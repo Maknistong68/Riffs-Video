@@ -2,7 +2,9 @@ import { frameToMs } from '../engine/time';
 import { lastNotePerString, type Timeline } from '../engine/timeline';
 import { drawNeck, type NeckGeometry } from './neck2d';
 import { drawTabLane, type LaneGeometry } from './tabLane';
+import { font } from './fonts';
 import { DARK_THEME, SAFE_ZONES, type Theme } from './theme';
+import { tuningLabel } from '../engine/tuning';
 
 export type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
@@ -30,12 +32,24 @@ export function defaultFrameSettings(fps: number): FrameSettings {
 }
 
 /** Classic layout geometry (title top, neck middle, tab lane bottom), inside the safe zones. */
-export function classicLayout(s: FrameSettings, strings: number): { neck: NeckGeometry; lane: LaneGeometry } {
+/** Visible frets: enough for the highest note in the riff (12, 15, 19 or 24). */
+export function visibleFrets(t: Pick<Timeline, 'events'>): number {
+  const max = t.events.reduce((m, e) => Math.max(m, e.fret), 0);
+  return [12, 15, 19, 24].find((f) => max < f) ?? 24;
+}
+
+export function classicLayout(s: FrameSettings, strings: number, frets = 12): { neck: NeckGeometry; lane: LaneGeometry } {
   const right = s.width - s.safeZones.rightPx;
   const bottom = s.height - s.safeZones.bottomPx;
-  const neck: NeckGeometry = { x0: 110, x1: right - 20, y0: 640, y1: 940, frets: 12, strings };
+  const neck: NeckGeometry = { x0: 110, x1: right - 20, y0: 640, y1: 940, frets, strings };
   const lane: LaneGeometry = { x0: 40, x1: right, y0: 1110, y1: bottom - 40, playheadX: 260, pxPerMs: 0.55 };
   return { neck, lane };
+}
+
+function currentBpm(t: Timeline, ms: number): number {
+  let bpm = t.tempoMap[0]?.bpm ?? 0;
+  for (const x of t.tempoMap) if (x.ms <= ms) bpm = x.bpm;
+  return bpm;
 }
 
 /**
@@ -45,7 +59,7 @@ export function classicLayout(s: FrameSettings, strings: number): { neck: NeckGe
 export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameSettings): void {
   const ms = frameToMs(frameIndex, s.fps);
   const th = s.theme;
-  const { neck, lane } = classicLayout(s, t.tuning.length);
+  const { neck, lane } = classicLayout(s, t.tuning.length, visibleFrets(t));
 
   ctx.save();
   ctx.fillStyle = th.background;
@@ -53,14 +67,14 @@ export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameS
 
   // Title
   ctx.fillStyle = th.text;
-  ctx.font = '800 64px system-ui, sans-serif';
+  ctx.font = font(800, 64);
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
   ctx.fillText(t.title, 60, s.safeZones.topPx + 160, s.width - s.safeZones.rightPx - 100);
   ctx.fillStyle = th.textDim;
-  ctx.font = '500 34px system-ui, sans-serif';
-  const bpm = t.tempoMap[0]?.bpm ?? 0;
-  ctx.fillText(`${bpm} bpm · standard tuning`, 60, s.safeZones.topPx + 220);
+  ctx.font = font(500, 34);
+  const bpm = Math.round(currentBpm(t, ms));
+  ctx.fillText(`${bpm} bpm · ${tuningLabel(t.tuning, t.capo)}`, 60, s.safeZones.topPx + 220);
 
   drawNeck(ctx, neck, th, ms, lastNotePerString(t, ms));
   drawTabLane(ctx, lane, t, th, ms);

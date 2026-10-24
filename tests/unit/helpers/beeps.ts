@@ -1,5 +1,5 @@
-import { msToSample } from '../engine/time';
-import type { Timeline } from '../engine/timeline';
+import { msToSample } from '../../../src/engine/time';
+import type { Timeline } from '../../../src/engine/timeline';
 
 export function midiToHz(midi: number): number {
   return 440 * 2 ** ((midi - 69) / 12);

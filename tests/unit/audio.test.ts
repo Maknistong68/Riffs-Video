@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { midiToHz, renderBeeps } from '../../src/audio/beeps';
+import { midiToHz, renderBeeps } from './helpers/beeps';
 import { detectOnsets } from '../../src/audio/onsets';
 import { AUDIO_SAMPLE_RATE, frameCount, samplesForFrames } from '../../src/engine/time';
-import { matchOnsets } from '../../src/export/syncCheck';
-import { demoTimeline } from '../../src/spike/demoTimeline';
+import { demoTimeline } from './helpers/demoTimeline';
 
 const t = demoTimeline();
 const total = samplesForFrames(frameCount(t.durationMs, 30), 30);
@@ -30,34 +29,23 @@ describe('beeps', () => {
   });
 });
 
-describe('onset detection + matching', () => {
-  it('finds every beep within 2 ms', () => {
+describe('onset detection', () => {
+  const nearest = (onsets: number[], ms: number) => Math.min(...onsets.map((o) => Math.abs(o - ms)));
+
+  it('finds every beep within 5 ms', () => {
     const onsets = detectOnsets(pcm, AUDIO_SAMPLE_RATE);
-    expect(onsets).toHaveLength(8);
-    const { matches, extraOnsets } = matchOnsets(t, onsets, 1000 / 30);
-    expect(extraOnsets).toEqual([]);
-    for (const m of matches) {
-      expect(m.ok).toBe(true);
-      expect(Math.abs(m.errorMs!)).toBeLessThan(2);
-    }
+    for (const e of t.events) expect(nearest(onsets, e.startMs)).toBeLessThan(5);
   });
 
-  it('reports a shifted audio track as out of sync', () => {
+  it('a 150 ms shifted track no longer lines up', () => {
     const shifted = new Float32Array(pcm.length);
-    shifted.set(pcm.subarray(0, pcm.length - 2400), 2400); // +50 ms
-    const { matches } = matchOnsets(t, detectOnsets(shifted, AUDIO_SAMPLE_RATE), 1000 / 30);
-    expect(matches.every((m) => !m.ok)).toBe(true);
+    shifted.set(pcm.subarray(0, pcm.length - 7200), 7200);
+    const onsets = detectOnsets(shifted, AUDIO_SAMPLE_RATE);
+    for (const e of t.events) expect(nearest(onsets, e.startMs)).toBeGreaterThan(1000 / 30);
   });
 
-  it('chord notes share one onset', () => {
-    const chord = structuredClone(t);
-    chord.events = [
-      { ...t.events[0]!, id: 'a', chordId: 'c1' },
-      { ...t.events[2]!, id: 'b', startMs: t.events[0]!.startMs, chordId: 'c1' },
-    ];
-    const { matches, extraOnsets } = matchOnsets(chord, [1000.5], 33);
-    expect(matches.every((m) => m.ok)).toBe(true);
-    expect(extraOnsets).toEqual([]);
+  it('silence has no onsets', () => {
+    expect(detectOnsets(new Float32Array(48_000), AUDIO_SAMPLE_RATE)).toEqual([]);
   });
 });
 

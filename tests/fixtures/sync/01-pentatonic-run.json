@@ -1,0 +1,131 @@
+{
+ "note": "Basic Pitch + flux onsets on alphaTab synth render (Sonivox) of tests/golden/riffs/01-pentatonic-run.atex",
+ "onsets": [
+  1001.33,
+  1302.67,
+  1601.33,
+  1900,
+  2198.67,
+  2500,
+  2798.67,
+  3100,
+  3401.33,
+  3465.33,
+  3697.33,
+  3753.33,
+  3998.67,
+  4297.33,
+  4598.67,
+  5198.67
+ ],
+ "detected": [
+  {
+   "startMs": 1010.07,
+   "durationMs": 464.4,
+   "midi": 40,
+   "amplitude": 0.627
+  },
+  {
+   "startMs": 1300.32,
+   "durationMs": 359.91,
+   "midi": 43,
+   "amplitude": 0.628
+  },
+  {
+   "startMs": 1602.18,
+   "durationMs": 116.1,
+   "midi": 57,
+   "amplitude": 0.283
+  },
+  {
+   "startMs": 1648.62,
+   "durationMs": 290.25,
+   "midi": 45,
+   "amplitude": 0.649
+  },
+  {
+   "startMs": 1904.04,
+   "durationMs": 291.53,
+   "midi": 47,
+   "amplitude": 0.727
+  },
+  {
+   "startMs": 2195.57,
+   "durationMs": 139.32,
+   "midi": 47,
+   "amplitude": 0.438
+  },
+  {
+   "startMs": 2195.57,
+   "durationMs": 394.74,
+   "midi": 50,
+   "amplitude": 0.674
+  },
+  {
+   "startMs": 2497.43,
+   "durationMs": 476.01,
+   "midi": 52,
+   "amplitude": 0.652
+  },
+  {
+   "startMs": 2799.29,
+   "durationMs": 417.96,
+   "midi": 55,
+   "amplitude": 0.689
+  },
+  {
+   "startMs": 3101.15,
+   "durationMs": 429.57,
+   "midi": 57,
+   "amplitude": 0.681
+  },
+  {
+   "startMs": 3414.62,
+   "durationMs": 290.25,
+   "midi": 59,
+   "amplitude": 0.792
+  },
+  {
+   "startMs": 3704.87,
+   "durationMs": 185.76,
+   "midi": 59,
+   "amplitude": 0.606
+  },
+  {
+   "startMs": 3704.87,
+   "durationMs": 291.53,
+   "midi": 62,
+   "amplitude": 0.83
+  },
+  {
+   "startMs": 3996.4,
+   "durationMs": 116.1,
+   "midi": 62,
+   "amplitude": 0.503
+  },
+  {
+   "startMs": 3996.4,
+   "durationMs": 603.72,
+   "midi": 64,
+   "amplitude": 0.632
+  },
+  {
+   "startMs": 4263.43,
+   "durationMs": 325.08,
+   "midi": 67,
+   "amplitude": 0.82
+  },
+  {
+   "startMs": 4600.12,
+   "durationMs": 847.53,
+   "midi": 64,
+   "amplitude": 0.842
+  },
+  {
+   "startMs": 4600.12,
+   "durationMs": 162.54,
+   "midi": 67,
+   "amplitude": 0.633
+  }
+ ]
+}

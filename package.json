@@ -21,8 +21,10 @@
   "homepage": "https://github.com/Maknistong68/Riffs-Video#readme",
   "dependencies": {
     "@coderline/alphatab": "^1.8.4",
+    "@fontsource/inter": "^5.3.0",
     "@mediabunny/aac-encoder": "^1.62.1",
     "@spotify/basic-pitch": "^1.0.1",
+    "@tensorflow/tfjs": "^3.21.0",
     "dexie": "^4.4.7",
     "mediabunny": "^1.62.1",
     "react": "^19.3.1",

@@ -1,0 +1,221 @@
+{
+ "note": "Basic Pitch + flux onsets on alphaTab synth render (Sonivox) of tests/golden/riffs/05-techniques.atex",
+ "onsets": [
+  1001.33,
+  1313.33,
+  1625.33,
+  1940,
+  2246.67,
+  2305.33,
+  2561.33,
+  2873.33,
+  3185.33,
+  3497.33,
+  3665.33,
+  3718.67,
+  3780,
+  4124,
+  4177.33,
+  4228,
+  4281.33,
+  4332,
+  4385.33,
+  4438.67,
+  4489.33,
+  4542.67,
+  4596,
+  4646.67,
+  4748,
+  4854.67,
+  4969.33,
+  5060,
+  5377.33,
+  5998.67,
+  6622.67,
+  7252,
+  7876,
+  8500
+ ],
+ "detected": [
+  {
+   "startMs": 998.46,
+   "durationMs": 116.1,
+   "midi": 52,
+   "amplitude": 0.314
+  },
+  {
+   "startMs": 1010.07,
+   "durationMs": 313.47,
+   "midi": 40,
+   "amplitude": 0.615
+  },
+  {
+   "startMs": 1311.93,
+   "durationMs": 116.1,
+   "midi": 52,
+   "amplitude": 0.331
+  },
+  {
+   "startMs": 1323.54,
+   "durationMs": 301.86,
+   "midi": 40,
+   "amplitude": 0.628
+  },
+  {
+   "startMs": 1625.4,
+   "durationMs": 325.08,
+   "midi": 40,
+   "amplitude": 0.573
+  },
+  {
+   "startMs": 1625.4,
+   "durationMs": 104.49,
+   "midi": 52,
+   "amplitude": 0.3
+  },
+  {
+   "startMs": 1950.48,
+   "durationMs": 256.7,
+   "midi": 40,
+   "amplitude": 0.616
+  },
+  {
+   "startMs": 1950.48,
+   "durationMs": 94.16,
+   "midi": 52,
+   "amplitude": 0.303
+  },
+  {
+   "startMs": 2253.62,
+   "durationMs": 313.47,
+   "midi": 62,
+   "amplitude": 0.816
+  },
+  {
+   "startMs": 2567.09,
+   "durationMs": 116.1,
+   "midi": 62,
+   "amplitude": 0.523
+  },
+  {
+   "startMs": 2567.09,
+   "durationMs": 313.47,
+   "midi": 64,
+   "amplitude": 0.813
+  },
+  {
+   "startMs": 2880.56,
+   "durationMs": 452.79,
+   "midi": 64,
+   "amplitude": 0.761
+  },
+  {
+   "startMs": 3182.42,
+   "durationMs": 325.08,
+   "midi": 62,
+   "amplitude": 0.792
+  },
+  {
+   "startMs": 3507.5,
+   "durationMs": 150.93,
+   "midi": 62,
+   "amplitude": 0.657
+  },
+  {
+   "startMs": 3507.5,
+   "durationMs": 220.59,
+   "midi": 66,
+   "amplitude": 0.758
+  },
+  {
+   "startMs": 3681.65,
+   "durationMs": 116.1,
+   "midi": 68,
+   "amplitude": 0.451
+  },
+  {
+   "startMs": 3797.75,
+   "durationMs": 407.63,
+   "midi": 69,
+   "amplitude": 0.79
+  },
+  {
+   "startMs": 4124.11,
+   "durationMs": 232.2,
+   "midi": 64,
+   "amplitude": 0.741
+  },
+  {
+   "startMs": 4425.97,
+   "durationMs": 243.81,
+   "midi": 65,
+   "amplitude": 0.774
+  },
+  {
+   "startMs": 4669.78,
+   "durationMs": 208.98,
+   "midi": 66,
+   "amplitude": 0.709
+  },
+  {
+   "startMs": 4739.44,
+   "durationMs": 325.08,
+   "midi": 76,
+   "amplitude": 0.841
+  },
+  {
+   "startMs": 5064.52,
+   "durationMs": 383.13,
+   "midi": 76,
+   "amplitude": 0.793
+  },
+  {
+   "startMs": 5389.6,
+   "durationMs": 616.61,
+   "midi": 40,
+   "amplitude": 0.737
+  },
+  {
+   "startMs": 5994.6,
+   "durationMs": 243.81,
+   "midi": 52,
+   "amplitude": 0.548
+  },
+  {
+   "startMs": 6006.21,
+   "durationMs": 348.3,
+   "midi": 40,
+   "amplitude": 0.593
+  },
+  {
+   "startMs": 6006.21,
+   "durationMs": 325.08,
+   "midi": 47,
+   "amplitude": 0.668
+  },
+  {
+   "startMs": 6621.54,
+   "durationMs": 673.38,
+   "midi": 69,
+   "amplitude": 0.818
+  },
+  {
+   "startMs": 7260.09,
+   "durationMs": 673.38,
+   "midi": 43,
+   "amplitude": 0.73
+  },
+  {
+   "startMs": 7260.09,
+   "durationMs": 104.49,
+   "midi": 50,
+   "amplitude": 0.319
+  },
+  {
+   "startMs": 7887.03,
+   "durationMs": 697.88,
+   "midi": 45,
+   "amplitude": 0.747
+  }
+ ]
+}

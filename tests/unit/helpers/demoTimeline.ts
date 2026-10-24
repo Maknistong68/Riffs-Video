@@ -1,4 +1,4 @@
-import { expectedMidi, type NoteEvent, type Timeline } from '../engine/timeline';
+import { expectedMidi, type NoteEvent, type Timeline } from '../../../src/engine/timeline';
 
 /** Standard tuning in display order: high e, B, G, D, A, low E. */
 export const STANDARD_TUNING = [64, 59, 55, 50, 45, 40];

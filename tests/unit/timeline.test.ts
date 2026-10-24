@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { activeEvents, lastNotePerString, upperBound, validateTimeline, type Timeline } from '../../src/engine/timeline';
-import { demoTimeline } from '../../src/spike/demoTimeline';
+import { demoTimeline } from './helpers/demoTimeline';
 
 const clone = (t: Timeline): Timeline => structuredClone(t);
 

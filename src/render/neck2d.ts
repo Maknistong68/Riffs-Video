@@ -1,4 +1,5 @@
 import type { NoteEvent } from '../engine/timeline';
+import { font } from './fonts';
 import type { Theme } from './theme';
 import type { Ctx2D } from './drawFrame';
 
@@ -73,7 +74,7 @@ export function drawNeck(
 
   // Fret numbers under the neck
   ctx.fillStyle = theme.textDim;
-  ctx.font = '600 26px system-ui, sans-serif';
+  ctx.font = font(600, 26);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   for (const f of [3, 5, 7, 9, 12]) {
@@ -124,7 +125,7 @@ export function drawNeck(
     } else {
       circle(ctx, p.x, p.y, DOT_RADIUS);
       ctx.fillStyle = theme.dotText;
-      ctx.font = '700 26px system-ui, sans-serif';
+      ctx.font = font(700, 26);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(String(e.fret), p.x, p.y + 1);

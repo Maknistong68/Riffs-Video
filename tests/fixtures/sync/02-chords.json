@@ -1,0 +1,255 @@
+{
+ "note": "Basic Pitch + flux onsets on alphaTab synth render (Sonivox) of tests/golden/riffs/02-chords.atex",
+ "onsets": [
+  998.67,
+  1662.67,
+  2332,
+  2668,
+  3001.33,
+  3662.67,
+  4332,
+  4998.67
+ ],
+ "detected": [
+  {
+   "startMs": 998.46,
+   "durationMs": 69.66,
+   "midi": 40,
+   "amplitude": 0.613
+  },
+  {
+   "startMs": 1010.07,
+   "durationMs": 661.77,
+   "midi": 47,
+   "amplitude": 0.766
+  },
+  {
+   "startMs": 1010.07,
+   "durationMs": 615.33,
+   "midi": 52,
+   "amplitude": 0.47
+  },
+  {
+   "startMs": 1068.12,
+   "durationMs": 592.11,
+   "midi": 40,
+   "amplitude": 0.753
+  },
+  {
+   "startMs": 1137.78,
+   "durationMs": 104.49,
+   "midi": 89,
+   "amplitude": 0.341
+  },
+  {
+   "startMs": 1660.23,
+   "durationMs": 139.32,
+   "midi": 40,
+   "amplitude": 0.326
+  },
+  {
+   "startMs": 1671.84,
+   "durationMs": 651.44,
+   "midi": 43,
+   "amplitude": 0.757
+  },
+  {
+   "startMs": 1671.84,
+   "durationMs": 663.05,
+   "midi": 50,
+   "amplitude": 0.785
+  },
+  {
+   "startMs": 1671.84,
+   "durationMs": 651.44,
+   "midi": 55,
+   "amplitude": 0.553
+  },
+  {
+   "startMs": 1904.04,
+   "durationMs": 326.36,
+   "midi": 71,
+   "amplitude": 0.315
+  },
+  {
+   "startMs": 2323.28,
+   "durationMs": 150.93,
+   "midi": 43,
+   "amplitude": 0.367
+  },
+  {
+   "startMs": 2323.28,
+   "durationMs": 336.69,
+   "midi": 62,
+   "amplitude": 0.47
+  },
+  {
+   "startMs": 2334.89,
+   "durationMs": 325.08,
+   "midi": 50,
+   "amplitude": 0.775
+  },
+  {
+   "startMs": 2334.89,
+   "durationMs": 336.69,
+   "midi": 57,
+   "amplitude": 0.782
+  },
+  {
+   "startMs": 2659.97,
+   "durationMs": 371.52,
+   "midi": 50,
+   "amplitude": 0.772
+  },
+  {
+   "startMs": 2659.97,
+   "durationMs": 348.3,
+   "midi": 62,
+   "amplitude": 0.455
+  },
+  {
+   "startMs": 2671.58,
+   "durationMs": 348.3,
+   "midi": 57,
+   "amplitude": 0.756
+  },
+  {
+   "startMs": 2996.66,
+   "durationMs": 661.77,
+   "midi": 43,
+   "amplitude": 0.765
+  },
+  {
+   "startMs": 2996.66,
+   "durationMs": 673.38,
+   "midi": 55,
+   "amplitude": 0.552
+  },
+  {
+   "startMs": 3031.49,
+   "durationMs": 650.16,
+   "midi": 50,
+   "amplitude": 0.795
+  },
+  {
+   "startMs": 3147.59,
+   "durationMs": 174.15,
+   "midi": 71,
+   "amplitude": 0.326
+  },
+  {
+   "startMs": 3658.43,
+   "durationMs": 185.76,
+   "midi": 43,
+   "amplitude": 0.343
+  },
+  {
+   "startMs": 3670.04,
+   "durationMs": 150.93,
+   "midi": 48,
+   "amplitude": 0.388
+  },
+  {
+   "startMs": 3670.04,
+   "durationMs": 81.27,
+   "midi": 52,
+   "amplitude": 0.299
+  },
+  {
+   "startMs": 3670.04,
+   "durationMs": 697.88,
+   "midi": 55,
+   "amplitude": 0.723
+  },
+  {
+   "startMs": 3670.04,
+   "durationMs": 651.44,
+   "midi": 60,
+   "amplitude": 0.794
+  },
+  {
+   "startMs": 3670.04,
+   "durationMs": 69.66,
+   "midi": 67,
+   "amplitude": 0.299
+  },
+  {
+   "startMs": 3681.65,
+   "durationMs": 663.05,
+   "midi": 64,
+   "amplitude": 0.821
+  },
+  {
+   "startMs": 4321.48,
+   "durationMs": 116.1,
+   "midi": 50,
+   "amplitude": 0.277
+  },
+  {
+   "startMs": 4321.48,
+   "durationMs": 684.99,
+   "midi": 57,
+   "amplitude": 0.752
+  },
+  {
+   "startMs": 4321.48,
+   "durationMs": 81.27,
+   "midi": 60,
+   "amplitude": 0.395
+  },
+  {
+   "startMs": 4321.48,
+   "durationMs": 684.99,
+   "midi": 66,
+   "amplitude": 0.821
+  },
+  {
+   "startMs": 4333.09,
+   "durationMs": 673.38,
+   "midi": 62,
+   "amplitude": 0.774
+  },
+  {
+   "startMs": 4333.09,
+   "durationMs": 104.49,
+   "midi": 69,
+   "amplitude": 0.343
+  },
+  {
+   "startMs": 4855.54,
+   "durationMs": 150.93,
+   "midi": 50,
+   "amplitude": 0.574
+  },
+  {
+   "startMs": 5006.47,
+   "durationMs": 116.1,
+   "midi": 47,
+   "amplitude": 0.282
+  },
+  {
+   "startMs": 5006.47,
+   "durationMs": 893.97,
+   "midi": 50,
+   "amplitude": 0.799
+  },
+  {
+   "startMs": 5006.47,
+   "durationMs": 893.97,
+   "midi": 57,
+   "amplitude": 0.768
+  },
+  {
+   "startMs": 5006.47,
+   "durationMs": 812.7,
+   "midi": 62,
+   "amplitude": 0.533
+  },
+  {
+   "startMs": 5006.47,
+   "durationMs": 870.75,
+   "midi": 66,
+   "amplitude": 0.727
+  }
+ ]
+}

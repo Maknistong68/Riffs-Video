@@ -1,4 +1,5 @@
 import type { NoteEvent, Timeline } from '../engine/timeline';
+import { font } from './fonts';
 import type { Theme } from './theme';
 import type { Ctx2D } from './drawFrame';
 
@@ -48,7 +49,7 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
     ctx.stroke();
   }
 
-  ctx.font = '700 34px system-ui, sans-serif';
+  ctx.font = font(700, 34);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const e of t.events) {

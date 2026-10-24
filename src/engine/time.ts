@@ -49,3 +49,29 @@ export function sampleToMs(sample: number, sampleRate: number = AUDIO_SAMPLE_RAT
 export function samplesForFrames(frames: number, fps: number, sampleRate: number = AUDIO_SAMPLE_RATE): number {
   return Math.round((frames * sampleRate) / fps);
 }
+
+/**
+ * Smallest frame count ≥ minFrames whose audio length, plus the encoder's priming delay, fills
+ * whole codec frames (AAC: 1024 samples). Then the encoder adds no padding and the audio stream
+ * ends exactly with the video (rule 3), even at 60 fps where one frame is only 800 samples.
+ */
+export function alignedFrameCount(
+  minFrames: number,
+  fps: number,
+  primingSamples: number,
+  codecFrameSize = 1024,
+  sampleRate: number = AUDIO_SAMPLE_RATE,
+): number {
+  let best = minFrames;
+  let bestPad = Infinity;
+  for (let f = minFrames; f < minFrames + codecFrameSize; f++) {
+    const used = samplesForFrames(f, fps, sampleRate) + primingSamples;
+    const pad = (codecFrameSize - (used % codecFrameSize)) % codecFrameSize;
+    if (pad < bestPad) {
+      best = f;
+      bestPad = pad;
+      if (pad === 0) break;
+    }
+  }
+  return best;
+}

@@ -1,63 +1,135 @@
-import type { Timeline } from '../engine/timeline';
+/**
+ * Pure Sync Report matching (CLAUDE.md §3): timeline notes vs what was heard in the exported audio.
+ * - pitch: Basic Pitch note with the expected MIDI pitch (±50 cents = same semitone) near the onset;
+ *   bends accept the bent range; octave confusions are accepted but flagged.
+ * - timing: nearest spectral-flux onset must be within ±1 video frame.
+ */
+import type { DetectedNote } from '../audio/transcribe';
+import type { NoteEvent, Timeline } from '../engine/timeline';
 
-export type OnsetMatch = {
+/** Basic Pitch's own onset resolution is ~11.6 ms frames with smearing; used for pitch pairing only. */
+export const PITCH_SEARCH_MS = 70;
+const HARMONIC_OFFSETS = [12, 19, 24, 28, 31];
+/** Faint detections (synth resonances, Basic Pitch ghosts) are not worth reporting. */
+export const EXTRA_MIN_AMPLITUDE = 0.4;
+
+export type CheckKind = 'full' | 'onset-only' | 'skipped';
+
+export type NoteMatch = {
   eventId: string;
   expectedMs: number;
-  detectedMs: number | null;
+  expectedMidi: number;
+  kind: CheckKind;
+  onsetMs: number | null;
   errorMs: number | null;
+  onsetOk: boolean;
+  detectedMidi: number | null;
+  pitchOk: boolean;
   ok: boolean;
+  detail: string;
 };
+
+export type FrameCheck = { frame: number; psnr: number; ok: boolean };
+export type HighlightCheck = { eventId: string; frame: number; ok: boolean; detail: string };
 
 export type SyncReport = {
   ok: boolean;
+  fps: number;
   toleranceMs: number;
   matched: number;
   total: number;
-  extraOnsets: number[];
-  matches: OnsetMatch[];
   maxAbsErrorMs: number;
+  matches: NoteMatch[];
+  extras: DetectedNote[];
   durations: { videoSec: number; audioSec: number; diffMs: number; ok: boolean } | null;
-  highlights: { eventId: string; frame: number; ok: boolean; detail: string }[];
+  frames: FrameCheck[];
+  highlights: HighlightCheck[];
+  audioLatencySamples?: number;
 };
 
-/**
- * Match detected onsets to timeline note starts (chord notes share one onset).
- * Each onset is used at most once; anything farther than `toleranceMs` is a miss.
- */
-export function matchOnsets(t: Timeline, onsetsMs: readonly number[], toleranceMs: number): {
-  matches: OnsetMatch[];
-  extraOnsets: number[];
-} {
+export function checkKind(e: NoteEvent): CheckKind {
+  if (e.legato) return 'skipped';
+  if (e.tech.includes('dead') || e.tech.includes('harmonic')) return 'onset-only';
+  return 'full';
+}
+
+function pitchMatches(e: NoteEvent, midi: number): 'exact' | 'octave' | null {
+  const hi = e.midi + Math.ceil(e.bendSemitones ?? 0);
+  if (midi >= e.midi && midi <= hi) return 'exact';
+  if (Math.abs(midi - e.midi) % 12 === 0) return 'octave';
+  return null;
+}
+
+export function matchNotes(
+  t: Timeline,
+  detected: readonly DetectedNote[],
+  onsetsMs: readonly number[],
+  fps: number,
+): { matches: NoteMatch[]; extras: DetectedNote[] } {
+  const tolerance = 1000 / fps;
   const used = new Set<number>();
-  const matches: OnsetMatch[] = [];
-  const groupOnset = new Map<string, number>();
+  const matches: NoteMatch[] = [];
+
+  const nearestOnset = (ms: number) => {
+    let best: number | null = null;
+    for (const o of onsetsMs) if (best === null || Math.abs(o - ms) < Math.abs(best - ms)) best = o;
+    return best;
+  };
+
   for (const e of t.events) {
-    const key = e.chordId ?? `@${e.startMs}`;
-    let idx = groupOnset.get(key);
-    if (idx === undefined) {
+    const kind = checkKind(e);
+    const base = { eventId: e.id, expectedMs: e.startMs, expectedMidi: e.midi, kind };
+    if (kind === 'skipped') {
+      matches.push({ ...base, onsetMs: null, errorMs: null, onsetOk: true, detectedMidi: null, pitchOk: true, ok: true, detail: 'legato (not re-picked): not checked' });
+      continue;
+    }
+    const onset = nearestOnset(e.startMs);
+    const errorMs = onset === null ? null : onset - e.startMs;
+    const onsetOk = errorMs !== null && Math.abs(errorMs) <= tolerance;
+
+    let pitchOk = kind === 'onset-only';
+    let detectedMidi: number | null = null;
+    let octave = false;
+    if (kind === 'full') {
       let best = -1;
-      let bestErr = Infinity;
-      for (let i = 0; i < onsetsMs.length; i++) {
+      let bestScore = Infinity;
+      for (let i = 0; i < detected.length; i++) {
         if (used.has(i)) continue;
-        const err = Math.abs(onsetsMs[i]! - e.startMs);
-        if (err < bestErr) {
-          bestErr = err;
+        const d = detected[i]!;
+        const dt = Math.abs(d.startMs - e.startMs);
+        if (dt > PITCH_SEARCH_MS) continue;
+        const pm = pitchMatches(e, d.midi);
+        if (!pm) continue;
+        const score = dt + (pm === 'octave' ? 1000 : 0); // prefer exact pitch
+        if (score < bestScore) {
+          bestScore = score;
           best = i;
         }
       }
-      idx = best >= 0 && bestErr <= toleranceMs ? best : -1;
-      if (idx >= 0) used.add(idx);
-      groupOnset.set(key, idx);
+      if (best >= 0) {
+        used.add(best);
+        detectedMidi = detected[best]!.midi;
+        pitchOk = true;
+        octave = bestScore >= 1000;
+      }
     }
-    const detected = idx >= 0 ? onsetsMs[idx]! : null;
-    matches.push({
-      eventId: e.id,
-      expectedMs: e.startMs,
-      detectedMs: detected,
-      errorMs: detected === null ? null : detected - e.startMs,
-      ok: detected !== null,
-    });
+    const ok = onsetOk && pitchOk;
+    let detail = ok ? (octave ? 'ok (heard an octave away)' : 'ok') : '';
+    if (!onsetOk) detail = errorMs === null ? 'no attack heard' : `attack ${errorMs > 0 ? 'late' : 'early'} by ${Math.abs(errorMs).toFixed(1)} ms`;
+    if (!pitchOk) detail = (detail ? detail + '; ' : '') + `pitch ${e.midi} not heard`;
+    if (kind === 'onset-only' && ok) detail = 'ok (attack only: ' + (e.tech.includes('dead') ? 'dead note' : 'harmonic') + ')';
+    matches.push({ ...base, onsetMs: onset, errorMs, onsetOk, detectedMidi, pitchOk, ok, detail });
   }
-  const extraOnsets = onsetsMs.filter((_, i) => !used.has(i));
-  return { matches, extraOnsets };
+
+  // Extras: detections not explained by any sounding note (re-detected sustain, harmonics, bend steps).
+  const extras = detected.filter((d, i) => {
+    if (used.has(i) || d.amplitude < EXTRA_MIN_AMPLITUDE) return false;
+    return !t.events.some((e) => {
+      const sounding = d.startMs >= e.startMs - PITCH_SEARCH_MS && d.startMs <= e.startMs + e.durationMs + PITCH_SEARCH_MS;
+      if (!sounding) return false;
+      const diff = d.midi - e.midi;
+      return pitchMatches(e, d.midi) !== null || HARMONIC_OFFSETS.includes(diff) || (e.tech.includes('slide') && Math.abs(diff) <= 12);
+    });
+  });
+  return { matches, extras };
 }
