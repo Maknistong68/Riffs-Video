@@ -27,6 +27,10 @@ export type NoteEvent = {
   pick?: 'down' | 'up';
   tech: Technique[];
   chordId?: string;
+  /** Sounds without a new pick attack (slide destination): no onset is expected in the audio. */
+  legato?: boolean;
+  /** Bend target above `midi` in semitones (bend/release techniques). */
+  bendSemitones?: number;
   /** 0..1; < LOW_CONFIDENCE is flagged in the UI. */
   confidence?: number;
 };

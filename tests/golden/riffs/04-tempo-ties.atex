@@ -1,0 +1,9 @@
+\title "Golden 4 - Tempo and Ties"
+\tempo 80
+\track "Guitar"
+\staff {tabs}
+\tuning (E4 B3 G3 D3 A2 E2)
+:4 5.2 7.2 :8 8.2 7.2 :4 5.2 |
+:4 -.2 :8 {tu 3} 5.3 7.3 5.3 {tu 3} 7.4 5.4 7.4 :4 5.4 |
+\tempo 120 :8 0.6 0.6 3.6 0.6 :4 5.6 -.6 |
+\tempo 60 :2 (0.6 2.5 2.4) (-.6 -.5 -.4)
