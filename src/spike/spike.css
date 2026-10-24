@@ -1,0 +1,49 @@
+:root {
+  color-scheme: dark;
+  --bg: #0d0f14;
+  --panel: #161a22;
+  --text: #f4f4f6;
+  --dim: #8a8f9c;
+  --accent: #ffcc1a;
+  --bad: #ff6b6b;
+  --good: #3ddc84;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px);
+  max-width: 520px;
+  margin: 0 auto;
+}
+.top h1 { font-size: 20px; margin: 12px 0 8px; }
+.tag { font-size: 12px; color: var(--bg); background: var(--accent); border-radius: 6px; padding: 2px 6px; vertical-align: middle; }
+.preview { display: flex; justify-content: center; }
+.preview canvas { height: 52dvh; width: auto; max-width: 100%; aspect-ratio: 9 / 16; border-radius: 12px; background: #000; }
+.panel { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn {
+  min-height: 48px; padding: 0 18px; border-radius: 14px; border: 0;
+  background: var(--panel); color: var(--text); font-size: 16px; font-weight: 600;
+}
+.btn.primary { background: var(--accent); color: #1a1205; font-size: 18px; min-height: 56px; }
+.btn:disabled { opacity: 0.5; }
+.seg { display: flex; background: var(--panel); border-radius: 14px; padding: 4px; }
+.seg button { min-height: 40px; min-width: 64px; border: 0; border-radius: 10px; background: transparent; color: var(--dim); font-weight: 600; }
+.seg button.on { background: #2a3140; color: var(--text); }
+.check { display: flex; align-items: center; gap: 6px; color: var(--dim); min-height: 44px; }
+.scrub { width: 100%; accent-color: var(--accent); }
+.progress .bar { height: 10px; background: var(--panel); border-radius: 5px; overflow: hidden; }
+.progress .bar div { height: 100%; background: var(--accent); transition: width 0.2s; }
+.result { display: flex; flex-direction: column; gap: 10px; }
+.player { width: 100%; max-height: 40dvh; background: #000; border-radius: 12px; }
+.card { background: var(--panel); border-radius: 14px; padding: 12px 14px; border-left: 4px solid var(--good); }
+.card.warn { border-left-color: var(--bad); }
+.card ul { margin: 8px 0; padding-left: 18px; }
+.dim { color: var(--dim); }
+.small { font-size: 13px; }
+.bad { color: var(--bad); }
+p { margin: 4px 0; }

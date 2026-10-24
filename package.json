@@ -1,0 +1,40 @@
+{
+  "name": "riffreel",
+  "version": "0.0.0",
+  "description": "RiffReel — on-device guitar riff video maker (PWA)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maknistong68/Riffs-Video.git"
+  },
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/Maknistong68/Riffs-Video/issues"
+  },
+  "homepage": "https://github.com/Maknistong68/Riffs-Video#readme",
+  "dependencies": {
+    "@mediabunny/aac-encoder": "^1.62.1",
+    "mediabunny": "^1.62.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "~5.9",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  },
+  "private": true,
+  "type": "module"
+}
