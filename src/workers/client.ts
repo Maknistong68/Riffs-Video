@@ -1,5 +1,6 @@
 /** Promise API over the render worker. One long-lived worker for inspect/prepare; one per export. */
-import type { Exported, ExportStage, Inspected, Prepared, WorkerRequest, WorkerResponse } from './protocol';
+import type { Timeline } from '../engine/timeline';
+import type { Exported, ExportStage, Inspected, Prepared, RiffConfig, WorkerRequest, WorkerResponse } from './protocol';
 
 export class WorkerError extends Error {
   constructor(message: string, readonly details: string[]) {
@@ -47,6 +48,10 @@ const sharedChannel = () => (shared ??= new Channel(spawn()));
 
 export function inspectSource(source: Extract<WorkerRequest, { type: 'inspect' }>['source']): Promise<Inspected> {
   return sharedChannel().call<Inspected>({ type: 'inspect', source });
+}
+
+export function buildRiffTimeline(riff: RiffConfig): Promise<Timeline> {
+  return sharedChannel().call<Timeline>({ type: 'timeline', riff });
 }
 
 export function prepareRiff(req: Omit<Extract<WorkerRequest, { type: 'prepare' }>, 'id' | 'type'>): Promise<Prepared> {

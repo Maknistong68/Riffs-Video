@@ -3,6 +3,7 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2022", "DOM"],
+    "allowImportingTsExtensions": false,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
@@ -12,5 +13,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["vite.config.ts", "playwright.config.ts", "tests/e2e"]
+  "include": ["vite.config.ts", "playwright.config.ts", "tests/e2e", "tests/golden/golden.spec.ts"]
 }

@@ -1,0 +1,8 @@
+\title "Midnight Pentatonic"
+\artist "RiffReel demo (original)"
+\tempo 92
+\track "Guitar"
+\staff {tabs}
+\tuning (E4 B3 G3 D3 A2 E2)
+:8 5.3 7.3 5.2 8.2 :16 5.1 8.1 5.1 8.1 :8 5.2 7.3 |
+:8 5.4 7.4 5.3 7.3{h} 5.3 7.4 :4 5.4{v}

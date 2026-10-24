@@ -1,0 +1,298 @@
+{
+ "timeline": {
+  "version": 1,
+  "title": "Golden 2 - Chords",
+  "tuning": [
+   64,
+   59,
+   55,
+   50,
+   45,
+   40
+  ],
+  "capo": 0,
+  "tempoMap": [
+   {
+    "ms": 0,
+    "bpm": 90
+   },
+   {
+    "ms": 1000,
+    "bpm": 90
+   }
+  ],
+  "leadInMs": 1000,
+  "durationMs": 7533.333333333333,
+  "events": [
+   {
+    "id": "p0-b0-n2",
+    "startMs": 1000,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 3,
+    "fret": 2,
+    "midi": 52,
+    "tech": [],
+    "chordId": "c0-0"
+   },
+   {
+    "id": "p0-b0-n1",
+    "startMs": 1000,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 4,
+    "fret": 2,
+    "midi": 47,
+    "tech": [],
+    "chordId": "c0-0"
+   },
+   {
+    "id": "p0-b0-n0",
+    "startMs": 1000,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": [],
+    "chordId": "c0-0"
+   },
+   {
+    "id": "p0-b1-n5",
+    "startMs": 1666.6666666666665,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 3,
+    "fret": 5,
+    "midi": 55,
+    "tech": [],
+    "chordId": "c0-1"
+   },
+   {
+    "id": "p0-b1-n4",
+    "startMs": 1666.6666666666665,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 4,
+    "fret": 5,
+    "midi": 50,
+    "tech": [],
+    "chordId": "c0-1"
+   },
+   {
+    "id": "p0-b1-n3",
+    "startMs": 1666.6666666666665,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 5,
+    "fret": 3,
+    "midi": 43,
+    "tech": [],
+    "chordId": "c0-1"
+   },
+   {
+    "id": "p0-b2-n8",
+    "startMs": 2333.333333333333,
+    "durationMs": 333.33333333333394,
+    "stringIdx": 2,
+    "fret": 7,
+    "midi": 62,
+    "tech": [],
+    "chordId": "c0-2"
+   },
+   {
+    "id": "p0-b2-n7",
+    "startMs": 2333.333333333333,
+    "durationMs": 333.33333333333394,
+    "stringIdx": 3,
+    "fret": 7,
+    "midi": 57,
+    "tech": [],
+    "chordId": "c0-2"
+   },
+   {
+    "id": "p0-b2-n6",
+    "startMs": 2333.333333333333,
+    "durationMs": 333.33333333333394,
+    "stringIdx": 4,
+    "fret": 5,
+    "midi": 50,
+    "tech": [],
+    "chordId": "c0-2"
+   },
+   {
+    "id": "p0-b3-n11",
+    "startMs": 2666.666666666667,
+    "durationMs": 333.33333333333303,
+    "stringIdx": 2,
+    "fret": 7,
+    "midi": 62,
+    "tech": [],
+    "chordId": "c0-3"
+   },
+   {
+    "id": "p0-b3-n10",
+    "startMs": 2666.666666666667,
+    "durationMs": 333.33333333333303,
+    "stringIdx": 3,
+    "fret": 7,
+    "midi": 57,
+    "tech": [],
+    "chordId": "c0-3"
+   },
+   {
+    "id": "p0-b3-n9",
+    "startMs": 2666.666666666667,
+    "durationMs": 333.33333333333303,
+    "stringIdx": 4,
+    "fret": 5,
+    "midi": 50,
+    "tech": [],
+    "chordId": "c0-3"
+   },
+   {
+    "id": "p0-b4-n14",
+    "startMs": 3000,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 3,
+    "fret": 5,
+    "midi": 55,
+    "tech": [],
+    "chordId": "c0-4"
+   },
+   {
+    "id": "p0-b4-n13",
+    "startMs": 3000,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 4,
+    "fret": 5,
+    "midi": 50,
+    "tech": [],
+    "chordId": "c0-4"
+   },
+   {
+    "id": "p0-b4-n12",
+    "startMs": 3000,
+    "durationMs": 666.6666666666665,
+    "stringIdx": 5,
+    "fret": 3,
+    "midi": 43,
+    "tech": [],
+    "chordId": "c0-4"
+   },
+   {
+    "id": "p1-b5-n17",
+    "startMs": 3666.6666666666665,
+    "durationMs": 666.6666666666674,
+    "stringIdx": 0,
+    "fret": 0,
+    "midi": 64,
+    "tech": [],
+    "chordId": "c1-5"
+   },
+   {
+    "id": "p1-b5-n16",
+    "startMs": 3666.6666666666665,
+    "durationMs": 666.6666666666674,
+    "stringIdx": 1,
+    "fret": 1,
+    "midi": 60,
+    "tech": [],
+    "chordId": "c1-5"
+   },
+   {
+    "id": "p1-b5-n15",
+    "startMs": 3666.6666666666665,
+    "durationMs": 666.6666666666674,
+    "stringIdx": 2,
+    "fret": 0,
+    "midi": 55,
+    "tech": [],
+    "chordId": "c1-5"
+   },
+   {
+    "id": "p1-b6-n20",
+    "startMs": 4333.333333333334,
+    "durationMs": 666.6666666666661,
+    "stringIdx": 0,
+    "fret": 2,
+    "midi": 66,
+    "tech": [],
+    "chordId": "c1-6"
+   },
+   {
+    "id": "p1-b6-n19",
+    "startMs": 4333.333333333334,
+    "durationMs": 666.6666666666661,
+    "stringIdx": 1,
+    "fret": 3,
+    "midi": 62,
+    "tech": [],
+    "chordId": "c1-6"
+   },
+   {
+    "id": "p1-b6-n18",
+    "startMs": 4333.333333333334,
+    "durationMs": 666.6666666666661,
+    "stringIdx": 2,
+    "fret": 2,
+    "midi": 57,
+    "tech": [],
+    "chordId": "c1-6"
+   },
+   {
+    "id": "p1-b7-n24",
+    "startMs": 5000,
+    "durationMs": 666.666666666667,
+    "stringIdx": 0,
+    "fret": 2,
+    "midi": 66,
+    "tech": [],
+    "chordId": "c1-7"
+   },
+   {
+    "id": "p1-b7-n23",
+    "startMs": 5000,
+    "durationMs": 666.666666666667,
+    "stringIdx": 1,
+    "fret": 3,
+    "midi": 62,
+    "tech": [],
+    "chordId": "c1-7"
+   },
+   {
+    "id": "p1-b7-n22",
+    "startMs": 5000,
+    "durationMs": 666.666666666667,
+    "stringIdx": 2,
+    "fret": 2,
+    "midi": 57,
+    "tech": [],
+    "chordId": "c1-7"
+   },
+   {
+    "id": "p1-b7-n21",
+    "startMs": 5000,
+    "durationMs": 666.666666666667,
+    "stringIdx": 3,
+    "fret": 0,
+    "midi": 50,
+    "tech": [],
+    "chordId": "c1-7"
+   }
+  ],
+  "bars": [
+   {
+    "index": 0,
+    "startMs": 1000
+   },
+   {
+    "index": 1,
+    "startMs": 3666.6666666666665
+   }
+  ]
+ },
+ "frames": {
+  "0": "8a7df79a69bd7136f280b8c3a47b55780e63209796010684ca4047a2be7e3e72",
+  "30": "025c819872ca997ab499c04e3a757dc8ff1a7f46c73479ecc5b0b8a144de3917",
+  "34": "693c95044b2199976aa3564dfbee7f4e400c2eb16023851cf60d13146bdbec75",
+  "50": "7311c3fd71d7c12be1cd296e0e19a3a9cbdb98a601b64c65682a6fb287cbbc8e",
+  "54": "c4318b71671c6031f4b820f5f310273d98c544846ce931b7ea69fe4aa42e778a",
+  "71": "a40f1624fd356142c769ad1dad7421d075cd7b57f6697a8bfa5b31fefa367be0",
+  "75": "5fc4a90898b77e8b70928ff2ab28bf0dcb07e949b33095bdec709a9664731fd7"
+ }
+}

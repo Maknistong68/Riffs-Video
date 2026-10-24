@@ -77,7 +77,7 @@ export function drawNeck(
   ctx.font = font(600, 26);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  for (const f of [3, 5, 7, 9, 12]) {
+  for (const f of [3, 5, 7, 9, 12, 15, 17, 19, 21, 24]) {
     if (f <= g.frets) ctx.fillText(String(f), (fretX(g, f - 1) + fretX(g, f)) / 2, g.y1 + 18);
   }
 

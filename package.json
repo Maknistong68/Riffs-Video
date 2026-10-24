@@ -8,7 +8,9 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test --project=\"iPhone 15\" --project=\"Pixel 7\"",
+    "golden": "playwright test --project=golden",
+    "golden:update": "UPDATE_GOLDEN=1 playwright test --project=golden"
   },
   "repository": {
     "type": "git",
@@ -26,9 +28,11 @@
     "@spotify/basic-pitch": "^1.0.1",
     "@tensorflow/tfjs": "^3.21.0",
     "dexie": "^4.4.7",
+    "dexie-react-hooks": "^4.4.0",
     "mediabunny": "^1.62.1",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "workbox-window": "^7.4.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

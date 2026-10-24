@@ -71,6 +71,10 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
       post({ id: req.id, type: 'inspected', result: { title: score.title, artist: score.artist, tracks: playableTracks(score) } });
       return;
     }
+    if (req.type === 'timeline') {
+      post({ id: req.id, type: 'timeline', result: build(req.riff).timeline });
+      return;
+    }
     if (req.type === 'prepare') {
       const built = build(req.riff);
       const total = samplesForFrames(frameCount(built.timeline.durationMs, 60), 60);

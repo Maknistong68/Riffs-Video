@@ -52,7 +52,7 @@ function alphaTexDiagnostics(e: unknown): string[] {
   return out.length > 0 ? out : [e instanceof Error ? e.message : String(e)];
 }
 
-export const SCORE_FILE_EXTENSIONS = ['.gp', '.gp3', '.gp4', '.gp5', '.gpx', '.xml', '.musicxml', '.mxl', '.atex', '.alphatex', '.txt'];
+export { SCORE_FILE_EXTENSIONS } from './formats';
 
 /** Guitar Pro 3–7, GPX, MusicXML (binary) — or alphaTex text by extension. */
 export function loadScoreFile(bytes: Uint8Array, fileName: string): Score {

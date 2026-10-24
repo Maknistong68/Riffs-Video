@@ -1,0 +1,175 @@
+{
+ "timeline": {
+  "version": 1,
+  "title": "Golden 1 - Pentatonic Run",
+  "tuning": [
+   64,
+   59,
+   55,
+   50,
+   45,
+   40
+  ],
+  "capo": 0,
+  "tempoMap": [
+   {
+    "ms": 0,
+    "bpm": 100
+   },
+   {
+    "ms": 1000,
+    "bpm": 100
+   }
+  ],
+  "leadInMs": 1000,
+  "durationMs": 7000,
+  "events": [
+   {
+    "id": "p0-b0-n0",
+    "startMs": 1000,
+    "durationMs": 300,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": []
+   },
+   {
+    "id": "p0-b1-n1",
+    "startMs": 1300,
+    "durationMs": 300,
+    "stringIdx": 5,
+    "fret": 3,
+    "midi": 43,
+    "tech": []
+   },
+   {
+    "id": "p0-b2-n2",
+    "startMs": 1600,
+    "durationMs": 300,
+    "stringIdx": 4,
+    "fret": 0,
+    "midi": 45,
+    "tech": []
+   },
+   {
+    "id": "p0-b3-n3",
+    "startMs": 1900,
+    "durationMs": 300,
+    "stringIdx": 4,
+    "fret": 2,
+    "midi": 47,
+    "tech": []
+   },
+   {
+    "id": "p0-b4-n4",
+    "startMs": 2200,
+    "durationMs": 300,
+    "stringIdx": 3,
+    "fret": 0,
+    "midi": 50,
+    "tech": []
+   },
+   {
+    "id": "p0-b5-n5",
+    "startMs": 2500,
+    "durationMs": 300,
+    "stringIdx": 3,
+    "fret": 2,
+    "midi": 52,
+    "tech": []
+   },
+   {
+    "id": "p0-b6-n6",
+    "startMs": 2800,
+    "durationMs": 300,
+    "stringIdx": 2,
+    "fret": 0,
+    "midi": 55,
+    "tech": []
+   },
+   {
+    "id": "p0-b7-n7",
+    "startMs": 3100,
+    "durationMs": 300,
+    "stringIdx": 2,
+    "fret": 2,
+    "midi": 57,
+    "tech": []
+   },
+   {
+    "id": "p1-b8-n8",
+    "startMs": 3400,
+    "durationMs": 300,
+    "stringIdx": 1,
+    "fret": 0,
+    "midi": 59,
+    "tech": []
+   },
+   {
+    "id": "p1-b9-n9",
+    "startMs": 3700,
+    "durationMs": 300,
+    "stringIdx": 1,
+    "fret": 3,
+    "midi": 62,
+    "tech": []
+   },
+   {
+    "id": "p1-b10-n10",
+    "startMs": 4000,
+    "durationMs": 300,
+    "stringIdx": 0,
+    "fret": 0,
+    "midi": 64,
+    "tech": []
+   },
+   {
+    "id": "p1-b11-n11",
+    "startMs": 4300,
+    "durationMs": 300,
+    "stringIdx": 0,
+    "fret": 3,
+    "midi": 67,
+    "tech": []
+   },
+   {
+    "id": "p1-b12-n12",
+    "startMs": 4600,
+    "durationMs": 600,
+    "stringIdx": 0,
+    "fret": 0,
+    "midi": 64,
+    "tech": []
+   }
+  ],
+  "bars": [
+   {
+    "index": 0,
+    "startMs": 1000
+   },
+   {
+    "index": 1,
+    "startMs": 3400
+   }
+  ]
+ },
+ "frames": {
+  "0": "6f13e7f0a294c0994fac6b2ed0e0622d8b08ad32bae957e0c148de4ee10020e3",
+  "30": "8c6ea36da8f0a94f3f34db46c721a60f7a99c09e48fc95e86d2e2a8eb29779d6",
+  "34": "6feab86c8524a3bc9d11b922c8e5386ab7bbf3700a21a4579ffb2c12510cc8dd",
+  "39": "6b94805fa1bef1360908ab09a2d3819a8d5615717d9ee5c3379761dff2dbbc5d",
+  "43": "5c1ca3c9e5ab6a5249da6e2718b54ef09743ca3673b18cae4f2bc5c11135bae6",
+  "48": "c27c0ea7314b13ebde12c5f393963571e182d70dcf9164543693842ff60ddfcb",
+  "52": "209b600f90b91e9db8bb730adc83af8e0e051d109041963b9c2f5ffb814b4aab",
+  "57": "9a4e509c2118e2d8e69c5f55d5448e8dc72ef1d89fd1d09d2c6485dd2d646f74",
+  "61": "e91d7a3025f484ba9e4f4238b6943eeb3f533b6d4726390fe875f2910687cecb",
+  "66": "d79fc2d80c483261923b26b5da90b69ce7eb60b4cd884b323b719135fce149db",
+  "70": "ce84a5db307866924de677139808a5ed5d6d60ea2893dbd11d8c7437d2f2809a",
+  "75": "7eb77537d8efbb24d04bedb0bc5c5e1883a5941ff50f479c90d5b11de4d5ea03",
+  "79": "f186e2534888903fbb6821f824e04c87daec4905b03a1f15dfb9e188f46ffe17",
+  "84": "6046434878bc62a02f9e6be47c18df4e252217d0bde922e8bcbb23272a90d9da",
+  "88": "3c55350134b386235f2cad274f10dc943f9364c4cbd46e610c4846b43667d5b3",
+  "93": "38b5c4a740821a79334feb8adec6be6179444cfb3724c966c0e52a43009b535f",
+  "97": "eff0b9d951cf37efbbc5672f000cf7631190895b6267116b45ea04e4a5e1e44e"
+ }
+}

@@ -90,6 +90,8 @@ type NoteEvent = {
   pick?: 'down' | 'up';
   tech: Technique[];         // 'bend' | 'release' | 'slide' | 'hammer' | 'pull' | 'palmMute' | 'vibrato' | 'harmonic' | 'dead' | 'tieContinue'
   chordId?: string;          // notes sharing a chordId are struck together
+  legato?: boolean;          // sounds without a new pick attack (slide destination): no onset expected
+  bendSemitones?: number;    // bend target above midi (Sync Report accepts the bent range)
   confidence?: number;       // 0..1, set by AI import / transcription; < 0.7 is flagged in UI
 };
 ```

@@ -2,11 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import react from '@vitejs/plugin-react';
 import type { Plugin } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
 
 /** Serves/emits Basic Pitch's model files at /models/basic-pitch/ (model.json references its shard by relative name). */
 function basicPitchModel(): Plugin {
-  const dir = join(__dirname, 'node_modules/@spotify/basic-pitch/model');
+  const dir = join(import.meta.dirname, 'node_modules/@spotify/basic-pitch/model');
   const files = ['model.json', 'group1-shard1of1.bin'];
   return {
     name: 'basic-pitch-model',
@@ -25,13 +26,42 @@ function basicPitchModel(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), basicPitchModel()],
+  plugins: [
+    react(),
+    basicPitchModel(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: false, // registered in src/app/pwa.ts
+      includeAssets: ['icons/apple-touch-icon.png'],
+      manifest: {
+        name: 'RiffReel — Guitar Riff Video Maker',
+        short_name: 'RiffReel',
+        description: 'Turn guitar riffs into vertical videos with an animated neck and tab, made on your phone.',
+        display: 'standalone',
+        orientation: 'portrait',
+        background_color: '#0d0f14',
+        theme_color: '#0d0f14',
+        start_url: '.',
+        icons: [
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        // Offline after first load: app shell, workers, SoundFont, font, Basic Pitch model, AAC fallback.
+        globPatterns: ['**/*.{js,css,html,woff2,sf2,json,bin,png,svg}'],
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        navigateFallback: 'index.html',
+      },
+    }),
+  ],
   resolve: {
     alias: [
       // alphaTab's package entry auto-starts alphaTab's own worker protocol when loaded inside a
       // Web Worker (it hijacks onmessage). We use it as a plain library everywhere, so import the
       // side-effect-free core build. Same API and types.
-      { find: /^@coderline\/alphatab$/, replacement: join(__dirname, 'node_modules/@coderline/alphatab/dist/alphaTab.core.mjs') },
+      { find: /^@coderline\/alphatab$/, replacement: join(import.meta.dirname, 'node_modules/@coderline/alphatab/dist/alphaTab.core.mjs') },
     ],
   },
   worker: { format: 'es' },

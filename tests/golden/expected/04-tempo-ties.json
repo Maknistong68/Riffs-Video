@@ -1,0 +1,257 @@
+{
+ "timeline": {
+  "version": 1,
+  "title": "Golden 4 - Tempo and Ties",
+  "tuning": [
+   64,
+   59,
+   55,
+   50,
+   45,
+   40
+  ],
+  "capo": 0,
+  "tempoMap": [
+   {
+    "ms": 0,
+    "bpm": 80
+   },
+   {
+    "ms": 1000,
+    "bpm": 80
+   },
+   {
+    "ms": 7000,
+    "bpm": 120
+   },
+   {
+    "ms": 9000,
+    "bpm": 60
+   }
+  ],
+  "leadInMs": 1000,
+  "durationMs": 14200,
+  "events": [
+   {
+    "id": "p0-b0-n0",
+    "startMs": 1000,
+    "durationMs": 750,
+    "stringIdx": 1,
+    "fret": 5,
+    "midi": 64,
+    "tech": []
+   },
+   {
+    "id": "p0-b1-n1",
+    "startMs": 1750,
+    "durationMs": 750,
+    "stringIdx": 1,
+    "fret": 7,
+    "midi": 66,
+    "tech": []
+   },
+   {
+    "id": "p0-b2-n2",
+    "startMs": 2500,
+    "durationMs": 375,
+    "stringIdx": 1,
+    "fret": 8,
+    "midi": 67,
+    "tech": []
+   },
+   {
+    "id": "p0-b3-n3",
+    "startMs": 2875,
+    "durationMs": 375,
+    "stringIdx": 1,
+    "fret": 7,
+    "midi": 66,
+    "tech": []
+   },
+   {
+    "id": "p0-b4-n4",
+    "startMs": 3250,
+    "durationMs": 1500,
+    "stringIdx": 1,
+    "fret": 5,
+    "midi": 64,
+    "tech": []
+   },
+   {
+    "id": "p1-b6-n6",
+    "startMs": 4750,
+    "durationMs": 250,
+    "stringIdx": 2,
+    "fret": 5,
+    "midi": 60,
+    "tech": []
+   },
+   {
+    "id": "p1-b7-n7",
+    "startMs": 5000,
+    "durationMs": 250,
+    "stringIdx": 2,
+    "fret": 7,
+    "midi": 62,
+    "tech": []
+   },
+   {
+    "id": "p1-b8-n8",
+    "startMs": 5250,
+    "durationMs": 250,
+    "stringIdx": 2,
+    "fret": 5,
+    "midi": 60,
+    "tech": []
+   },
+   {
+    "id": "p1-b9-n9",
+    "startMs": 5500,
+    "durationMs": 250,
+    "stringIdx": 3,
+    "fret": 7,
+    "midi": 57,
+    "tech": []
+   },
+   {
+    "id": "p1-b10-n10",
+    "startMs": 5750,
+    "durationMs": 250,
+    "stringIdx": 3,
+    "fret": 5,
+    "midi": 55,
+    "tech": []
+   },
+   {
+    "id": "p1-b11-n11",
+    "startMs": 6000,
+    "durationMs": 250,
+    "stringIdx": 3,
+    "fret": 7,
+    "midi": 57,
+    "tech": []
+   },
+   {
+    "id": "p1-b12-n12",
+    "startMs": 6250,
+    "durationMs": 750,
+    "stringIdx": 3,
+    "fret": 5,
+    "midi": 55,
+    "tech": []
+   },
+   {
+    "id": "p2-b13-n13",
+    "startMs": 7000,
+    "durationMs": 250,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": []
+   },
+   {
+    "id": "p2-b14-n14",
+    "startMs": 7250,
+    "durationMs": 250,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": []
+   },
+   {
+    "id": "p2-b15-n15",
+    "startMs": 7500,
+    "durationMs": 250,
+    "stringIdx": 5,
+    "fret": 3,
+    "midi": 43,
+    "tech": []
+   },
+   {
+    "id": "p2-b16-n16",
+    "startMs": 7750,
+    "durationMs": 250,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": []
+   },
+   {
+    "id": "p2-b17-n17",
+    "startMs": 8000,
+    "durationMs": 1000,
+    "stringIdx": 5,
+    "fret": 5,
+    "midi": 45,
+    "tech": []
+   },
+   {
+    "id": "p3-b19-n21",
+    "startMs": 9000,
+    "durationMs": 4000,
+    "stringIdx": 3,
+    "fret": 2,
+    "midi": 52,
+    "tech": [],
+    "chordId": "c3-19"
+   },
+   {
+    "id": "p3-b19-n20",
+    "startMs": 9000,
+    "durationMs": 4000,
+    "stringIdx": 4,
+    "fret": 2,
+    "midi": 47,
+    "tech": [],
+    "chordId": "c3-19"
+   },
+   {
+    "id": "p3-b19-n19",
+    "startMs": 9000,
+    "durationMs": 4000,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": [],
+    "chordId": "c3-19"
+   }
+  ],
+  "bars": [
+   {
+    "index": 0,
+    "startMs": 1000
+   },
+   {
+    "index": 1,
+    "startMs": 4000
+   },
+   {
+    "index": 2,
+    "startMs": 7000
+   },
+   {
+    "index": 3,
+    "startMs": 9000
+   }
+  ]
+ },
+ "frames": {
+  "0": "a64130838d354c193484fa2eb9e2e3149a20fa98340e041a1d79f69418767251",
+  "30": "44dd007f777b14566f9f29c2063f215e2af60a00e370c1fab096926609d8eda0",
+  "34": "842430f29c9059694b5d42e9e1c7288b4b0c37e8e19e75d8cfb61bba2d0e02a0",
+  "53": "cf68b15743d2f378deb983b7023c020960abcb41abda0ccf06d6bf8689839631",
+  "57": "4eb2beb304e463dee1aa126d9dacab3445dec63410ec6fc230a7dd4bdf0a07dc",
+  "75": "fdb97a88ec789db5bf36353209f125a3682812364e55a456640738b9959179de",
+  "79": "12b273a7e0d19d8a6420e64b4db264bdf541c75b1605afb46c82969fa54ce16d",
+  "87": "914edca879150e125775fe101f80d9aa2ecee01bc4ba3a81d6f7706f58e54bfd",
+  "91": "b84b36176b225ddb984dbd641bdc5e06dbd5bc04dc610e8d5d57ddbde7da6b31",
+  "98": "95b7e0564418d28e172d46b370751b2aa23927673267e0a2f79da65632c6c97b",
+  "102": "edb6d84383a544e11a3ca76da80927857f069514f4be80a8be4bffd1730b91d5",
+  "143": "7f47dac8ac45b3d3eefdac26177eb1b084f533be6d04a992367bdab1caf65259",
+  "147": "632903e64642388a277e64b136286a55749e4aa391348d50ef8e0600dcfd5765",
+  "150": "c8ca017f6217b3760f4eea83ed64381906343a09a338a31449f152403f8d95fa",
+  "154": "cacbb3401e8e0e2c4140261b93b77ae69aa80731f643c4b9af52739f94aa9a33",
+  "158": "060e22c0618e2cdf7b9960a8ffea3b94262c3f86986546a2368fe9971b8d76b9",
+  "162": "d4fec3b9532505c45d8b6858dbfac4f5da42452ac3100b0e05cacd6c3eb2092c"
+ }
+}

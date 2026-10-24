@@ -1,0 +1,8 @@
+\title "Slow Bend Blues"
+\artist "RiffReel demo (original)"
+\tempo 70
+\track "Guitar"
+\staff {tabs}
+\tuning (E4 B3 G3 D3 A2 E2)
+:8 8.2 5.1 8.2 {tu 3} 5.2 8.3 5.3 :4 7.3{b (0 4)} 5.3 |
+:8 7.4 5.4 7.5{sl} 5.5 :2 7.6{v}

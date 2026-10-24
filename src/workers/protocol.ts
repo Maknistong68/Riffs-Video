@@ -16,6 +16,7 @@ export type TrackInfo = { index: number; name: string; strings: number };
 
 export type WorkerRequest =
   | { id: number; type: 'inspect'; source: RiffSource }
+  | { id: number; type: 'timeline'; riff: RiffConfig }
   | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode }
   | {
       id: number;
@@ -37,5 +38,6 @@ export type WorkerResponse =
   | { id: number; type: 'progress'; stage: ExportStage; fraction: number; frame?: number; frames?: number }
   | { id: number; type: 'inspected'; result: Inspected }
   | { id: number; type: 'prepared'; result: Prepared }
+  | { id: number; type: 'timeline'; result: Timeline }
   | { id: number; type: 'exported'; result: Exported }
   | { id: number; type: 'error'; message: string; details: string[] };

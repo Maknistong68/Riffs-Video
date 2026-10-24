@@ -1,0 +1,277 @@
+{
+ "timeline": {
+  "version": 1,
+  "title": "Golden 5 - Techniques",
+  "tuning": [
+   64,
+   59,
+   55,
+   50,
+   45,
+   38
+  ],
+  "capo": 2,
+  "tempoMap": [
+   {
+    "ms": 0,
+    "bpm": 96
+   },
+   {
+    "ms": 1000,
+    "bpm": 96
+   }
+  ],
+  "leadInMs": 1000,
+  "durationMs": 9700,
+  "events": [
+   {
+    "id": "p0-b0-n0",
+    "startMs": 1000,
+    "durationMs": 83.33333333333326,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": [
+     "palmMute"
+    ]
+   },
+   {
+    "id": "p0-b1-n1",
+    "startMs": 1312.5,
+    "durationMs": 83.33333333333326,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": [
+     "palmMute"
+    ]
+   },
+   {
+    "id": "p0-b2-n2",
+    "startMs": 1625,
+    "durationMs": 83.33333333333348,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": [
+     "palmMute"
+    ]
+   },
+   {
+    "id": "p0-b3-n3",
+    "startMs": 1937.5,
+    "durationMs": 83.33333333333348,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": [
+     "palmMute"
+    ]
+   },
+   {
+    "id": "p0-b4-n4",
+    "startMs": 2250,
+    "durationMs": 312.5,
+    "stringIdx": 2,
+    "fret": 5,
+    "midi": 62,
+    "tech": []
+   },
+   {
+    "id": "p0-b5-n5",
+    "startMs": 2562.5,
+    "durationMs": 312.5,
+    "stringIdx": 2,
+    "fret": 7,
+    "midi": 64,
+    "tech": [
+     "hammer"
+    ]
+   },
+   {
+    "id": "p0-b6-n6",
+    "startMs": 2875,
+    "durationMs": 312.5,
+    "stringIdx": 2,
+    "fret": 7,
+    "midi": 64,
+    "tech": []
+   },
+   {
+    "id": "p0-b7-n7",
+    "startMs": 3187.5,
+    "durationMs": 312.5,
+    "stringIdx": 2,
+    "fret": 5,
+    "midi": 62,
+    "tech": [
+     "pull"
+    ]
+   },
+   {
+    "id": "p1-b8-n8",
+    "startMs": 3500,
+    "durationMs": 625,
+    "stringIdx": 1,
+    "fret": 5,
+    "midi": 66,
+    "tech": [
+     "slide"
+    ]
+   },
+   {
+    "id": "p1-b9-n9",
+    "startMs": 3812.5,
+    "durationMs": 312.5,
+    "stringIdx": 1,
+    "fret": 8,
+    "midi": 69,
+    "tech": [
+     "slide"
+    ],
+    "legato": true
+   },
+   {
+    "id": "p1-b10-n10",
+    "startMs": 4125,
+    "durationMs": 625,
+    "stringIdx": 2,
+    "fret": 7,
+    "midi": 64,
+    "tech": [
+     "bend"
+    ],
+    "bendSemitones": 2
+   },
+   {
+    "id": "p1-b11-n11",
+    "startMs": 4750,
+    "durationMs": 312.5,
+    "stringIdx": 0,
+    "fret": 10,
+    "midi": 76,
+    "tech": [
+     "vibrato"
+    ]
+   },
+   {
+    "id": "p1-b12-n12",
+    "startMs": 5062.5,
+    "durationMs": 312.5,
+    "stringIdx": 0,
+    "fret": 10,
+    "midi": 76,
+    "tech": []
+   },
+   {
+    "id": "p1-b13-n13",
+    "startMs": 5375,
+    "durationMs": 625,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": []
+   },
+   {
+    "id": "p2-b14-n16",
+    "startMs": 6000,
+    "durationMs": 83.33333333333303,
+    "stringIdx": 3,
+    "fret": 0,
+    "midi": 52,
+    "tech": [
+     "palmMute"
+    ],
+    "chordId": "c2-14"
+   },
+   {
+    "id": "p2-b14-n15",
+    "startMs": 6000,
+    "durationMs": 83.33333333333303,
+    "stringIdx": 4,
+    "fret": 0,
+    "midi": 47,
+    "tech": [
+     "palmMute"
+    ],
+    "chordId": "c2-14"
+   },
+   {
+    "id": "p2-b14-n14",
+    "startMs": 6000,
+    "durationMs": 83.33333333333303,
+    "stringIdx": 5,
+    "fret": 0,
+    "midi": 40,
+    "tech": [
+     "palmMute"
+    ],
+    "chordId": "c2-14"
+   },
+   {
+    "id": "p2-b15-n17",
+    "startMs": 6625,
+    "durationMs": 625,
+    "stringIdx": 2,
+    "fret": 12,
+    "midi": 69,
+    "tech": [
+     "harmonic"
+    ]
+   },
+   {
+    "id": "p2-b16-n18",
+    "startMs": 7250,
+    "durationMs": 625,
+    "stringIdx": 5,
+    "fret": 3,
+    "midi": 43,
+    "tech": []
+   },
+   {
+    "id": "p2-b17-n19",
+    "startMs": 7875,
+    "durationMs": 625,
+    "stringIdx": 5,
+    "fret": 5,
+    "midi": 45,
+    "tech": [
+     "hammer"
+    ]
+   }
+  ],
+  "bars": [
+   {
+    "index": 0,
+    "startMs": 1000
+   },
+   {
+    "index": 1,
+    "startMs": 3500
+   },
+   {
+    "index": 2,
+    "startMs": 6000
+   }
+  ]
+ },
+ "frames": {
+  "0": "11544f45e07db86bd57434eabe0b0a2a9656397160cebe6b4513009873c4429b",
+  "30": "8874d461b61869774002d845a24222fc7f8c620e232b666c21e9b8f02fd3341a",
+  "34": "7ad56e88ceda293e7e45a530dba9c635b9d65b49205b6cd30cdd292968795cd8",
+  "40": "9531c3b9c841100d5bf8cdeb2f8101d1c3bd1faa3e6d5867d7694a20fbb9275a",
+  "44": "cab13d4cf3eefd252da3157ae0387eaa6d6cbb65c4fc986bec1f5426475da261",
+  "49": "70dec9a7560494c2e966215f879e926b2e0be5a34ae923a6ef007b29335af0a8",
+  "53": "84d27208afac7855df9ff6a23d1509b593bad79319393486f2da95c6ba1267e7",
+  "59": "e133380e8e4991b671bd0b1615aa2cfd92cc988162e5a7a3d29ac11ff84f4477",
+  "63": "83462cbde980c064a47cb157de956b5eabfee94f3b9c8377b3952f885d1e0eca",
+  "68": "a8ba961db9f46521d973411877e3f4a097e7e9c4f6295a096e55de752eac9401",
+  "72": "70a7d7bfb87786e8f1f3c5c64d40b6e816ac2201d3d3ee4c3f2be3d83fefd2cd",
+  "77": "2eed0394ebccde51fcc6152c44fd2b23768b44a14e5ddf9b49fcc40a17e748d4",
+  "81": "674ea31651a578c92825728f0c6beac657d9f5daf4e653879b99a5fe10cca10b",
+  "87": "0ec18ab639d10f4fc32b5d852371daf870868b301312ee463204cf304552d94d",
+  "91": "d8698d0be8e30df65da636b951d3107aef9cc4dbaa47d6fff1ba0d7420b703cb",
+  "96": "9ad8176bcc1fcf2973abe433d1bc3c380aa7a8051d36bb3421ec4b6fa4e9e613",
+  "100": "97daebbbb76899099b8398be0cf4506acaa8fb6607df2eea526c41625856cb62"
+ }
+}

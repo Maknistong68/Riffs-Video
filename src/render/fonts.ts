@@ -18,7 +18,9 @@ let loading: Promise<boolean> | null = null;
 /** Resolves true when the bundled font is ready (false = fell back to system font). */
 export function loadRenderFonts(): Promise<boolean> {
   loading ??= (async () => {
-    const set = (globalThis as unknown as { fonts?: FontFaceSet }).fonts;
+    // Workers expose self.fonts; windows expose document.fonts.
+    const g = globalThis as unknown as { fonts?: FontFaceSet; document?: { fonts?: FontFaceSet } };
+    const set = g.fonts ?? g.document?.fonts;
     if (!set || typeof FontFace === 'undefined') return false;
     try {
       const faces = (

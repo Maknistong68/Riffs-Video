@@ -144,3 +144,14 @@ describe('golden riffs build cleanly', () => {
     });
   }
 });
+
+describe('demo riffs build cleanly', () => {
+  const demos = join(__dirname, '../../src/demo');
+  for (const f of readdirSync(demos).filter((x) => x.endsWith('.atex'))) {
+    it(f, () => {
+      const { timeline, warnings } = buildTex(readFileSync(join(demos, f), 'utf8'));
+      expect(warnings).toEqual([]);
+      expect(validateTimeline(timeline)).toEqual([]);
+    });
+  }
+});
