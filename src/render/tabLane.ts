@@ -2,7 +2,8 @@
 import { lastNotePerString, type NoteEvent, type Timeline } from '../engine/timeline';
 import type { Ctx2D } from './drawFrame';
 import { font } from './fonts';
-import { bendLabel, previousOnString } from './neck2d';
+import { noteName } from '../engine/tuning';
+import { bendLabel, previousOnString, withAlpha } from './neck2d';
 import type { RenderStyle } from './style';
 import type { Theme } from './theme';
 
@@ -27,35 +28,57 @@ export function noteX(g: LaneGeometry, e: Pick<NoteEvent, 'startMs'>, ms: number
   return g.playheadX + (e.startMs - ms) * g.pxPerMs;
 }
 
+/** Left margin with the string names (e B G D A E). */
+const LABEL_W = 58;
+const POP_MS = 140;
+
+/** String letters for the margin: high e lower-case, as in printed tab. */
+export function stringLetters(tuning: readonly number[]): string[] {
+  return tuning.map((m, i) => {
+    const n = noteName(m);
+    return i === 0 && n === 'E' && tuning.length > 1 ? 'e' : n;
+  });
+}
+
 export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: Theme, ms: number, style: RenderStyle): void {
   const strings = t.tuning.length;
   ctx.save();
-  ctx.fillStyle = theme.laneBg;
-  roundRect(ctx, g.x0, g.y0, g.x1 - g.x0, g.y1 - g.y0, 24);
-  ctx.fill();
+  // Full-width lane: a faint band instead of a boxed card.
+  ctx.fillStyle = withAlpha(theme.laneBg, 0.55);
+  ctx.fillRect(g.x0, g.y0, g.x1 - g.x0, g.y1 - g.y0);
   ctx.beginPath();
   ctx.rect(g.x0, g.y0, g.x1 - g.x0, g.y1 - g.y0);
   ctx.clip();
 
-  ctx.strokeStyle = theme.laneLine;
+  const letters = stringLetters(t.tuning);
   ctx.lineWidth = 2;
   for (let s = 0; s < strings; s++) {
     const y = laneLineY(g, s, strings);
+    ctx.strokeStyle = theme.laneLine;
     ctx.beginPath();
-    ctx.moveTo(g.x0, y);
+    ctx.moveTo(g.x0 + LABEL_W, y);
     ctx.lineTo(g.x1, y);
     ctx.stroke();
+    ctx.fillStyle = theme.textDim;
+    ctx.font = font(800, 28);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(letters[s] ?? '', g.x0 + LABEL_W / 2, y + 1);
   }
+  // Notes fade out as they reach the letters (left) and fade in from the right edge.
+  const edgeAlpha = (x: number) => Math.max(0, Math.min(1, (x - (g.x0 + LABEL_W + 10)) / 70, (g.x1 - x) / 60));
 
   ctx.strokeStyle = theme.textDim;
   for (const b of t.bars) {
     const x = noteX(g, b, ms) - 30;
-    if (x < g.x0 || x > g.x1) continue;
+    if (x < g.x0 + LABEL_W || x > g.x1) continue;
+    ctx.globalAlpha = edgeAlpha(x);
     ctx.beginPath();
     ctx.moveTo(x, laneLineY(g, 0, strings));
     ctx.lineTo(x, laneLineY(g, strings - 1, strings));
     ctx.stroke();
   }
+  ctx.globalAlpha = 1;
 
   const visible = t.events.filter((e) => {
     const x = noteX(g, e, ms);
@@ -63,9 +86,19 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
   });
   const sounding = new Set(lastNotePerString(t, ms).filter((e): e is NoteEvent => !!e && ms >= e.startMs && ms < e.startMs + e.durationMs));
 
-  // Playhead behind the notes, so the numbers crossing it stay readable.
+  // Playhead behind the notes, so the numbers crossing it stay readable: a soft beam + a glowing line.
+  const beam = ctx.createLinearGradient(g.playheadX - 40, 0, g.playheadX + 40, 0);
+  beam.addColorStop(0, withAlpha(theme.playhead, 0));
+  beam.addColorStop(0.5, withAlpha(theme.playhead, 0.16));
+  beam.addColorStop(1, withAlpha(theme.playhead, 0));
+  ctx.fillStyle = beam;
+  ctx.fillRect(g.playheadX - 40, g.y0, 80, g.y1 - g.y0);
+  ctx.save();
+  ctx.shadowColor = theme.playhead;
+  ctx.shadowBlur = 18;
   ctx.fillStyle = theme.playhead;
   ctx.fillRect(g.playheadX - 3, g.y0 + 8, 6, g.y1 - g.y0 - 16);
+  ctx.restore();
 
   // Palm-mute brackets over consecutive PM notes.
   drawPmBrackets(ctx, g, visible, theme, ms);
@@ -103,18 +136,32 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  // The next note(s) to play get a white pill: the eye knows what comes after the playhead.
+  const nextStart = visible.find((e) => e.startMs > ms)?.startMs;
   for (const e of visible) {
     const x = noteX(g, e, ms);
     const y = laneLineY(g, e.stringIdx, strings);
     const active = sounding.has(e);
-    ctx.globalAlpha = ms >= e.startMs + e.durationMs ? 0.45 : 1;
+    const fade = edgeAlpha(x);
+    if (fade <= 0) continue;
+    ctx.globalAlpha = (ms >= e.startMs + e.durationMs ? 0.3 : 1) * fade;
     const label = e.tech.includes('dead') ? 'x' : e.tech.includes('harmonic') ? `<${e.fret}>` : String(e.fret);
-    const w = Math.max(52, label.length * 20 + 14);
-    ctx.fillStyle = active ? theme.noteBoxActive : theme.noteBox;
-    roundRect(ctx, x - w / 2, y - 22, w, 44, 10);
+    const since = ms - e.startMs;
+    const isNext = !active && e.startMs === nextStart;
+    const pop = active && since >= 0 && since < POP_MS ? 1 + 0.25 * (1 - since / POP_MS) ** 2 : isNext ? 1.1 : 1;
+    const w = Math.max(58, label.length * 24 + 16) * pop;
+    const h = 52 * pop;
+    ctx.save();
+    if (active) {
+      ctx.shadowColor = theme.noteBoxActive;
+      ctx.shadowBlur = 24;
+    }
+    ctx.fillStyle = active ? theme.noteBoxActive : isNext ? '#f2f2f2' : theme.noteBox;
+    roundRect(ctx, x - w / 2, y - h / 2, w, h, 12 * pop);
     ctx.fill();
-    ctx.fillStyle = active ? theme.dotText : theme.noteText;
-    ctx.font = font(700, 34);
+    ctx.restore();
+    ctx.fillStyle = active ? theme.dotText : isNext ? '#111318' : theme.noteText;
+    ctx.font = font(800, Math.round(40 * pop));
     ctx.fillText(label, x, y + 1);
     ctx.fillStyle = theme.glyph;
     if (e.bendSemitones) {

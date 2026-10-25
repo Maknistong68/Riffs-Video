@@ -30,6 +30,8 @@ export type Theme = {
 
 export const DARK_THEME: Theme = {
   background: '#0d0f14',
+  backgroundTop: '#07080c',
+  backgroundBottom: '#141826',
   text: '#f4f4f6',
   textDim: '#8a8f9c',
   wood: '#3b2414',
@@ -47,8 +49,8 @@ export const DARK_THEME: Theme = {
   noteBox: '#262c38',
   noteBoxActive: '#ffcc1a',
   noteText: '#f4f4f6',
-  playhead: '#ff4d6d',
-  ghost: '#7fd1ff',
+  playhead: '#ffcc1a',
+  ghost: '#f2f2f2',
   glyph: '#e9f6ff',
   badge: '#2a3140',
   badgeText: '#f4f4f6',
@@ -75,8 +77,8 @@ export const THEMES: Record<ThemeId, Theme> = {
     laneLine: '#4a2a2a',
     noteBox: '#2c1818',
     noteBoxActive: '#ff2d3c',
-    playhead: '#ffffff',
-    ghost: '#ff9a9a',
+    playhead: '#ff2d3c',
+    ghost: '#f2f2f2',
     glyph: '#ffe3e3',
   },
   blues: {
@@ -92,8 +94,8 @@ export const THEMES: Record<ThemeId, Theme> = {
     laneLine: '#2c3f68',
     noteBox: '#1a2a4d',
     noteBoxActive: '#38a6ff',
-    playhead: '#ffb347',
-    ghost: '#ffd27f',
+    playhead: '#38a6ff',
+    ghost: '#f2f2f2',
     glyph: '#e3f0ff',
   },
   lofi: {
@@ -109,8 +111,8 @@ export const THEMES: Record<ThemeId, Theme> = {
     laneLine: '#4a3a5c',
     noteBox: '#33264a',
     noteBoxActive: '#ff8fc2',
-    playhead: '#8fe3ff',
-    ghost: '#c9b8ff',
+    playhead: '#ff8fc2',
+    ghost: '#f2f2f2',
     glyph: '#fff0f7',
   },
   acoustic: {
@@ -126,8 +128,8 @@ export const THEMES: Record<ThemeId, Theme> = {
     laneLine: '#4a3b26',
     noteBox: '#2e2416',
     noteBoxActive: '#6fe0a2',
-    playhead: '#ffcc66',
-    ghost: '#ffe39e',
+    playhead: '#6fe0a2',
+    ghost: '#f2f2f2',
     glyph: '#fff6e6',
   },
 };

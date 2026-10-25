@@ -1,5 +1,44 @@
 # Status
 
+## Video look — redesign for TikTok (after Phase 6) ✅ in emulation · ⏳ real-device check
+
+**Neck orientation fixed:** the neck is now drawn as the player sees it looking down at the guitar: low E on
+top, high e at the bottom. The tab lane keeps high e on top, as printed tab does. One conversion function
+(`neckRow()` in `render/neck2d.ts`) used by 2D, 3D and the Sync Report probes; unit-tested (P5).
+
+**Independent review:** a reviewer agent (motion/UI designer + TikTok growth brief) scored exported frames
+before and after each round, with concrete px/ms fixes each time:
+
+| Dimension | Before | R2 | R3 | Final |
+|---|---|---|---|---|
+| Scroll-stopping hook | 2 | 5 | 6 | 6 |
+| Readability at phone size | 4 | 6 | 7 | 8 |
+| Visual polish | 4 | 6 | 6 | 7 |
+| Motion / satisfying feel | 3 | 6 | 7 | 7 |
+| 9:16 canvas & safe zones | 4 | 6 | 6 | 7 |
+| Brand / shareability | 2 | 4 | 5 | 5 |
+
+Attention estimate went from "low" to "low–medium; medium with the hook audio first".
+Before/after: `docs/visuals/redesign-before-after.png`.
+
+What changed (all still a pure function of time — same frame in preview, export and Sync Report):
+- Hook line ("Can you play this?", editable in Text) from frame 0, steps back after 2.5 s; last 1.2 s ask
+  "What BPM can you play it at?". Chips for BPM / difficulty / non-standard tuning; bar ticks on the progress bar.
+- Neck zoomed to the riff's frets (±1), bigger, dark rosewood board with depth; every fret numbered when zoomed.
+- One accent colour per theme (dot, playhead, progress); upcoming notes in white so they never look "lit".
+- Hits: pop (160 ms), glow, expanding ring (250 ms), glowing vibrating string; background light pulses per attack.
+- Approach rings close onto the next notes; past notes fade as dim, shrinking dots (the hand's path).
+- Count-in: whole riff ghosted on the board + big 3·2·1; the ghosted riff returns after the last note so the
+  end matches frame 0 (loops).
+- Tab lane: full width, string letters (e B G D A E), bigger digits, white pill for the next note, glowing
+  playhead, edge fades. Neck-Overlay gets a big "e string · fret 8" readout.
+- Sync Report highlight probe moved beside the dot's centre (towards the nut) so a chord's neighbouring dot
+  can never cover it.
+
+Reviewer's top remaining moves (not done — owner's call): play the riff at full speed before the count-in
+(the optional "Hook first" teach pass could become the default; it makes videos longer), a more realistic
+guitar SoundFont, and a repeatable series format (Riff #N, speed-up ending).
+
 ## Phase 6 — Creative extras ✅ in emulation (whole backlog) · ⏳ real-device check
 
 | Backlog item | Where | Checked by |

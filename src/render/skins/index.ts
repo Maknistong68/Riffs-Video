@@ -29,8 +29,8 @@ const linear = (thin: number, thick: number) => (i: number, n: number) => thin +
 
 export const SKINS: Record<SkinId, Skin> = {
   strat: {
-    id: 'strat', name: 'Strat (maple)', wood: '#d9a65e', woodGrain: '#c48f47', binding: null,
-    fretWire: '#d8dbe0', nut: '#f4ecd6', inlay: '#1d1d1f', inlayShape: 'dot',
+    id: 'strat', name: 'Strat (rosewood)', wood: '#2e1c13', woodGrain: '#3d261a', binding: null,
+    fretWire: '#d8dbe0', nut: '#f4ecd6', inlay: '#efe6d2', inlayShape: 'dot',
     plain: '#c9c4b8', wound: '#a9a397', firstWound: () => 3, gauge: linear(2, 6), neckScale: 1, strings: 6,
   },
   lespaul: {

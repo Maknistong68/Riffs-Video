@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { defaultFrameSettings } from '../../src/render/drawFrame';
-import { cameraCenter, CLOSEUP_SPAN, layoutGeometry, visibleFrets } from '../../src/render/layouts';
-import { bendProgress, dotPosition, dotRadius, fretX, noteProbe, vibrationAmplitude } from '../../src/render/neck2d';
+import { cameraCenter, CLOSEUP_SPAN, HEADER, layoutGeometry, riffFretWindow, visibleFrets } from '../../src/render/layouts';
+import { bendProgress, dotPosition, dotRadius, fretX, neckRow, noteProbe, popScale, POP_MS, stringY, vibrationAmplitude } from '../../src/render/neck2d';
+import { laneLineY } from '../../src/render/tabLane';
 import { staffStep } from '../../src/render/notation';
 import { SKIN_IDS } from '../../src/render/skins';
 import { LAYOUTS } from '../../src/render/style';
@@ -17,12 +18,18 @@ describe('neck view', () => {
     const w1 = fretX(neck, 1) - fretX(neck, 0);
     const w12 = fretX(neck, 12) - fretX(neck, 11);
     expect(w1).toBeGreaterThan(w12);
-    expect(fretX(neck, 0)).toBeCloseTo(neck.x0);
-    expect(fretX(neck, 12)).toBeCloseTo(neck.x1);
+    expect(fretX(neck, neck.fromFret)).toBeCloseTo(neck.x0);
+    expect(fretX(neck, neck.toFret)).toBeCloseTo(neck.x1);
   });
 
-  it('high e is drawn on top (P5)', () => {
-    expect(dotPosition(neck, 0, 1).y).toBeLessThan(dotPosition(neck, 5, 1).y);
+  it("neck is the player's view: low E on top, high e at the bottom — inverse of the tab lane (P5)", () => {
+    expect(dotPosition(neck, 5, 1).y).toBeLessThan(dotPosition(neck, 0, 1).y);
+    for (let s = 1; s < 6; s++) expect(stringY(neck, s)).toBeLessThan(stringY(neck, s - 1));
+    expect(neckRow(5, 6)).toBe(0);
+    expect(neckRow(0, 6)).toBe(5);
+    // The tab lane keeps high e on top.
+    const lane = layoutGeometry(defaultFrameSettings(30), t, 0).lane!;
+    expect(laneLineY(lane, 0, 6)).toBeLessThan(laneLineY(lane, 5, 6));
   });
 
   it('left-handed mirrors the neck: nut on the right', () => {
@@ -35,7 +42,26 @@ describe('neck view', () => {
   it('string vibration is deterministic and only while the note sounds', () => {
     expect(vibrationAmplitude(-1, 300)).toBe(0);
     expect(vibrationAmplitude(300, 300)).toBe(0);
-    expect(vibrationAmplitude(0, 300)).toBe(12);
+    expect(vibrationAmplitude(0, 300)).toBe(16);
+  });
+
+  it('hit pop: bigger on the attack, back to normal after POP_MS', () => {
+    expect(popScale(-1)).toBe(1);
+    expect(popScale(0)).toBeCloseTo(1.35);
+    expect(popScale(POP_MS / 2)).toBeGreaterThan(1);
+    expect(popScale(POP_MS)).toBe(1);
+  });
+
+  it('neck window hugs the riff: its frets ±1, at least 5 wide, nut shown for open strings or low riffs', () => {
+    const ev = (fret: number) => ({ ...t.events[0]!, fret });
+    expect(riffFretWindow({ events: [ev(5), ev(8), ev(7)] })).toEqual({ from: 3.4, to: 8.6 });
+    expect(riffFretWindow({ events: [ev(2), ev(3)] })).toEqual({ from: 0, to: 5 });
+    expect(riffFretWindow({ events: [ev(0), ev(9)] }).from).toBe(0);
+    const w = riffFretWindow({ events: [ev(12), ev(12)] });
+    expect(w.to - w.from).toBeGreaterThanOrEqual(5);
+    expect(w.from).toBeLessThan(11);
+    expect(w.to).toBeGreaterThan(12);
+    expect(riffFretWindow({ events: [ev(23), ev(24)] }).to).toBe(24);
   });
 
   it('bend progress rises 0 → 1, release falls', () => {
@@ -51,6 +77,9 @@ describe('neck view', () => {
     const p = noteProbe(neck, t.events[1]!)!;
     const d = dotPosition(neck, t.events[1]!.stringIdx, t.events[1]!.fret);
     expect(Math.hypot(p.x - d.x, p.y - d.y)).toBeLessThan(dotRadius(neck));
+    // Beside the dot's centre (towards the nut), never towards a neighbouring string.
+    expect(p.y).toBeCloseTo(d.y);
+    expect(p.x).toBeLessThan(d.x);
   });
 });
 
@@ -65,13 +94,14 @@ describe('every layout × skin respects the TikTok safe zones (P17)', () => {
           const bottom = s.height - s.safeZones.bottomPx;
           const r = dotRadius(g.neck);
           expect(g.neck.x1 + r).toBeLessThanOrEqual(right);
-          for (let str = 0; str < g.neck.strings; str++) {
+          // Open-string dots sit outside the nut; a neck zoomed past the nut only happens without open strings.
+          for (let str = 0; str < (g.neck.fromFret <= 0 ? g.neck.strings : 0); str++) {
             const open = dotPosition(g.neck, str, 0);
             expect(open.x + r).toBeLessThanOrEqual(right);
             expect(open.x - r).toBeGreaterThanOrEqual(0);
           }
           expect(g.neck.y1 + 60).toBeLessThan(bottom); // fret numbers below the neck
-          expect(g.neck.y0).toBeGreaterThan(s.safeZones.topPx + 340); // below title + caption
+          expect(g.neck.y0).toBeGreaterThan(s.safeZones.topPx + HEADER.sectionCenter + 28); // below hook, title, chips + teach caption
           for (const box of [g.lane, g.notation]) {
             if (!box) continue;
             expect(box.x1).toBeLessThanOrEqual(right);

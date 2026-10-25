@@ -33,6 +33,8 @@ export type RenderStyle = {
   /** "Guess the song?" opener (title hidden until the reveal at the end). */
   opener: 'none' | 'guess';
   endCard: EndCard;
+  /** Big line at the top from the first frame ("Can you play this?"); empty = title only. */
+  hook: string;
 };
 
 export const DEFAULT_STYLE: RenderStyle = {
@@ -44,7 +46,7 @@ export const DEFAULT_STYLE: RenderStyle = {
   noteNames: false,
   lookAhead: true,
   credit: '',
-  difficulty: 'none',
+  difficulty: 'auto',
   view: '3d',
   camera: DEFAULT_CAMERA,
   theme: 'dark',
@@ -52,6 +54,7 @@ export const DEFAULT_STYLE: RenderStyle = {
   heatmap: false,
   opener: 'none',
   endCard: { kind: 'none', text: '' },
+  hook: 'Can you play this?',
 };
 
 export const LAYOUTS: { id: LayoutId; name: string }[] = [

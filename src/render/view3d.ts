@@ -7,7 +7,7 @@
  * World axes: x along the neck (nut at 0, towards the body), y across the strings (string 0 at
  * the top, as on screen), z out of the fretboard towards a front-on viewer.
  */
-import type { NeckView, Projector } from './neck2d';
+import { neckRow, type NeckView, type Projector } from './neck2d';
 
 export { CAMERA_PRESETS, clampCamera, DEFAULT_CAMERA, PITCH_MAX, PITCH_MIN, YAW_LIMIT, type Camera3D, type CameraMotion } from './camera';
 import { clampCamera, type Camera3D } from './camera';
@@ -53,7 +53,7 @@ export function neckModel(v: NeckView): NeckModel {
   const widthAt = (wx: number) => width * (0.9 + 0.2 * Math.max(0, Math.min(1.1, Math.abs(wx) / xBody)));
   const pad = 0.09;
   const spacingAt = (wx: number) => (widthAt(wx) * (1 - 2 * pad)) / Math.max(1, v.strings - 1);
-  const stringYAt = (s: number, wx: number) => widthAt(wx) * (0.5 - pad) - s * spacingAt(wx);
+  const stringYAt = (s: number, wx: number) => widthAt(wx) * (0.5 - pad) - neckRow(s, v.strings) * spacingAt(wx);
   return { strings: v.strings, mirror: v.mirror, width, stringZ: width * 0.045, x, widthAt, stringYAt, spacingAt };
 }
 
@@ -106,7 +106,7 @@ export function solveCamera(m: NeckModel, v: NeckView, region: Region, c: Camera
   const pts: Vec3[] = [];
   for (const x of xs) {
     const hw = m.widthAt(x) / 2;
-    const below = m.stringYAt(m.strings - 1 + 1.7, x); // fret-number row
+    const below = m.stringYAt(-1.7, x); // fret-number row, below the high e
     for (const y of [hw + m.width * 0.05, below]) for (const z of [-m.width * 0.08, m.stringZ * 2]) pts.push([x, y, z]);
   }
   let target: Vec3 = [(xs[0]! + xs[1]!) / 2, 0, 0];

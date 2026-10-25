@@ -425,6 +425,10 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
               <input className="input" defaultValue={riff.title} onBlur={(e) => e.target.value.trim() && e.target.value !== riff.title && void updateRiff(riff.id, { title: e.target.value.trim() })} />
             </label>
             <label className="field">
+              <span>Hook line (big text at the top, first 2.5 s)</span>
+              <input className="input" defaultValue={render.hook} placeholder="Leave empty for title only" maxLength={60} onBlur={(e) => e.target.value !== render.hook && setRender({ hook: e.target.value.trim() })} data-testid="hook-line" />
+            </label>
+            <label className="field">
               <span>Artist credit</span>
               <input className="input" defaultValue={render.credit} placeholder="e.g. Original by @you" onBlur={(e) => e.target.value !== render.credit && setRender({ credit: e.target.value.trim() })} />
             </label>

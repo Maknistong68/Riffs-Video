@@ -340,7 +340,7 @@ practice link page.
 | P2 | Online tabs are often wrong | Basic Pitch check vs audio; confidence flags; Riff Review gate |
 | P3 | Scraping is blocked / against terms | User pastes or uploads; app never scrapes |
 | P4 | Same pitch playable in several places | Fingering optimizer (min hand movement, max 4-fret span) |
-| P5 | String numbering confusion (alphaTab vs tab display) | Unit test against a known file; single conversion function |
+| P5 | String numbering confusion (alphaTab vs tab display) | Unit test against a known file; single conversion function. The neck is drawn in the player's view (low E on top) — inverse of the tab lane (high e on top); `neckRow()` is the one place that flips it |
 | P6 | Audio/video drift | Single timeline, pure drawFrame, shared tick→ms from alphaTab |
 | P7 | Real recordings drift in tempo (Silent mode) | Per-bar sync points from beat tracking / manual nudges |
 | P8 | Synth sounds fake | Better guitar SoundFonts, velocity humanize (seeded), tone presets |

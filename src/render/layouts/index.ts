@@ -21,8 +21,11 @@ export type LayoutGeometry = {
 
 export type View3D = { model: NeckModel; pose: CameraPose; region: Region; fromFret: number; toFret: number };
 
-/** Header (title, bpm, badges) ends here; the 3D neck may use the space below it. */
+/** Header (hook, title, chips) ends here; the 3D neck may use the space below it. */
 const HEADER_BOTTOM = 300;
+
+/** Where the header puts things (offsets from the top safe zone). Shared with drawFrame. */
+export const HEADER = { hookBaseline: 92, titleBaseline: 154, chipsCenter: 212, sectionCenter: 278 } as const;
 
 /**
  * Layout geometry for this frame, including the 3D camera and projection when the style asks
@@ -42,7 +45,7 @@ export function frameGeometry(s: FrameSettings, t: Timeline, ms: number): Layout
   // Follow-hand rig: frame only the frets around the playing hand (the Close-up window, which
   // always contains every sounding note) and pan with it. Other rigs frame the layout's window.
   let fitView = v;
-  if (s.style.camera.motion === 'follow' && v.fromFret <= 0) {
+  if (s.style.camera.motion === 'follow' && s.style.layout !== 'closeup') {
     const from = closeupWindow(t, ms);
     fitView = { ...v, fromFret: from, toFret: from + CLOSEUP_SPAN };
   }
@@ -52,6 +55,23 @@ export function frameGeometry(s: FrameSettings, t: Timeline, ms: number): Layout
     neck: { ...v, proj: makeProjector(model, pose, region, stringSpacing(v)), labelFrets: [fitView.fromFret, fitView.toFret] },
     view3d: { model, pose, region, fromFret: fitView.fromFret, toFret: fitView.toFret },
   };
+}
+
+/**
+ * The neck window for a riff: its fretted notes ±1 fret, at least 5 frets wide, starting at the
+ * nut when the riff sits low. Fixed for the whole video (no zoom pumping), so frets are big.
+ */
+export function riffFretWindow(t: Pick<Timeline, 'events'>): { from: number; to: number } {
+  const frets = t.events.map((e) => e.fret).filter((f) => f > 0);
+  if (!frets.length) return { from: 0, to: 5 };
+  const lo = Math.min(...frets);
+  const hi = Math.max(...frets);
+  let from = lo - 1 <= 2 ? 0 : lo - 1.6;
+  let to = Math.min(24, hi + 0.6);
+  if (to - from < 5) to = Math.min(24, from + 5);
+  if (to - from < 5) from = Math.max(0, to - 5);
+  if (from > 0 && t.events.some((e) => e.fret === 0)) from = 0; // open strings: show the nut
+  return { from, to };
 }
 
 /** Visible frets: enough for the highest note in the riff (12, 15, 19 or 24). */
@@ -130,38 +150,41 @@ export function layoutGeometry(s: FrameSettings, t: Timeline, ms: number): Layou
   const skin = SKINS[s.style.skin];
   const mirror = s.style.leftHanded;
   // Nut side needs room for open-string dots, the far side for glyphs (vibrato, bend labels).
-  const NUT_ROOM = 90;
-  const FAR_ROOM = 64;
+  const NUT_ROOM = 104;
+  const FAR_ROOM = 56;
+  // Wider necks (classical) may be thinner-looking but never taller than the box the layout gave them.
   const neckBox = (y0: number, height: number, nutRoom = NUT_ROOM) => {
-    const h = height * skin.neckScale;
+    const h = height * Math.min(1, skin.neckScale);
     const mid = y0 + height / 2;
     const x0 = 30 + (mirror ? FAR_ROOM : nutRoom);
     const x1 = right - (mirror ? nutRoom : FAR_ROOM);
     return { x0, x1, y0: mid - h / 2, y1: mid + h / 2 };
   };
-  const frets = visibleFrets(t);
-  const lane = (y0: number, y1: number): LaneGeometry => ({ x0: 40, x1: right, y0, y1, playheadX: 260, pxPerMs: 0.55 });
+  const win = riffFretWindow(t);
+  // A window that starts past the nut has no open-string dots to make room for.
+  const nutRoom = win.from > 0 ? 10 : NUT_ROOM;
+  const lane = (y0: number, y1: number): LaneGeometry => ({ x0: 30, x1: right, y0, y1, playheadX: 270, pxPerMs: 0.55 });
 
   switch (s.style.layout) {
     case 'overlay':
       return {
-        neck: { ...neckBox(600, 560), fromFret: 0, toFret: frets, strings, mirror },
+        neck: { ...neckBox(470, 660, nutRoom), fromFret: win.from, toFret: win.to, strings, mirror },
         lane: null,
         notation: null,
         numbersOnNeck: true,
       };
     case 'split':
       return {
-        neck: { ...neckBox(520, 250), fromFret: 0, toFret: frets, strings, mirror },
-        lane: lane(860, 1150),
-        notation: lane(1170, bottom - 40),
+        neck: { ...neckBox(436, 360, nutRoom), fromFret: win.from, toFret: win.to, strings, mirror },
+        lane: lane(860, 1130),
+        notation: lane(1150, bottom - 60),
         numbersOnNeck: false,
       };
     case 'closeup': {
       const from = closeupWindow(t, ms);
       return {
-        neck: { ...neckBox(600, 500), fromFret: from, toFret: from + CLOSEUP_SPAN, strings, mirror },
-        lane: lane(1190, bottom - 40),
+        neck: { ...neckBox(436, 540), fromFret: from, toFret: from + CLOSEUP_SPAN, strings, mirror },
+        lane: lane(1050, bottom - 60),
         notation: null,
         numbersOnNeck: false,
       };
@@ -169,8 +192,8 @@ export function layoutGeometry(s: FrameSettings, t: Timeline, ms: number): Layou
     case 'classic':
     default:
       return {
-        neck: { ...neckBox(640, 300), fromFret: 0, toFret: frets, strings, mirror },
-        lane: lane(1110, bottom - 40),
+        neck: { ...neckBox(436, 486, nutRoom), fromFret: win.from, toFret: win.to, strings, mirror },
+        lane: lane(980, bottom - 60),
         notation: null,
         numbersOnNeck: false,
       };

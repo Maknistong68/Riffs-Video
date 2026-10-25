@@ -280,7 +280,7 @@ function buildHeadstock(
       py = w * 0.62;
       keyY = w * 0.98;
     } else {
-      const side = s < n / 2 ? 1 : -1; // treble strings on one side, bass on the other
+      const side = s < n / 2 ? -1 : 1; // treble strings on the high-e (lower) side, bass on the top side
       const k = side > 0 ? s : n - 1 - s;
       px = -L * (0.3 + 0.24 * k);
       py = side * w * 0.42;

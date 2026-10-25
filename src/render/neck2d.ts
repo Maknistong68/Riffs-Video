@@ -34,6 +34,13 @@ export type Projector = (fret: number, stringIdx: number) => { x: number; y: num
 
 /** How long before a note its ghost ring appears. */
 export const LOOKAHEAD_MS = 450;
+/** Approach ring: starts this long before a note and closes onto its dot exactly at the onset. */
+export const APPROACH_MS = 700;
+/** Hit animation lengths (pop, ring, glow) after a note's onset. */
+export const POP_MS = 160;
+export const RING_MS = 250;
+/** Trail: where the hand just was fades out over this long after a note ends. */
+export const TRAIL_MS = 500;
 const SLIDE_MS = 160;
 const BEND_RISE_MS = 220;
 
@@ -46,18 +53,42 @@ export function fretX(v: NeckView, fret: number): number {
   return v.mirror ? v.x0 + v.x1 - x : x;
 }
 
+/** Board above the top string / below the bottom one: room for a popped dot and its ring. */
+const PAD = 0.11;
+
 export function stringSpacing(v: NeckView): number {
-  const pad = (v.y1 - v.y0) * 0.09;
+  const pad = (v.y1 - v.y0) * PAD;
   return (v.y1 - v.y0 - 2 * pad) / Math.max(1, v.strings - 1);
 }
 
+/**
+ * Row on the neck, top to bottom, of a string. The neck is drawn as the player sees it looking
+ * down at the guitar: lowest (thickest) string on top, high e at the bottom — the opposite of the
+ * tab lane, which keeps high e on top. The one place this conversion happens (P5).
+ */
+export function neckRow(stringIdx: number, strings: number): number {
+  return strings - 1 - stringIdx;
+}
+
 export function stringY(v: NeckView, stringIdx: number): number {
-  const pad = (v.y1 - v.y0) * 0.09;
-  return v.y0 + pad + stringSpacing(v) * stringIdx;
+  const pad = (v.y1 - v.y0) * PAD;
+  return v.y0 + pad + stringSpacing(v) * neckRow(stringIdx, v.strings);
 }
 
 export function dotRadius(v: NeckView): number {
-  return Math.max(14, Math.min(34, stringSpacing(v) * 0.44));
+  return Math.max(14, Math.min(46, stringSpacing(v) * 0.48));
+}
+
+/** Dot size multiplier right after the attack (a quick pop back to 1). */
+export function popScale(sinceMs: number): number {
+  if (sinceMs < 0 || sinceMs >= POP_MS) return 1;
+  return 1 + 0.35 * (1 - sinceMs / POP_MS) ** 2;
+}
+
+/** '#rrggbb' + alpha → rgba() (theme colours are plain hex). */
+export function withAlpha(hex: string, a: number): string {
+  const n = parseInt(hex.slice(1, 7), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${Math.max(0, Math.min(1, a)).toFixed(3)})`;
 }
 
 /** Fret value halfway (in real distance) between wires f-1 and f: where a fretted dot sits. */
@@ -68,7 +99,7 @@ export function midFret(f: number): number {
 /** Size multiplier of a dot at this note (perspective in 3D, 1 when flat). */
 export function dotScale(v: NeckView, stringIdx: number, fret: number): number {
   if (!v.proj) return 1;
-  return v.proj(fret === 0 ? Math.max(0, v.fromFret) - 0.6 : midFret(fret), stringIdx).scale;
+  return 1.15 * v.proj(fret === 0 ? Math.max(0, v.fromFret) - 0.6 : midFret(fret), stringIdx).scale;
 }
 
 /** Centre of a note's dot; open strings sit just outside the nut (or the visible edge). */
@@ -94,16 +125,25 @@ export function noteProbe(v: NeckView, e: NoteEvent): { x: number; y: number } |
   if (e.tech.includes('dead') || e.legato) return null;
   const p = dotPosition(v, e.stringIdx, e.fret);
   const r = dotRadius(v) * dotScale(v, e.stringIdx, e.fret);
-  if (e.tech.includes('harmonic')) return { x: p.x, y: p.y - r * 0.55 };
-  return { x: p.x, y: p.y - r * 0.73 };
+  // Beside the number, towards the nut: only one dot per string is ever lit, so no other note's
+  // dot can cover this side (above/below, a chord's neighbouring string can).
+  const side = v.mirror ? 1 : -1;
+  if (e.tech.includes('harmonic')) return { x: p.x + side * r * 0.6, y: p.y };
+  return { x: p.x + side * r * 0.72, y: p.y };
 }
 
 const INLAYS = [3, 5, 7, 9, 15, 17, 19, 21];
 
+/** Frets that get a number: every fret on a zoomed-in neck, the inlay frets on a long one. */
+export function fretLabels(from: number, to: number): number[] {
+  if (to - from <= 9) return Array.from({ length: 24 }, (_, i) => i + 1);
+  return [1, 3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+}
+
 /** String displacement envelope: deterministic in time since the note was struck. */
 export function vibrationAmplitude(sinceStrikeMs: number, durationMs: number): number {
   if (sinceStrikeMs < 0 || sinceStrikeMs >= durationMs) return 0;
-  return 12 * Math.exp(-sinceStrikeMs / 220);
+  return 16 * Math.exp(-sinceStrikeMs / 240);
 }
 
 /** The note played before `e` on the same string (for h/p arcs and slides). */
@@ -137,10 +177,10 @@ function drawFretNumbers3d(ctx: Ctx2D, v: NeckView, theme: Theme): void {
   ctx.fillStyle = theme.textDim;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  for (const f of [1, 3, 5, 7, 9, 12, 15, 17, 19, 21, 24]) {
+  for (const f of fretLabels(lo, hi)) {
     if (f - 1 >= lo - 0.05 && f <= hi + 0.05 && (f > 1 || lo > 0.5)) {
-      const p = proj(midFret(f), v.strings - 1 + 1.25);
-      ctx.font = font(600, Math.round(26 * Math.max(0.6, Math.min(1.6, p.scale))));
+      const p = proj(midFret(f), -1.25); // one row past the high e (bottom)
+      ctx.font = font(700, Math.max(28, Math.round(44 * Math.min(1.6, p.scale))));
       ctx.fillText(String(f), p.x, p.y);
     }
   }
@@ -154,6 +194,15 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
   const w = right - left;
   const h = v.y1 - v.y0;
 
+  // Shadow under the board lifts it off the background.
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 18;
+  ctx.fillStyle = skin.wood;
+  ctx.fillRect(left, v.y0, w, h);
+  ctx.restore();
+
   // Board (clipped: a zoomed window may start mid-fret)
   ctx.save();
   ctx.beginPath();
@@ -164,6 +213,13 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
     ctx.fillRect(left, v.y0 - 7, w, h + 14);
   }
   ctx.fillStyle = skin.wood;
+  ctx.fillRect(left, v.y0, w, h);
+  // Rounded-neck shading: darker at the edges, a soft sheen just above the middle.
+  const shade = ctx.createLinearGradient(0, v.y0, 0, v.y1);
+  shade.addColorStop(0, 'rgba(0, 0, 0, 0.38)');
+  shade.addColorStop(0.42, 'rgba(255, 255, 255, 0.05)');
+  shade.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+  ctx.fillStyle = shade;
   ctx.fillRect(left, v.y0, w, h);
   ctx.strokeStyle = skin.woodGrain;
   ctx.lineWidth = 2;
@@ -176,8 +232,14 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
     ctx.stroke();
   }
 
-  // Inlays (only inside the visible window)
+  // Inlays (only inside the visible window; hidden at a fret being played so they never peek out
+  // from behind a lit dot)
   const midY = (v.y0 + v.y1) / 2;
+  const busyFrets = new Set(lastNotePerString(t, ms).filter((e): e is NoteEvent => !!e && ms >= e.startMs - APPROACH_MS && ms < e.startMs + e.durationMs).map((e) => e.fret));
+  for (let i = upperBound(t.events, ms); i < upperBound(t.events, ms + LOOKAHEAD_MS * 2); i++) busyFrets.add(t.events[i]!.fret);
+  // Count-in: the whole riff is ghosted on the board.
+  const riffEnd = Math.max(0, ...t.events.map((e) => e.startMs + e.durationMs));
+  if (ms < (t.events[0]?.startMs ?? 0) || ms > riffEnd) for (const e of t.events) busyFrets.add(e.fret);
   const firstFret = Math.max(1, Math.ceil(v.fromFret + 0.01));
   for (let f = firstFret; f <= Math.floor(v.toFret); f++) {
     if (skin.inlayShape === 'none') break;
@@ -185,6 +247,7 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
     const fw = Math.abs(fretX(v, f) - fretX(v, f - 1));
     const isDouble = f % 12 === 0;
     if (!isDouble && !INLAYS.includes(f)) continue;
+    if (busyFrets.has(f)) continue;
     ctx.fillStyle = skin.inlay;
     if (skin.inlayShape === 'dot') {
       const rr = Math.min(10, fw * 0.18);
@@ -214,7 +277,12 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
   ctx.fillStyle = skin.fretWire;
   for (let f = Math.max(1, Math.ceil(v.fromFret)); f <= Math.floor(v.toFret); f++) {
     if (f <= v.fromFret) continue;
-    ctx.fillRect(fretX(v, f) - 2.5, v.y0, 5, h);
+    ctx.fillRect(fretX(v, f) - 3, v.y0, 6, h);
+  }
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+  for (let f = Math.max(1, Math.ceil(v.fromFret)); f <= Math.floor(v.toFret); f++) {
+    if (f <= v.fromFret) continue;
+    ctx.fillRect(fretX(v, f) - 1.5, v.y0, 1.5, h);
   }
 
   ctx.restore();
@@ -222,10 +290,10 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
   // Fret numbers under the neck (only frets fully in view)
   ctx.save();
   ctx.fillStyle = theme.textDim;
-  ctx.font = font(600, 26);
+  ctx.font = font(700, 30);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  for (const f of [1, 3, 5, 7, 9, 12, 15, 17, 19, 21, 24]) {
+  for (const f of fretLabels(v.fromFret, v.toFret)) {
     if (f - 1 >= v.fromFret - 0.05 && f <= v.toFret + 0.05 && (f > 1 || v.fromFret > 0.5)) {
       ctx.fillText(String(f), (fretX(v, f - 1) + fretX(v, f)) / 2, v.y1 + 16);
     }
@@ -251,7 +319,11 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
     ctx.stroke();
     ctx.restore();
     if (amp > 0 && e) {
+      ctx.save();
       ctx.strokeStyle = theme.stringActive;
+      ctx.lineWidth = skin.gauge(s, v.strings) + 2.5;
+      ctx.shadowColor = theme.dot;
+      ctx.shadowBlur = 10 + 26 * Math.exp(-(ms - e.startMs) / 260);
       const from = e.fret === 0 ? fretX(v, Math.max(0, v.fromFret)) : fretX(v, e.fret);
       const bridge = v.mirror ? sLeft : sRight;
       const phase = Math.cos(((ms - e.startMs) / 1000) * 2 * Math.PI * 11);
@@ -264,6 +336,7 @@ function drawFlatNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: Time
         ctx.lineTo(from + (bridge - from) * u, y + amp * phase * Math.sin(Math.PI * u));
       }
       ctx.stroke();
+      ctx.restore();
     } else {
       ctx.strokeStyle = s >= firstWound ? skin.wound : skin.plain;
       ctx.beginPath();
@@ -281,22 +354,12 @@ function drawNeckOverlay(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, ms:
   const perString = lastNotePerString(t, ms);
   // Neck-Overlay: next notes appear on the neck as numbered markers with a closing ring.
   if (numbersOnNeck) drawNeckNumbers(ctx, v, t, theme, ms, r);
-  // Look-ahead ghosts for the next notes
-  else if (style.lookAhead) {
-    const end = upperBound(t.events, ms + LOOKAHEAD_MS);
-    for (let i = upperBound(t.events, ms); i < end; i++) {
-      const e = t.events[i]!;
-      const p = dotPosition(v, e.stringIdx, e.fret);
-      const near = 1 - (e.startMs - ms) / LOOKAHEAD_MS;
-      ctx.globalAlpha = 0.25 + 0.55 * near;
-      ctx.strokeStyle = theme.ghost;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r * dotScale(v, e.stringIdx, e.fret) * (1.25 - 0.25 * near), 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-  }
+  // Approach rings for the next notes: a hollow numbered marker where the finger goes, and a
+  // ring that closes onto it exactly at the onset (the ring never covers the dot's centre area,
+  // so the Sync Report's "not lit before its time" check still holds).
+  else if (style.lookAhead) drawApproach(ctx, v, t, theme, ms, r);
+  if (!numbersOnNeck) drawRiffMap(ctx, v, t, theme, ms, r);
+  drawTrail(ctx, v, t, theme, ms, r);
 
   // Technique links (behind the dots): h/p arcs and slide lines
   const sounding = perString.filter((e): e is NoteEvent => e !== null && ms < e.startMs + e.durationMs && ms >= e.startMs);
@@ -336,6 +399,118 @@ function drawNeckOverlay(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, ms:
   for (const e of sounding) drawNoteDot(ctx, v, theme, t, e, ms, style, r);
 }
 
+/** The next (up to 3) onsets as approach markers. */
+function drawApproach(ctx: Ctx2D, v: NeckView, t: Timeline, th: Theme, ms: number, r0: number): void {
+  const first = upperBound(t.events, ms);
+  const end = upperBound(t.events, ms + APPROACH_MS);
+  const onsets: number[] = [];
+  for (let i = first; i < end; i++) {
+    const e = t.events[i]!;
+    if (!onsets.includes(e.startMs)) {
+      if (onsets.length === 3) break;
+      onsets.push(e.startMs);
+    }
+    const p = dotPosition(v, e.stringIdx, e.fret);
+    const r = r0 * dotScale(v, e.stringIdx, e.fret);
+    const u = 1 - (e.startMs - ms) / APPROACH_MS; // 0 → 1 as it approaches
+    const nextUp = onsets.length === 1;
+    ctx.save();
+    ctx.globalAlpha = nextUp ? 0.92 : 0.6;
+    ctx.fillStyle = th.noteBox;
+    circle(ctx, p.x, p.y, r);
+    ctx.globalAlpha = (nextUp ? 1 : 0.5) * (0.35 + 0.65 * u);
+    ctx.strokeStyle = th.ghost;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.stroke();
+    if (!e.legato) {
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r * (1.08 + 1.2 * (1 - u)), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = nextUp ? 0.9 : 0.55;
+    ctx.fillStyle = th.text;
+    ctx.font = font(800, Math.round(r * 0.9));
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(e.tech.includes('dead') ? 'x' : String(e.fret), p.x, p.y + 1);
+    ctx.restore();
+  }
+}
+
+/**
+ * Before the first note: every place the riff will touch, ghosted in white, so the very first
+ * frame already shows the riff's shape. Fades out as the first note arrives (white, never the
+ * accent colour, so no note reads as lit early).
+ */
+function drawRiffMap(ctx: Ctx2D, v: NeckView, t: Timeline, th: Theme, ms: number, r0: number): void {
+  const first = t.events[0];
+  if (!first) return;
+  // Also after the last note: the end matches frame 0, so the video loops seamlessly.
+  const lastEnd = Math.max(...t.events.map((e) => e.startMs + e.durationMs));
+  let fade: number;
+  if (ms < first.startMs) fade = Math.min(1, (first.startMs - ms) / 500);
+  else if (ms > lastEnd) fade = Math.min(1, (ms - lastEnd) / 400);
+  else return;
+  const seen = new Set<string>();
+  ctx.save();
+  for (const e of t.events) {
+    const key = `${e.stringIdx}:${e.fret}`;
+    if (seen.has(key) || (ms < first.startMs && e.startMs - ms < APPROACH_MS)) continue;
+    seen.add(key);
+    const p = dotPosition(v, e.stringIdx, e.fret);
+    const r = r0 * dotScale(v, e.stringIdx, e.fret);
+    ctx.globalAlpha = 0.15 * fade;
+    ctx.fillStyle = th.text;
+    circle(ctx, p.x, p.y, r);
+    ctx.globalAlpha = 0.45 * fade;
+    ctx.font = font(800, Math.round(r * 0.85));
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(e.tech.includes('dead') ? 'x' : String(e.fret), p.x, p.y + 1);
+  }
+  ctx.restore();
+}
+
+function soonAt(t: Timeline, ms: number, stringIdx: number, fret: number): boolean {
+  const end = upperBound(t.events, ms + 600);
+  for (let i = upperBound(t.events, ms); i < end; i++) if (t.events[i]!.stringIdx === stringIdx && t.events[i]!.fret === fret) return true;
+  return false;
+}
+
+/** Where the hand just was: small fading dots joined by a line, so the path reads as a shape. */
+function drawTrail(ctx: Ctx2D, v: NeckView, t: Timeline, th: Theme, ms: number, r0: number): void {
+  const pts: { x: number; y: number; a: number; k: number }[] = [];
+  for (let i = upperBound(t.events, ms) - 1; i >= 0 && pts.length < 4; i--) {
+    const e = t.events[i]!;
+    const end = e.startMs + e.durationMs;
+    if (e.startMs < ms - 6000) break;
+    if (ms < end || ms - end > TRAIL_MS) continue;
+    if (soonAt(t, ms, e.stringIdx, e.fret)) continue; // the next note's marker owns that spot
+    const p = dotPosition(v, e.stringIdx, e.fret);
+    const k = (ms - end) / TRAIL_MS;
+    pts.push({ ...p, a: 0.35 * (1 - k), k });
+  }
+  if (pts.length === 0) return;
+  ctx.save();
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  for (let k = 1; k < pts.length; k++) {
+    ctx.strokeStyle = withAlpha(th.dot, Math.min(pts[k - 1]!.a, pts[k]!.a) * 0.6);
+    ctx.beginPath();
+    ctx.moveTo(pts[k - 1]!.x, pts[k - 1]!.y);
+    ctx.lineTo(pts[k]!.x, pts[k]!.y);
+    ctx.stroke();
+  }
+  for (const p of pts) {
+    ctx.fillStyle = withAlpha(th.dot, p.a);
+    circle(ctx, p.x, p.y, r0 * (1 - 0.5 * p.k));
+  }
+  ctx.restore();
+}
+
 function drawNeckNumbers(ctx: Ctx2D, v: NeckView, t: Timeline, th: Theme, ms: number, r0: number): void {
   const horizon = LOOKAHEAD_MS * 2;
   const end = upperBound(t.events, ms + horizon);
@@ -362,7 +537,9 @@ function drawNeckNumbers(ctx: Ctx2D, v: NeckView, t: Timeline, th: Theme, ms: nu
 }
 
 function drawNoteDot(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, e: NoteEvent, ms: number, style: RenderStyle, r0: number): void {
-  const r = r0 * dotScale(v, e.stringIdx, e.fret);
+  const since = ms - e.startMs;
+  // Picked notes pop; legato notes (slide destinations) only glow — they have no new attack.
+  const r = r0 * dotScale(v, e.stringIdx, e.fret) * (e.legato ? 1 : popScale(since));
   let p = dotPosition(v, e.stringIdx, e.fret);
   // Slide destination: the dot travels from the previous fret.
   if (e.legato && e.tech.includes('slide')) {
@@ -377,6 +554,20 @@ function drawNoteDot(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, e: Note
   const bend = bendProgress(e, ms);
   if (bend > 0) p = { x: p.x, y: p.y - bend * Math.min(1.5, e.bendSemitones ?? 1) * stringSpacing(v) * (r / r0) * 0.5 };
 
+  // Expanding hit ring.
+  if (!e.legato && since < RING_MS) {
+    const k = since / RING_MS;
+    ctx.save();
+    ctx.strokeStyle = withAlpha(theme.dot, 0.8 * (1 - k));
+    ctx.lineWidth = 2 + 6 * (1 - k);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r * (1.15 + 1.5 * k), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.shadowColor = theme.dot;
+  ctx.shadowBlur = 12 + 34 * Math.exp(-Math.max(0, since) / 200);
   ctx.fillStyle = theme.dot;
   ctx.strokeStyle = theme.dot;
   if (e.tech.includes('dead')) {
@@ -388,6 +579,7 @@ function drawNoteDot(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, e: Note
     ctx.moveTo(p.x + k, p.y - k);
     ctx.lineTo(p.x - k, p.y + k);
     ctx.stroke();
+    ctx.restore();
     return;
   }
   if (e.tech.includes('harmonic')) {
@@ -398,9 +590,11 @@ function drawNoteDot(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, e: Note
     ctx.lineTo(p.x - r * 1.15, p.y);
     ctx.closePath();
     ctx.fill();
+    ctx.restore();
   } else {
     // Open strings get the same filled dot (labelled 0) so every note of a chord reads as lit.
     circle(ctx, p.x, p.y, r);
+    ctx.restore();
     const label = style.fingerNumbers && e.fret > 0 ? (e.finger !== undefined ? String(e.finger) : '') : String(e.fret);
     if (label) {
       ctx.fillStyle = theme.dotText;
