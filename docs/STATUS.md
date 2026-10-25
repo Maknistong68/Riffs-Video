@@ -1,5 +1,35 @@
 # Status
 
+## Phase 3 — Understanding music from text and audio ✅ in emulation · ⏳ waiting for real-device check
+
+### Acceptance
+| Criterion | Result |
+|---|---|
+| 10 test ASCII tabs parse to the expected note lists | ✅ `tests/fixtures/ascii/01–10` vs hand-written `expected.json` (h/p, slides, bends + release, vibrato, PM lines, dead notes, harmonics, 2-digit frets, chords, drop D / E♭ from labels or text, capo, repeats, reversed line order) |
+| Clean-guitar clips transcribe with ≥ 90 % note accuracy | ✅ in emulation: `npm run accuracy` — 6 recording-like clips (detuned, humanised, noisy, reverb), mean F1 0.970, worst ≥ 0.90. ⚠️ Synthetic clips; 2 of the 6 were looked at while tuning the cleanup rules. Real recordings on a phone are the real test |
+| e2e (iPhone 15 + Pixel 7) | ✅ paste ASCII → tap rhythm → export 6/6; upload audio → transcribe → review → export 17/17; Silent timing-only export (silence verified) |
+| Golden renders unchanged | ✅ 5/5 |
+| Real-device check | ⏳ needs the user |
+
+### What exists
+- **Paste text tab** (`#/paste`, `src/import/asciiTab.ts`): rule-based parser → columns of notes without rhythm; first
+  guess from character spacing (`spacingRhythm`), warnings shown before Review.
+- **Rhythm** (`src/import/rhythm.ts`): tap each note or tap the beat in Riff Review (`TapRhythm`), quantised to a 16th grid
+  with a tempo prior; the tab is rewritten as alphaTex (`alphatexWriter.ts`) and re-parsed by alphaTab, so audio and
+  timeline still come from one score.
+- **Audio import** (`#/audio`): record (MediaRecorder, processing off) or upload → 48 kHz mono → Basic Pitch in the
+  worker → cleanup (`transcribeRiff.ts`: onset snapping, overtone/ghost removal, re-trigger merge, envelope-based
+  bend/slide detection) → fingering optimizer → tempo estimate + quantise → Riff Review with per-note confidence
+  (amber < 0.7) and the original recording to compare against.
+- **Silent / timing-only mode**: video with a silent audio track, start offset + BPM; optional local reference audio
+  for alignment preview only (never exported). Sync Report checks the track is really silent.
+
+### Decisions / notes
+- Text tabs and transcriptions both become alphaTex, so every import path goes through the same alphaTab → Timeline →
+  Review gate.
+- Re-tapping the rhythm regenerates the score and resets note edits (the editor says so).
+- Polyphonic strumming transcribes worse than single-note lines; Review is where that gets fixed.
+
 ## Phase 2 — Make it good ✅ in emulation · ⏳ waiting for real-device check
 
 ### Acceptance
