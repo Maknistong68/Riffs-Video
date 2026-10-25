@@ -80,11 +80,14 @@ function Review({ riff }: { riff: RiffRecord }) {
   const noteCount = bars.reduce((n, b) => n + b.notes.length, 0);
   const pv = usePreview(prepared, 60);
   const nowMs = frameToMs(pv.frame, 60);
-  const playingKey = useMemo(() => {
-    if (!t || !pv.playing) return null;
-    const e = t.events.find((x) => x.ref && nowMs >= x.startMs && nowMs < x.startMs + x.durationMs);
-    return e?.ref ? refKey(e.ref) : null;
+  // Every note sounding now (all notes of a chord), not just the first one found.
+  const playingKeys = useMemo(() => {
+    const keys = new Set<string>();
+    if (!t || !pv.playing) return keys;
+    for (const x of t.events) if (x.ref && nowMs >= x.startMs && nowMs < x.startMs + x.durationMs) keys.add(refKey(x.ref));
+    return keys;
   }, [t, nowMs, pv.playing]);
+  const playingKey = playingKeys.values().next().value ?? null;
 
   // Keep the playing bar in view.
   useEffect(() => {
@@ -167,7 +170,7 @@ function Review({ riff }: { riff: RiffRecord }) {
                     <button
                       key={key}
                       data-key={key}
-                      className={`tabnote ${cls} ${selected === key ? 'sel' : ''} ${playingKey === key ? 'playing' : ''}`}
+                      className={`tabnote ${cls} ${selected === key ? 'sel' : ''} ${playingKeys.has(key) ? 'playing' : ''}`}
                       style={{ left: 20 + (n.startMs - bar.startMs) * PX_PER_MS, top: 32 + n.stringIdx * ROW }}
                       onClick={() => setSelected(key)}
                       aria-label={`Bar ${bar.index + 1}, string ${n.stringIdx + 1}, fret ${n.fret}`}

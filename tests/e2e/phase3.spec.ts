@@ -33,6 +33,20 @@ test('text tab pasted into Write riff → hint → Paste text tab keeps the text
   await page.screenshot({ path: `test-results/${info.project.name}-paste-from-write.png` });
 });
 
+test('Riff Review playback lights every note of a chord', async ({ page }) => {
+  await page.goto('/#/paste');
+  await page.getByTestId('ascii').fill(readFileSync(join(fixtures, 'ascii/03-chords.txt'), 'utf8'));
+  await page.getByTestId('save-ascii').click();
+  await expect(page.locator('.tabnote').first()).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Play' }).click();
+  let most = 0;
+  for (let i = 0; i < 40 && most < 3; i++) {
+    most = Math.max(most, await page.locator('.tabnote.playing').count());
+    await page.waitForTimeout(100);
+  }
+  expect(most).toBeGreaterThanOrEqual(3);
+});
+
 test('paste ASCII tab → tap the rhythm → review → export ✅', async ({ page }, info) => {
   await page.goto('/');
   await page.getByLabel('Create riff').click();

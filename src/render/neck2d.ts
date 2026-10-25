@@ -71,7 +71,6 @@ export function noteProbe(v: NeckView, e: NoteEvent): { x: number; y: number } |
   const p = dotPosition(v, e.stringIdx, e.fret);
   const r = dotRadius(v);
   if (e.tech.includes('harmonic')) return { x: p.x, y: p.y - r * 0.55 };
-  if (e.fret === 0) return { x: p.x, y: p.y - (r - 6) };
   return { x: p.x, y: p.y - r * 0.73 };
 }
 
@@ -342,14 +341,10 @@ function drawNoteDot(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, e: Note
     ctx.lineTo(p.x - r * 1.15, p.y);
     ctx.closePath();
     ctx.fill();
-  } else if (e.fret === 0) {
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, r - 6, 0, Math.PI * 2);
-    ctx.stroke();
   } else {
+    // Open strings get the same filled dot (labelled 0) so every note of a chord reads as lit.
     circle(ctx, p.x, p.y, r);
-    const label = style.fingerNumbers ? (e.finger !== undefined ? String(e.finger) : '') : String(e.fret);
+    const label = style.fingerNumbers && e.fret > 0 ? (e.finger !== undefined ? String(e.finger) : '') : String(e.fret);
     if (label) {
       ctx.fillStyle = theme.dotText;
       ctx.font = font(700, Math.round(r * 0.95));
