@@ -18,10 +18,10 @@ async function sha256(data: Uint8ClampedArray): Promise<string> {
 
 const harness = {
   /** PNG data URLs of drawFrame output for a style / teach arrangement (visual review). */
-  async renderFrames(text: string, frames: number[], style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH) {
+  async renderFrames(text: string, frames: number[], style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH, timing: { leadInMs?: number; tailMs?: number } = {}) {
     await loadRenderFonts();
     if (style.view === '3d' && !(await ensureNeck3d())) throw new Error('WebGL unavailable');
-    const { timeline } = buildArrangement(() => loadAlphaTex(text), { trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs, tailMs: DEFAULT_BUILD.tailMs, teach });
+    const { timeline } = buildArrangement(() => loadAlphaTex(text), { trackIndex: 0, leadInMs: timing.leadInMs ?? DEFAULT_BUILD.leadInMs, tailMs: timing.tailMs ?? DEFAULT_BUILD.tailMs, teach });
     const s = defaultFrameSettings(30, style);
     const canvas = new OffscreenCanvas(s.width, s.height);
     const ctx = canvas.getContext('2d', { alpha: false })!;

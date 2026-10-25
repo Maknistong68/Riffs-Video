@@ -63,6 +63,10 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
   });
   const sounding = new Set(lastNotePerString(t, ms).filter((e): e is NoteEvent => !!e && ms >= e.startMs && ms < e.startMs + e.durationMs));
 
+  // Playhead behind the notes, so the numbers crossing it stay readable.
+  ctx.fillStyle = theme.playhead;
+  ctx.fillRect(g.playheadX - 3, g.y0 + 8, 6, g.y1 - g.y0 - 16);
+
   // Palm-mute brackets over consecutive PM notes.
   drawPmBrackets(ctx, g, visible, theme, ms);
 
@@ -174,9 +178,6 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
     }
   }
   ctx.restore();
-
-  ctx.fillStyle = theme.playhead;
-  ctx.fillRect(g.playheadX - 3, g.y0 + 8, 6, g.y1 - g.y0 - 16);
 }
 
 function drawPmBrackets(ctx: Ctx2D, g: LaneGeometry, visible: NoteEvent[], theme: Theme, ms: number): void {

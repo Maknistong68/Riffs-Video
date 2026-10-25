@@ -4,6 +4,7 @@ import type { Timeline } from '../engine/timeline';
 import { font } from './fonts';
 import { frameGeometry } from './layouts';
 import { neckRenderer } from './neck3dRegistry';
+import { autoDifficulty, barCounterText, drawOpener, drawOutro, inOutro } from './overlays';
 import { drawNeck } from './neck2d';
 import { drawNotation } from './notation';
 import { SKINS } from './skins';
@@ -85,8 +86,15 @@ export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameS
   } else {
     drawNeck(ctx, geo.neck, SKINS[s.style.skin], th, t, ms, s.style, geo.numbersOnNeck);
   }
-  if (geo.lane) drawTabLane(ctx, geo.lane, t, th, ms, s.style);
-  if (geo.notation) drawNotation(ctx, geo.notation, t, th, ms);
+  const outro = inOutro(t, ms) && (s.style.opener === 'guess' || s.style.endCard.kind !== 'none');
+  const opening = s.style.opener === 'guess' && ms < (t.events[0]?.startMs ?? 0);
+  // Opener / end cards take the tab lane's place while they show.
+  if (!outro && !opening) {
+    if (geo.lane) drawTabLane(ctx, geo.lane, t, th, ms, s.style);
+    if (geo.notation) drawNotation(ctx, geo.notation, t, th, ms);
+  }
+  drawOpener(ctx, t, s, geo, ms);
+  drawOutro(ctx, t, s, geo, ms);
 
   // Progress bar (above the caption safe zone)
   const barY = s.height - s.safeZones.bottomPx - 14;
@@ -112,14 +120,17 @@ function drawHeader(ctx: Ctx2D, t: Timeline, s: FrameSettings, ms: number): void
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = th.text;
   ctx.font = font(800, 64);
-  ctx.fillText(t.title, 60, top + 160, maxW);
+  // Guess mode keeps the title secret until the reveal.
+  const hidden = s.style.opener === 'guess' && !inOutro(t, ms);
+  ctx.fillText(hidden ? 'Guess the song?' : t.title, 60, top + 160, maxW);
   ctx.fillStyle = th.textDim;
   ctx.font = font(500, 34);
-  ctx.fillText(`${Math.round(currentBpm(t, ms))} bpm · ${tuningLabel(t.tuning, t.capo)}`, 60, top + 216, maxW);
+  const bar = s.style.barCounter ? barCounterText(t, ms) : null;
+  ctx.fillText(`${Math.round(currentBpm(t, ms))} bpm · ${tuningLabel(t.tuning, t.capo)}${bar ? ` · ${bar}` : ''}`, 60, top + 216, maxW);
   let x = 60;
   const y = top + 262;
   if (s.style.difficulty !== 'none') {
-    const label = s.style.difficulty;
+    const label = s.style.difficulty === 'auto' ? autoDifficulty(t) : s.style.difficulty;
     ctx.font = font(700, 28);
     const w = ctx.measureText(label).width + 32;
     ctx.fillStyle = { Easy: '#2e7d4f', Medium: '#9a6a12', Hard: '#a33a3a' }[label];
@@ -129,7 +140,7 @@ function drawHeader(ctx: Ctx2D, t: Timeline, s: FrameSettings, ms: number): void
     ctx.fillText(label, x + 16, y);
     x += w + 16;
   }
-  if (s.style.credit) {
+  if (s.style.credit && !hidden) {
     ctx.fillStyle = th.textDim;
     ctx.font = font(500, 28);
     ctx.fillText(s.style.credit, x, y, maxW - (x - 60));

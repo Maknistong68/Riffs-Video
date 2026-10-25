@@ -14,7 +14,7 @@ import { CAMERA_PRESETS, clampCamera, type Camera3D, type CameraMotion } from '.
 import { ensureNeck3d } from '../../render/neck3dRegistry';
 import { isPlainTeach } from '../../engine/teach';
 import { SKIN_IDS, SKINS } from '../../render/skins';
-import { LAYOUTS, type DifficultyBadge, type LayoutId, type RenderStyle } from '../../render/style';
+import { LAYOUTS, type DifficultyBadge, type EndCard, type LayoutId, type RenderStyle } from '../../render/style';
 import { db, drumsOf, getSettings, styleOf, toneOf, updateSettings, type RiffRecord, type StyleSettings } from '../../storage/db';
 import { toneForSkin, tonePreset } from '../../audio/tone';
 import { ToneControls } from './ToneControls';
@@ -410,6 +410,8 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
                 ))}
               </div>
             </div>
+            <label className="switch"><span>Bar counter</span><input type="checkbox" checked={render.barCounter} onChange={(e) => setRender({ barCounter: e.target.checked })} /></label>
+            <label className="switch"><span>Fretboard heatmap at the end</span><input type="checkbox" checked={render.heatmap} onChange={(e) => setRender({ heatmap: e.target.checked })} data-testid="heatmap" /></label>
             <label className="switch"><span>Show next notes (look-ahead)</span><input type="checkbox" checked={render.lookAhead} onChange={(e) => setRender({ lookAhead: e.target.checked })} /></label>
             <label className="switch"><span>Show TikTok safe zones (preview only)</span><input type="checkbox" checked={showSafe} onChange={(e) => setShowSafe(e.target.checked)} /></label>
           </>
@@ -426,7 +428,25 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
             </label>
             <div className="field">
               <span>Difficulty badge{suggested ? ` (suggested: ${suggested})` : ''}</span>
-              <Segmented<DifficultyBadge> label="Difficulty badge" value={render.difficulty} onChange={(v) => setRender({ difficulty: v })} options={[{ value: 'none', label: 'None' }, { value: 'Easy', label: 'Easy' }, { value: 'Medium', label: 'Medium' }, { value: 'Hard', label: 'Hard' }]} />
+              <Segmented<DifficultyBadge> label="Difficulty badge" value={render.difficulty} onChange={(v) => setRender({ difficulty: v })} options={[{ value: 'none', label: 'None' }, { value: 'auto', label: 'Auto' }, { value: 'Easy', label: 'Easy' }, { value: 'Medium', label: 'Med' }, { value: 'Hard', label: 'Hard' }]} />
+            </div>
+            <div className="field">
+              <span>Opener</span>
+              <Segmented<'none' | 'guess'> label="Opener" value={render.opener} onChange={(v) => setRender({ opener: v })} options={[{ value: 'none', label: 'None' }, { value: 'guess', label: 'Guess the song?' }]} />
+              {render.opener === 'guess' && <p className="small dim">The title stays hidden behind a 3-2-1 countdown and is revealed at the end.</p>}
+            </div>
+            <div className="field" data-testid="endcard-controls">
+              <span>End card</span>
+              <Segmented<EndCard['kind']> label="End card" value={render.endCard.kind} onChange={(kind) => setRender({ endCard: { ...render.endCard, kind } })} options={[{ value: 'none', label: 'None' }, { value: 'follow', label: 'Follow' }, { value: 'part', label: 'Part X of Y' }]} />
+              {render.endCard.kind === 'part' && (
+                <div className="row">
+                  <label className="field" style={{ flex: 1 }}><span>Part</span><input className="input" type="number" min={1} max={20} value={render.endCard.part ?? 1} onChange={(e) => setRender({ endCard: { ...render.endCard, part: Math.max(1, Number(e.target.value) || 1) } })} /></label>
+                  <label className="field" style={{ flex: 1 }}><span>of</span><input className="input" type="number" min={1} max={20} value={render.endCard.parts ?? 2} onChange={(e) => setRender({ endCard: { ...render.endCard, parts: Math.max(1, Number(e.target.value) || 1) } })} /></label>
+                </div>
+              )}
+              {render.endCard.kind !== 'none' && (
+                <input className="input" defaultValue={render.endCard.text} placeholder={render.endCard.kind === 'follow' ? 'Follow for more riffs' : 'Part 2 on my profile'} aria-label="End card text" onBlur={(e) => e.target.value !== render.endCard.text && setRender({ endCard: { ...render.endCard, text: e.target.value.trim() } })} />
+              )}
             </div>
             <label className="switch"><span>This is my original riff</span><input type="checkbox" checked={riff.isOriginal} onChange={(e) => void updateRiff(riff.id, { isOriginal: e.target.checked })} /></label>
           </>

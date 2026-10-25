@@ -3,7 +3,10 @@ import { DEFAULT_CAMERA, type Camera3D } from './camera';
 import type { ThemeId } from './theme';
 
 export type LayoutId = 'classic' | 'overlay' | 'split' | 'closeup';
-export type DifficultyBadge = 'none' | 'Easy' | 'Medium' | 'Hard';
+export type DifficultyBadge = 'none' | 'auto' | 'Easy' | 'Medium' | 'Hard';
+
+/** End-of-video card: none, "Follow for more", or "Part 1 of 3" (split videos). */
+export type EndCard = { kind: 'none' | 'follow' | 'part'; text: string; part?: number; parts?: number };
 
 /** Everything visual that the user can change. Part of FrameSettings → drawFrame stays pure. */
 export type RenderStyle = {
@@ -23,6 +26,13 @@ export type RenderStyle = {
   camera: Camera3D;
   /** Colour theme (genre look). */
   theme: ThemeId;
+  /** "Bar 3 / 8" above the progress bar. */
+  barCounter: boolean;
+  /** End-of-video fretboard heatmap. */
+  heatmap: boolean;
+  /** "Guess the song?" opener (title hidden until the reveal at the end). */
+  opener: 'none' | 'guess';
+  endCard: EndCard;
 };
 
 export const DEFAULT_STYLE: RenderStyle = {
@@ -38,6 +48,10 @@ export const DEFAULT_STYLE: RenderStyle = {
   view: '3d',
   camera: DEFAULT_CAMERA,
   theme: 'dark',
+  barCounter: true,
+  heatmap: false,
+  opener: 'none',
+  endCard: { kind: 'none', text: '' },
 };
 
 export const LAYOUTS: { id: LayoutId; name: string }[] = [

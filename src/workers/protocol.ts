@@ -16,6 +16,8 @@ export type RiffConfig = {
   source: RiffSource;
   trackIndex: number;
   leadInMs: number;
+  /** Time after the last note (end cards / heatmap need longer than the default ring-out). */
+  tailMs?: number;
   title?: string;
   edits?: RiffEdit[];
   teach?: TeachOptions;

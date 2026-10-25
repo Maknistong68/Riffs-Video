@@ -47,7 +47,7 @@ function build(riff: RiffConfig) {
   const arr = buildArrangement(makeScore, {
     trackIndex: riff.trackIndex,
     leadInMs: riff.leadInMs,
-    tailMs: DEFAULT_BUILD.tailMs,
+    tailMs: riff.tailMs ?? DEFAULT_BUILD.tailMs,
     teach: riff.teach ?? NO_TEACH,
     ...(riff.title ? { title: riff.title } : {}),
   });
