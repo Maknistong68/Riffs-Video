@@ -102,8 +102,14 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
           {errors.map((m, i) => <span key={i}>{m}</span>)}
         </div>
       )}
-      {soon('📋', 'Paste text tab', 'phase 3')}
-      {soon('🎙️', 'Record or upload audio', 'phase 3')}
+      <button className="option" onClick={() => { onClose(); navigate({ name: 'paste' }); }}>
+        <span className="ico">📋</span>
+        <span className="txt"><strong>Paste text tab</strong><span className="dim small">ASCII tab from anywhere — tap the rhythm after</span></span>
+      </button>
+      <button className="option" onClick={() => { onClose(); navigate({ name: 'audio' }); }}>
+        <span className="ico">🎙️</span>
+        <span className="txt"><strong>Record or upload audio</strong><span className="dim small">Play the riff — RiffReel writes the tab</span></span>
+      </button>
       {soon('🤖', 'AI import', 'phase 4')}
       {soon('🎲', 'Generate original riff', 'a later phase')}
     </Sheet>

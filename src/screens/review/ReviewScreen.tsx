@@ -13,6 +13,9 @@ import { prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared } from '../../workers/protocol';
 import { usePreview } from '../studio/usePreview';
 import { NoteEditor } from './NoteEditor';
+import { TapRhythm } from './TapRhythm';
+import { parseAsciiTab, spacingRhythm } from '../../import/asciiTab';
+import { asciiToAlphaTex } from '../../import/asciiToAlphaTex';
 
 const PX_PER_MS = 0.16;
 const ROW = 30;
@@ -29,6 +32,25 @@ function Review({ riff }: { riff: RiffRecord }) {
   const [error, setError] = useState<string[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [fingering, setFingering] = useState<RiffEdit[] | null>(null);
+  const [tapping, setTapping] = useState(false);
+  const ascii = useMemo(() => {
+    if (!riff.asciiText) return null;
+    try {
+      return parseAsciiTab(riff.asciiText);
+    } catch {
+      return null;
+    }
+  }, [riff.asciiText]);
+  const rhythmGuessed = riff.source === 'ascii' && riff.rhythm?.method === 'spacing';
+
+  /** New rhythm → regenerate the alphaTex from the pasted tab (note refs change, so edits reset). */
+  const applyRhythm = async (r: { units: number[] | null; bpm: number; method: 'taps' | 'tempo' }) => {
+    if (!ascii) return;
+    const units = r.units ?? riff.rhythm?.units ?? spacingRhythm(ascii.columns);
+    const { text } = asciiToAlphaTex(ascii, { title: riff.title, bpm: r.bpm, units });
+    await updateRiff(riff.id, { sourceText: text, rhythm: { method: r.method, bpm: r.bpm, units }, edits: [], timelineCache: undefined });
+    setTapping(false);
+  };
   const edits = riff.edits ?? [];
   const source = useMemo(() => riffSource(riff), [riff.sourceText, riff.sourceBytes, riff.fileName]); // eslint-disable-line react-hooks/exhaustive-deps
   const style = styleOf(riff);
@@ -91,6 +113,19 @@ function Review({ riff }: { riff: RiffRecord }) {
       </p>
 
       {error && <div className="errors" role="alert">{error.map((m, i) => <span key={i}>{m}</span>)}</div>}
+      {riff.source === 'ascii' && ascii && (
+        <div className={rhythmGuessed ? 'notice' : 'card'} data-testid="rhythm-banner">
+          <span>
+            {rhythmGuessed
+              ? `Rhythm missing: guessed from the tab’s spacing at ${riff.rhythm?.bpm ?? 100} bpm. Tap it for the real thing.`
+              : `Rhythm from your ${riff.rhythm?.method === 'taps' ? 'taps' : 'tempo tap'} · ${riff.rhythm?.bpm} bpm`}
+          </span>
+          <div className="row" style={{ marginTop: 8 }}>
+            <button className="btn" data-testid="open-tap" onClick={() => setTapping(true)}>{rhythmGuessed ? 'Tap the rhythm' : 'Tap again'}</button>
+          </div>
+          {edits.length > 0 && <p className="small dim">Changing the rhythm resets your {edits.length} note edit{edits.length === 1 ? '' : 's'}.</p>}
+        </div>
+      )}
       {prepared && prepared.editErrors.length > 0 && (
         <div className="errors">{prepared.editErrors.map((m, i) => <span key={i}>Edit skipped: {m}</span>)}</div>
       )}
@@ -100,6 +135,7 @@ function Review({ riff }: { riff: RiffRecord }) {
         <span>
           {errorCount > 0 ? <span className="bad">● {errorCount} impossible</span> : <span className="good">✓ all playable</span>}
           {warnCount > 0 && <span className="warn"> · ● {warnCount} unsure</span>}
+          {rhythmGuessed && <span className="warn"> · rhythm missing</span>}
         </span>
       </div>
 
@@ -163,6 +199,9 @@ function Review({ riff }: { riff: RiffRecord }) {
 
       {selectedNote && t && (
         <NoteEditor key={selected + JSON.stringify(edits.length)} note={selectedNote} timeline={t} flags={flags.get(selected!) ?? []} onEdit={addEdit} onClose={() => setSelected(null)} />
+      )}
+      {tapping && ascii && (
+        <TapRhythm columns={ascii.columns} bpm={riff.rhythm?.bpm ?? 100} onApply={(r) => void applyRhythm(r)} onClose={() => setTapping(false)} />
       )}
       {fingering && (
         <Sheet label="Better fingering" onClose={() => setFingering(null)}>

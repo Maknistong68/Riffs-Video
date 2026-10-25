@@ -6,6 +6,8 @@ export type Route =
   | { name: 'exports' }
   | { name: 'settings' }
   | { name: 'write'; riffId?: string }
+  | { name: 'paste' }
+  | { name: 'audio' }
   | { name: 'review'; riffId: string }
   | { name: 'studio'; riffId: string; atMs?: number; openExport?: boolean }
   | { name: 'result'; exportId: string };
@@ -23,6 +25,10 @@ export function parseRoute(hash: string): Route {
       return parts[1] ? { name: 'write', riffId: parts[1] } : { name: 'write' };
     case 'review':
       return parts[1] ? { name: 'review', riffId: parts[1] } : { name: 'library' };
+    case 'paste':
+      return { name: 'paste' };
+    case 'audio':
+      return { name: 'audio' };
     case 'riff':
       if (parts[1]) {
         const at = params.get('t');
@@ -53,6 +59,10 @@ export function href(r: Route): string {
       return r.riffId ? `#/write/${r.riffId}` : '#/write';
     case 'review':
       return `#/review/${r.riffId}`;
+    case 'paste':
+      return '#/paste';
+    case 'audio':
+      return '#/audio';
     case 'studio': {
       const q = new URLSearchParams();
       if (r.atMs !== undefined) q.set('t', String(Math.round(r.atMs)));

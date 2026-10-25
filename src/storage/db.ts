@@ -31,6 +31,12 @@ export type RiffRecord = {
   edits?: RiffEdit[];
   /** The user confirmed the notes in Riff Review (accuracy gate). */
   reviewed?: boolean;
+  /** Pasted ASCII tab (source 'ascii'): sourceText is generated from it + the rhythm. */
+  asciiText?: string;
+  /** How the rhythm was obtained for rhythm-less sources (P1). */
+  rhythm?: { method: 'spacing' | 'taps' | 'tempo' | 'audio'; bpm: number; units: number[] };
+  /** Per-note confidence 0..1 by note ref key (audio transcription / AI import). */
+  noteConfidence?: Record<string, number>;
   timelineCache?: Timeline;
   styleSettings: StyleSettings;
   demoId?: string;
