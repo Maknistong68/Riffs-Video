@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { navigate } from '../../app/router';
+import { looksLikeAsciiTab } from '../../import/asciiTab';
+import { handOffToPaste } from '../../import/pasteHandoff';
 import { db } from '../../storage/db';
 import { createRiff, updateRiff } from '../../storage/riffs';
 import { inspectSource, WorkerError } from '../../workers/client';
@@ -43,6 +45,13 @@ export function WriteScreen({ riffId }: { riffId?: string }) {
     return () => window.clearTimeout(id);
   }, [text]);
 
+  const isTextTab = useMemo(() => text !== null && looksLikeAsciiTab(text), [text]);
+  const openInPaste = () => {
+    if (text === null) return;
+    handOffToPaste(text);
+    navigate({ name: 'paste' }, true);
+  };
+
   const save = async () => {
     if (text === null || !status.ok) return;
     const title = status.title || 'Untitled riff';
@@ -77,7 +86,16 @@ export function WriteScreen({ riffId }: { riffId?: string }) {
         aria-label="alphaTex"
         data-testid="alphatex"
       />
-      {status.messages.length > 0 && (
+      {isTextTab ? (
+        <div className="card" role="alert" data-testid="looks-like-ascii">
+          <strong>This looks like a text tab</strong>
+          <p className="small dim">
+            This editor reads alphaTex. Lines like <code>e|--0--3--|</code> belong in <strong>Paste text tab</strong>, which reads the
+            tuning from the string labels and lets you tap the rhythm.
+          </p>
+          <button className="btn primary block" onClick={openInPaste} data-testid="open-in-paste">Open in Paste text tab</button>
+        </div>
+      ) : status.messages.length > 0 && (
         <div className="errors" role="alert" data-testid="tex-errors">
           {status.messages.map((m, i) => <span key={i}>{m}</span>)}
         </div>
@@ -90,8 +108,8 @@ export function WriteScreen({ riffId }: { riffId?: string }) {
         </span>
         <input type="checkbox" checked={isOriginal} onChange={(e) => setIsOriginal(e.target.checked)} />
       </label>
-      <button className="btn primary block" disabled={!status.ok} onClick={() => void save()} data-testid="save-riff">
-        {status.ok ? 'Save & review notes' : 'Fix the errors above'}
+      <button className="btn primary block" disabled={!status.ok || isTextTab} onClick={() => void save()} data-testid="save-riff">
+        {isTextTab ? 'Use Paste text tab instead' : status.ok ? 'Save & review notes' : 'Fix the errors above'}
       </button>
     </main>
   );

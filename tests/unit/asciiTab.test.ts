@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { buildTimeline, DEFAULT_BUILD } from '../../src/engine/buildTimeline';
 import { validateTimeline } from '../../src/engine/timeline';
 import { loadAlphaTex } from '../../src/import/alphatab';
-import { AsciiTabError, parseAsciiTab, spacingRhythm, type AsciiNote } from '../../src/import/asciiTab';
+import { AsciiTabError, looksLikeAsciiTab, parseAsciiTab, spacingRhythm, type AsciiNote } from '../../src/import/asciiTab';
 import { asciiToAlphaTex } from '../../src/import/asciiToAlphaTex';
 
 const dir = join(__dirname, '../fixtures/ascii');
@@ -70,4 +70,15 @@ describe('every fixture converts to a valid alphaTab score', () => {
       expect(refs.flat().filter(Boolean)).toHaveLength(parsed.length);
     });
   }
+});
+
+describe('looksLikeAsciiTab (text tab pasted into the alphaTex editor)', () => {
+  it('spots a text tab, also after a header', () => {
+    expect(looksLikeAsciiTab(readFileSync(join(dir, '01-basic.txt'), 'utf8'))).toBe(true);
+    expect(looksLikeAsciiTab('Song: x\nTuning: B D D D D D\n\nD|--0--0-|\nD|--0--0-|\nD|--0--0-|\nD|--12-11|\nD|-------|\nB|-------|')).toBe(true);
+  });
+  it('does not flag alphaTex', () => {
+    expect(looksLikeAsciiTab('\\title "My Riff"\n\\tempo 100\n.\n:8 0.6 3.6 0.5 2.5 0.4 2.4 :4 0.3 |\n:8 2.3 0.4 2.5{h} 3.5 :2 0.6')).toBe(false);
+    expect(looksLikeAsciiTab('')).toBe(false);
+  });
 });

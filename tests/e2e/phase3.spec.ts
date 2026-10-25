@@ -17,6 +17,22 @@ async function exportAndCheck(page: Page, shot: string, silent = false) {
   await expect(report).toHaveAttribute('data-ok', 'true');
 }
 
+test('text tab pasted into Write riff → hint → Paste text tab keeps the text', async ({ page }, info) => {
+  const tab = readFileSync(join(fixtures, 'ascii/05-techniques.txt'), 'utf8');
+  await page.goto('/');
+  await page.getByLabel('Create riff').click();
+  await page.getByRole('button', { name: /Write riff/ }).click();
+  await page.getByTestId('alphatex').fill(tab);
+  await expect(page.getByTestId('looks-like-ascii')).toBeVisible();
+  await expect(page.getByTestId('tex-errors')).toHaveCount(0);
+  await expect(page.getByTestId('save-riff')).toBeDisabled();
+  await page.screenshot({ path: `test-results/${info.project.name}-write-ascii-hint.png` });
+  await page.getByTestId('open-in-paste').click();
+  await expect(page.getByTestId('ascii')).toHaveValue(tab);
+  await expect(page.getByTestId('ascii-summary')).toContainText('7 notes');
+  await page.screenshot({ path: `test-results/${info.project.name}-paste-from-write.png` });
+});
+
 test('paste ASCII tab → tap the rhythm → review → export ✅', async ({ page }, info) => {
   await page.goto('/');
   await page.getByLabel('Create riff').click();

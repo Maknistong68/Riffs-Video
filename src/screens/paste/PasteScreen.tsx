@@ -3,6 +3,7 @@ import { navigate } from '../../app/router';
 import { tuningLabel } from '../../engine/tuning';
 import { AsciiTabError, parseAsciiTab, spacingRhythm, type ParsedAsciiTab } from '../../import/asciiTab';
 import { asciiToAlphaTex } from '../../import/asciiToAlphaTex';
+import { takePastedText } from '../../import/pasteHandoff';
 import { createRiff } from '../../storage/riffs';
 
 const EXAMPLE = `e|-----------------|-----------------|
@@ -14,7 +15,7 @@ E|-5h8-------------|-------------8-5-|`;
 
 /** S3: paste a text tab → notes (no rhythm yet) → Riff Review, where rhythm is tapped. */
 export function PasteScreen() {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(takePastedText);
   const [title, setTitle] = useState('');
   const [bpm, setBpm] = useState(100);
   const result = useMemo((): { p: ParsedAsciiTab } | { error: string } | null => {

@@ -52,6 +52,16 @@ const BODY_CHARS = /^[-0-9|:hpbrsx~v/\\()<>*.^t ]*$/i;
 type RawLine = { text: string; index: number };
 type Block = { lines: RawLine[]; labels: (string | null)[]; bodyStart: number[]; pm: RawLine | null; repeat: number };
 
+/** True when the text holds at least one block of text-tab lines (e.g. pasted into the alphaTex editor by mistake). */
+export function looksLikeAsciiTab(text: string): boolean {
+  let run = 0;
+  for (const line of text.split(/\r?\n/)) {
+    run = isTabLine(line) ? run + 1 : 0;
+    if (run >= 4) return true;
+  }
+  return false;
+}
+
 function isTabLine(line: string): boolean {
   const s = line.replace(/\s+[x×]\s*\d+\s*$|\s+\d+\s*[x×]\s*$/i, '');
   const m = LABEL.exec(s);
