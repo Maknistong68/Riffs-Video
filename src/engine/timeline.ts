@@ -12,8 +12,13 @@ export type Technique =
   | 'dead'
   | 'tieContinue';
 
+/** Stable address of a note in the score (indices, unlike alphaTab's per-parse ids). */
+export type NoteRef = { bar: number; voice: number; beat: number; note: number };
+
 export type NoteEvent = {
   id: string;
+  /** Which score note produced this event (same ref for every repeat of it). */
+  ref?: NoteRef;
   /** Relative to start of video (includes leadInMs). */
   startMs: number;
   durationMs: number;

@@ -8,6 +8,7 @@ import { fetchSoundFont } from '../audio/soundpacks';
 import { renderSynth } from '../audio/synth';
 import { transcribe } from '../audio/transcribe';
 import { buildTimeline, DEFAULT_BUILD } from '../engine/buildTimeline';
+import { applyEdits } from '../engine/edits';
 import { AUDIO_SAMPLE_RATE } from '../engine/time';
 import { exportMp4, planExport } from '../export/exporter';
 import { frameCount, samplesForFrames } from '../engine/time';
@@ -23,8 +24,9 @@ const post = (m: WorkerResponse, transfer: Transferable[] = []) => self.postMess
 
 function build(riff: RiffConfig) {
   const score = loadRiffSource(riff.source);
+  const { errors: editErrors } = applyEdits(score, riff.trackIndex, riff.edits ?? []);
   const opts = { ...DEFAULT_BUILD, trackIndex: riff.trackIndex, leadInMs: riff.leadInMs };
-  return buildTimeline(score, riff.title ? { ...opts, title: riff.title } : opts);
+  return { ...buildTimeline(score, riff.title ? { ...opts, title: riff.title } : opts), editErrors };
 }
 
 async function renderAudio(riff: RiffConfig, built: ReturnType<typeof build>, totalSamples: number, soundFontUrl: string, mode: SoundMode, onProgress: (f: number) => void) {
@@ -79,7 +81,7 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
       const built = build(req.riff);
       const total = samplesForFrames(frameCount(built.timeline.durationMs, 60), 60);
       const { pcm, lufs } = await renderAudio(req.riff, built, total, req.soundFontUrl, req.soundMode, (f) => progress('audio', f));
-      post({ id: req.id, type: 'prepared', result: { timeline: built.timeline, warnings: built.warnings, pcm, sampleRate: AUDIO_SAMPLE_RATE, lufs } }, [pcm.buffer]);
+      post({ id: req.id, type: 'prepared', result: { timeline: built.timeline, warnings: built.warnings, editErrors: built.editErrors, pcm, sampleRate: AUDIO_SAMPLE_RATE, lufs } }, [pcm.buffer]);
       return;
     }
     // export

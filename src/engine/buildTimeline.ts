@@ -4,6 +4,7 @@
  * i.e. the very data the synthesizer plays. Lead-in is applied here and only here.
  */
 import { alphaTab, firstStringedStaff, prepareScore, type PreparedScore, type Score } from '../import/alphatab';
+import { assignFingers } from './fingering';
 import { alphaTabStringToIdx } from './strings';
 import { bendSemitonesOf, fingerOf, pickOf, techniquesOf } from './techniques';
 import { buildTempoSegments, tickToMs, type TempoSegment } from './tempo';
@@ -81,7 +82,7 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
         seen.add(beat.id);
         const tick = mb.start + item.playbackStart;
         const notes = beat.notes.filter((n) => !n.isTieDestination);
-        const chordId = notes.length > 1 ? `c${playIndex}-${beat.id}` : undefined;
+        const chordId = notes.length > 1 ? `c${playIndex}:${beat.voice.bar.index}.${beat.voice.index}.${beat.index}` : undefined;
         for (const note of notes) {
           const stringIdx = alphaTabStringToIdx(note.string, stringCount);
           const midiKey = note.realValue;
@@ -101,8 +102,10 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
               warnings.push(`No MIDI note for ${describe(note, beat)}; using beat length`);
             }
           }
+          const ref = { bar: beat.voice.bar.index, voice: beat.voice.index, beat: beat.index, note: note.index };
           const ev: NoteEvent = {
-            id: `p${playIndex}-b${beat.id}-n${note.id}`,
+            id: `p${playIndex}:${ref.bar}.${ref.voice}.${ref.beat}.${ref.note}`,
+            ref,
             startMs: ms(tick),
             durationMs: Math.max(1, ms(endTick) - ms(tick)),
             stringIdx,
@@ -133,6 +136,10 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
   }
 
   events.sort((a, b) => a.startMs - b.startMs || a.stringIdx - b.stringIdx);
+  // Fingers written in the file win; the rest get a computed one-finger-per-fret suggestion.
+  assignFingers({ events }).forEach((f, i) => {
+    if (f !== undefined) events[i]!.finger = f;
+  });
   const lastBar = tickLookup.masterBars[tickLookup.masterBars.length - 1];
   const musicEnd = Math.max(lastBar ? ms(lastBar.end) : lead, ...events.map((e) => e.startMs + e.durationMs));
 

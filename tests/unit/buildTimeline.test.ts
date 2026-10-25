@@ -102,6 +102,11 @@ describe('buildTimeline', () => {
     expect(timeline.events.at(-1)!.chordId).toBeUndefined();
   });
 
+  it('fills in computed fingers; open strings have none', () => {
+    const e = buildTex(HEAD + ':8 5.6 7.6 8.6 0.5').timeline.events;
+    expect(e.map((x) => x.finger)).toEqual([1, 3, 4, undefined]);
+  });
+
   it('capo is included in midi', () => {
     const { timeline, warnings } = buildTex(HEAD.replace('\\staff', '\\capo 3 \\staff') + ':4 0.6');
     expect(warnings).toEqual([]);

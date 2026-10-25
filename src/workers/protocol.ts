@@ -2,6 +2,7 @@ import type { ExportInfo } from '../export/exporter';
 import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
 import type { RiffSource } from '../import/source';
+import type { RiffEdit } from '../engine/edits';
 
 export type SoundMode = 'synth' | 'synth-click';
 
@@ -10,6 +11,7 @@ export type RiffConfig = {
   trackIndex: number;
   leadInMs: number;
   title?: string;
+  edits?: RiffEdit[];
 };
 
 export type TrackInfo = { index: number; name: string; strings: number };
@@ -31,7 +33,7 @@ export type WorkerRequest =
 export type ExportStage = 'prepare' | 'audio' | 'render' | 'verify-audio' | 'verify-pitch' | 'verify-frames';
 
 export type Inspected = { title: string; artist: string; tracks: TrackInfo[] };
-export type Prepared = { timeline: Timeline; warnings: string[]; pcm: Float32Array<ArrayBuffer>; sampleRate: number; lufs: number };
+export type Prepared = { timeline: Timeline; warnings: string[]; editErrors: string[]; pcm: Float32Array<ArrayBuffer>; sampleRate: number; lufs: number };
 export type Exported = { mp4: ArrayBuffer; info: ExportInfo; report: SyncReport; timeline: Timeline; warnings: string[] };
 
 export type WorkerResponse =
