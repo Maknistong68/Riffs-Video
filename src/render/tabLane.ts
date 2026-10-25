@@ -1,7 +1,10 @@
-import type { NoteEvent, Timeline } from '../engine/timeline';
-import { font } from './fonts';
-import type { Theme } from './theme';
+/** Scrolling tab lane with technique glyphs and pick arrows. Pure. */
+import { lastNotePerString, type NoteEvent, type Timeline } from '../engine/timeline';
 import type { Ctx2D } from './drawFrame';
+import { font } from './fonts';
+import { bendLabel, previousOnString } from './neck2d';
+import type { RenderStyle } from './style';
+import type { Theme } from './theme';
 
 export type LaneGeometry = {
   x0: number;
@@ -12,18 +15,24 @@ export type LaneGeometry = {
   pxPerMs: number;
 };
 
+/** Top padding leaves room for pick strokes, bottom padding for the PM bracket. */
+const PAD_TOP = 58;
+const PAD_BOTTOM = 52;
+
 export function laneLineY(g: LaneGeometry, stringIdx: number, strings: number): number {
-  const pad = 34;
-  return g.y0 + pad + ((g.y1 - g.y0 - 2 * pad) * stringIdx) / (strings - 1);
+  return g.y0 + PAD_TOP + ((g.y1 - g.y0 - PAD_TOP - PAD_BOTTOM) * stringIdx) / Math.max(1, strings - 1);
 }
 
-export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: Theme, ms: number): void {
+export function noteX(g: LaneGeometry, e: Pick<NoteEvent, 'startMs'>, ms: number): number {
+  return g.playheadX + (e.startMs - ms) * g.pxPerMs;
+}
+
+export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: Theme, ms: number, style: RenderStyle): void {
   const strings = t.tuning.length;
+  ctx.save();
   ctx.fillStyle = theme.laneBg;
   roundRect(ctx, g.x0, g.y0, g.x1 - g.x0, g.y1 - g.y0, 24);
   ctx.fill();
-
-  ctx.save();
   ctx.beginPath();
   ctx.rect(g.x0, g.y0, g.x1 - g.x0, g.y1 - g.y0);
   ctx.clip();
@@ -38,10 +47,9 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
     ctx.stroke();
   }
 
-  // Bar lines
   ctx.strokeStyle = theme.textDim;
   for (const b of t.bars) {
-    const x = g.playheadX + (b.startMs - ms) * g.pxPerMs - 30;
+    const x = noteX(g, b, ms) - 30;
     if (x < g.x0 || x > g.x1) continue;
     ctx.beginPath();
     ctx.moveTo(x, laneLineY(g, 0, strings));
@@ -49,33 +57,161 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
     ctx.stroke();
   }
 
-  ctx.font = font(700, 34);
+  const visible = t.events.filter((e) => {
+    const x = noteX(g, e, ms);
+    return x > g.x0 - 160 && x < g.x1 + 80;
+  });
+  const sounding = new Set(lastNotePerString(t, ms).filter((e): e is NoteEvent => !!e && ms >= e.startMs && ms < e.startMs + e.durationMs));
+
+  // Palm-mute brackets over consecutive PM notes.
+  drawPmBrackets(ctx, g, visible, theme, ms);
+
+  // Links between notes: h/p arcs, slide lines.
+  ctx.lineWidth = 3;
+  for (const e of visible) {
+    const hp = e.tech.includes('hammer') ? 'h' : e.tech.includes('pull') ? 'p' : null;
+    const slideDest = e.tech.includes('slide') && e.legato;
+    if (!hp && !slideDest) continue;
+    const prev = previousOnString(t, e);
+    if (!prev) continue;
+    const y = laneLineY(g, e.stringIdx, strings);
+    const xa = noteX(g, prev, ms) + 24;
+    const xb = noteX(g, e, ms) - 24;
+    ctx.strokeStyle = theme.glyph;
+    ctx.fillStyle = theme.glyph;
+    if (hp) {
+      ctx.beginPath();
+      ctx.moveTo(xa, y - 22);
+      ctx.quadraticCurveTo((xa + xb) / 2, y - 48, xb, y - 22);
+      ctx.stroke();
+      ctx.font = font(700, 22);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(hp, (xa + xb) / 2, y - 36);
+    } else {
+      ctx.beginPath();
+      const up = e.fret > prev.fret;
+      ctx.moveTo(xa, up ? y + 10 : y - 10);
+      ctx.lineTo(xb, up ? y - 10 : y + 10);
+      ctx.stroke();
+    }
+  }
+
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  for (const e of t.events) {
-    const x = g.playheadX + (e.startMs - ms) * g.pxPerMs;
-    if (x < g.x0 - 60 || x > g.x1 + 60) continue;
+  for (const e of visible) {
+    const x = noteX(g, e, ms);
     const y = laneLineY(g, e.stringIdx, strings);
-    const sounding = isSounding(e, ms);
+    const active = sounding.has(e);
     ctx.globalAlpha = ms >= e.startMs + e.durationMs ? 0.45 : 1;
-    ctx.fillStyle = sounding ? theme.noteBoxActive : theme.noteBox;
-    roundRect(ctx, x - 26, y - 22, 52, 44, 10);
+    const label = e.tech.includes('dead') ? 'x' : e.tech.includes('harmonic') ? `<${e.fret}>` : String(e.fret);
+    const w = Math.max(52, label.length * 20 + 14);
+    ctx.fillStyle = active ? theme.noteBoxActive : theme.noteBox;
+    roundRect(ctx, x - w / 2, y - 22, w, 44, 10);
     ctx.fill();
-    ctx.fillStyle = sounding ? theme.dotText : theme.noteText;
-    ctx.fillText(String(e.fret), x, y + 1);
+    ctx.fillStyle = active ? theme.dotText : theme.noteText;
+    ctx.font = font(700, 34);
+    ctx.fillText(label, x, y + 1);
+    ctx.fillStyle = theme.glyph;
+    if (e.bendSemitones) {
+      // Up-arrow + amount, as in printed tab.
+      const ax = x + w / 2 + 8;
+      ctx.strokeStyle = theme.glyph;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(ax, y - 4);
+      ctx.quadraticCurveTo(ax + 10, y - 8, ax + 10, y - 26);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(ax + 4, y - 22);
+      ctx.lineTo(ax + 10, y - 32);
+      ctx.lineTo(ax + 16, y - 22);
+      ctx.closePath();
+      ctx.fill();
+      ctx.font = font(700, 20);
+      ctx.textAlign = 'left';
+      ctx.fillText(bendLabel(e.bendSemitones), ax + 18, y - 28);
+      ctx.textAlign = 'center';
+    }
+    if (e.tech.includes('vibrato')) {
+      ctx.font = font(700, 24);
+      ctx.textAlign = 'left';
+      ctx.fillText('~', x + w / 2 + 2, y + 2);
+      ctx.textAlign = 'center';
+    }
+    if (style.fingerNumbers && e.finger !== undefined) {
+      ctx.font = font(600, 18);
+      ctx.fillStyle = theme.textDim;
+      ctx.fillText(String(e.finger), x + w / 2 - 2, y + 30);
+    }
   }
   ctx.globalAlpha = 1;
+
+  // Pick strokes above each note column: ⊓ down, V up.
+  if (style.pickArrows) {
+    const done = new Set<number>();
+    for (const e of visible) {
+      if (!e.pick || done.has(Math.round(e.startMs))) continue;
+      done.add(Math.round(e.startMs));
+      const x = noteX(g, e, ms);
+      const y = g.y0 + 12;
+      ctx.strokeStyle = theme.glyph;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = ms >= e.startMs + e.durationMs ? 0.45 : 1;
+      ctx.beginPath();
+      if (e.pick === 'down') {
+        ctx.moveTo(x - 9, y + 12);
+        ctx.lineTo(x - 9, y);
+        ctx.lineTo(x + 9, y);
+        ctx.lineTo(x + 9, y + 12);
+      } else {
+        ctx.moveTo(x - 8, y);
+        ctx.lineTo(x, y + 14);
+        ctx.lineTo(x + 8, y);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
   ctx.restore();
 
   ctx.fillStyle = theme.playhead;
   ctx.fillRect(g.playheadX - 3, g.y0 + 8, 6, g.y1 - g.y0 - 16);
 }
 
-function isSounding(e: NoteEvent, ms: number): boolean {
-  return ms >= e.startMs && ms < e.startMs + e.durationMs;
+function drawPmBrackets(ctx: Ctx2D, g: LaneGeometry, visible: NoteEvent[], theme: Theme, ms: number): void {
+  const pm = visible.filter((e) => e.tech.includes('palmMute'));
+  if (pm.length === 0) return;
+  const runs: NoteEvent[][] = [];
+  for (const e of pm) {
+    const run = runs[runs.length - 1];
+    const last = run?.[run.length - 1];
+    // Consecutive PM notes (gap < 700 ms) share one bracket.
+    if (run && last && e.startMs - last.startMs < 700) run.push(e);
+    else runs.push([e]);
+  }
+  ctx.strokeStyle = theme.glyph;
+  ctx.fillStyle = theme.glyph;
+  ctx.lineWidth = 3;
+  for (const run of runs) {
+    const xa = Math.max(g.x0 + 10, noteX(g, run[0]!, ms) - 20);
+    const xb = noteX(g, run[run.length - 1]!, ms) + 24;
+    const y = g.y1 - 18;
+    ctx.font = font(800, 20);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('PM', xa, y);
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(xa + 36, y);
+    ctx.lineTo(xb, y);
+    ctx.lineTo(xb, y - 10);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
 }
 
-function roundRect(ctx: Ctx2D, x: number, y: number, w: number, h: number, r: number): void {
+export function roundRect(ctx: Ctx2D, x: number, y: number, w: number, h: number, r: number): void {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);

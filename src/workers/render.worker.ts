@@ -98,7 +98,7 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
     // export
     progress('prepare', 0);
     const [built] = await Promise.all([Promise.resolve(build(req.riff)), loadRenderFonts()]);
-    const settings = defaultFrameSettings(req.fps);
+    const settings = defaultFrameSettings(req.fps, req.style);
     const plan = await planExport(built.timeline, settings);
     const { pcm } = await renderAudio(req.riff, built, plan.totalSamples, req.soundFontUrl, req.soundMode, (f) => progress('audio', f));
     const { data, info } = await exportMp4(built.timeline, pcm, settings, plan, (p) =>

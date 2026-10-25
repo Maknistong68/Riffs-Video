@@ -1,10 +1,16 @@
 import { frameToMs } from '../engine/time';
-import { lastNotePerString, type Timeline } from '../engine/timeline';
-import { drawNeck, type NeckGeometry } from './neck2d';
-import { drawTabLane, type LaneGeometry } from './tabLane';
-import { font } from './fonts';
-import { DARK_THEME, SAFE_ZONES, type Theme } from './theme';
 import { tuningLabel } from '../engine/tuning';
+import type { Timeline } from '../engine/timeline';
+import { font } from './fonts';
+import { layoutGeometry } from './layouts';
+import { drawNeck } from './neck2d';
+import { drawNotation } from './notation';
+import { SKINS } from './skins';
+import { DEFAULT_STYLE, type RenderStyle } from './style';
+import { drawTabLane, roundRect } from './tabLane';
+import { DARK_THEME, SAFE_ZONES, type Theme } from './theme';
+
+export { visibleFrets } from './layouts';
 
 export type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
@@ -15,12 +21,13 @@ export type FrameSettings = {
   theme: Theme;
   safeZones: typeof SAFE_ZONES;
   showSafeZones: boolean;
+  style: RenderStyle;
 };
 
 export const VIDEO_WIDTH = 1080;
 export const VIDEO_HEIGHT = 1920;
 
-export function defaultFrameSettings(fps: number): FrameSettings {
+export function defaultFrameSettings(fps: number, style: Partial<RenderStyle> = {}): FrameSettings {
   return {
     fps,
     width: VIDEO_WIDTH,
@@ -28,22 +35,8 @@ export function defaultFrameSettings(fps: number): FrameSettings {
     theme: DARK_THEME,
     safeZones: SAFE_ZONES,
     showSafeZones: false,
+    style: { ...DEFAULT_STYLE, ...style },
   };
-}
-
-/** Classic layout geometry (title top, neck middle, tab lane bottom), inside the safe zones. */
-/** Visible frets: enough for the highest note in the riff (12, 15, 19 or 24). */
-export function visibleFrets(t: Pick<Timeline, 'events'>): number {
-  const max = t.events.reduce((m, e) => Math.max(m, e.fret), 0);
-  return [12, 15, 19, 24].find((f) => max < f) ?? 24;
-}
-
-export function classicLayout(s: FrameSettings, strings: number, frets = 12): { neck: NeckGeometry; lane: LaneGeometry } {
-  const right = s.width - s.safeZones.rightPx;
-  const bottom = s.height - s.safeZones.bottomPx;
-  const neck: NeckGeometry = { x0: 110, x1: right - 20, y0: 640, y1: 940, frets, strings };
-  const lane: LaneGeometry = { x0: 40, x1: right, y0: 1110, y1: bottom - 40, playheadX: 260, pxPerMs: 0.55 };
-  return { neck, lane };
 }
 
 function currentBpm(t: Timeline, ms: number): number {
@@ -59,29 +52,22 @@ function currentBpm(t: Timeline, ms: number): number {
 export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameSettings): void {
   const ms = frameToMs(frameIndex, s.fps);
   const th = s.theme;
-  const { neck, lane } = classicLayout(s, t.tuning.length, visibleFrets(t));
+  const geo = layoutGeometry(s, t, ms);
+  const right = s.width - s.safeZones.rightPx;
 
   ctx.save();
   ctx.fillStyle = th.background;
   ctx.fillRect(0, 0, s.width, s.height);
 
-  // Title
-  ctx.fillStyle = th.text;
-  ctx.font = font(800, 64);
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(t.title, 60, s.safeZones.topPx + 160, s.width - s.safeZones.rightPx - 100);
-  ctx.fillStyle = th.textDim;
-  ctx.font = font(500, 34);
-  const bpm = Math.round(currentBpm(t, ms));
-  ctx.fillText(`${bpm} bpm · ${tuningLabel(t.tuning, t.capo)}`, 60, s.safeZones.topPx + 220);
+  drawHeader(ctx, t, s, ms);
+  drawSection(ctx, t, s, ms);
 
-  drawNeck(ctx, neck, th, ms, lastNotePerString(t, ms));
-  drawTabLane(ctx, lane, t, th, ms);
+  drawNeck(ctx, geo.neck, SKINS[s.style.skin], th, t, ms, s.style, geo.numbersOnNeck);
+  if (geo.lane) drawTabLane(ctx, geo.lane, t, th, ms, s.style);
+  if (geo.notation) drawNotation(ctx, geo.notation, t, th, ms);
 
   // Progress bar (above the caption safe zone)
   const barY = s.height - s.safeZones.bottomPx - 14;
-  const right = s.width - s.safeZones.rightPx;
   ctx.fillStyle = th.laneLine;
   ctx.fillRect(40, barY, right - 40, 6);
   ctx.fillStyle = th.playhead;
@@ -94,4 +80,54 @@ export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameS
     ctx.fillRect(0, 0, s.width, s.safeZones.topPx);
   }
   ctx.restore();
+}
+
+function drawHeader(ctx: Ctx2D, t: Timeline, s: FrameSettings, ms: number): void {
+  const th = s.theme;
+  const top = s.safeZones.topPx;
+  const maxW = s.width - s.safeZones.rightPx - 100;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = th.text;
+  ctx.font = font(800, 64);
+  ctx.fillText(t.title, 60, top + 160, maxW);
+  ctx.fillStyle = th.textDim;
+  ctx.font = font(500, 34);
+  ctx.fillText(`${Math.round(currentBpm(t, ms))} bpm · ${tuningLabel(t.tuning, t.capo)}`, 60, top + 216, maxW);
+  let x = 60;
+  const y = top + 262;
+  if (s.style.difficulty !== 'none') {
+    const label = s.style.difficulty;
+    ctx.font = font(700, 28);
+    const w = ctx.measureText(label).width + 32;
+    ctx.fillStyle = { Easy: '#2e7d4f', Medium: '#9a6a12', Hard: '#a33a3a' }[label];
+    roundRect(ctx, x, y - 30, w, 42, 21);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, x + 16, y);
+    x += w + 16;
+  }
+  if (s.style.credit) {
+    ctx.fillStyle = th.textDim;
+    ctx.font = font(500, 28);
+    ctx.fillText(s.style.credit, x, y, maxW - (x - 60));
+  }
+}
+
+/** Teach captions: "Slow · 50%", "Loop 2/3 · bar 3", "Full speed". */
+function drawSection(ctx: Ctx2D, t: Timeline, s: FrameSettings, ms: number): void {
+  const sec = t.sections?.find((x) => ms >= x.startMs - 400 && ms < x.endMs + 400);
+  if (!sec) return;
+  const th = s.theme;
+  ctx.font = font(800, 36);
+  const w = ctx.measureText(sec.label).width + 56;
+  const cx = (s.width - s.safeZones.rightPx) / 2 + 20;
+  const y = s.safeZones.topPx + 330;
+  ctx.fillStyle = th.noteBoxActive;
+  roundRect(ctx, cx - w / 2, y - 30, w, 60, 30);
+  ctx.fill();
+  ctx.fillStyle = th.dotText;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(sec.label, cx, y + 1);
 }

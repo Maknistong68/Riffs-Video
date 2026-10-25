@@ -10,8 +10,9 @@ import { detectOnsets } from '../audio/onsets';
 import type { DetectedNote } from '../audio/transcribe';
 import { AUDIO_SAMPLE_RATE, firstFrameAtOrAfter, frameToMs } from '../engine/time';
 import { activeEvents, type Timeline } from '../engine/timeline';
-import { classicLayout, drawFrame, visibleFrets, type FrameSettings } from '../render/drawFrame';
-import { DOT_RADIUS, dotPosition } from '../render/neck2d';
+import { drawFrame, type FrameSettings } from '../render/drawFrame';
+import { layoutGeometry } from '../render/layouts';
+import { noteProbe } from '../render/neck2d';
 import { pickSampleFrames, psnr } from './frameCompare';
 import { matchNotes, type HighlightCheck, type SyncReport } from './syncCheck';
 
@@ -73,19 +74,20 @@ export async function verifyExport(
     frames.push({ frame: f, psnr: p, ok: p >= MIN_FRAME_PSNR });
   }
 
-  // 4. Highlight timing
-  const { neck } = classicLayout(settings, t.tuning.length, visibleFrets(t));
+  // 4. Highlight timing (probe positions come from the layout at that exact frame: Close-up pans)
   const dot = hexToRgb(settings.theme.dot);
   const step = Math.max(1, Math.ceil(t.events.length / MAX_HIGHLIGHT_CHECKS));
+  const probeAt = (e: Timeline['events'][number], frame: number) => {
+    const p = noteProbe(layoutGeometry(settings, t, frameToMs(frame, fps)).neck, e);
+    return p && { x: Math.round(p.x), y: Math.round(p.y) };
+  };
   const probes = t.events
-    .filter((_, k) => k % step === 0)
+    .filter((e, k) => k % step === 0 && noteProbe(layoutGeometry(settings, t, e.startMs).neck, e) !== null)
     .map((e) => {
       const f = firstFrameAtOrAfter(e.startMs, fps);
       const occupiedBefore =
         f === 0 || activeEvents(t, frameToMs(f - 1, fps)).some((o) => o.stringIdx === e.stringIdx && o.fret === e.fret);
-      const p = dotPosition(neck, e.stringIdx, e.fret);
-      // Sample above the fret number and clear of the vibrating string line.
-      return { e, f, occupiedBefore, x: Math.round(p.x), y: Math.round(p.y - (e.fret === 0 ? DOT_RADIUS - 6 : 19)) };
+      return { e, f, occupiedBefore, on: probeAt(e, f), off: f > 0 ? probeAt(e, f - 1) : null };
     });
   const wanted = [...new Set(probes.flatMap((p) => (p.occupiedBefore ? [p.f] : [p.f - 1, p.f])))].sort((a, b) => a - b);
   const pixel = new Map<string, readonly number[]>();
@@ -95,8 +97,9 @@ export async function verifyExport(
     if (!wc) continue;
     const c = context2d(wc.canvas);
     for (const p of probes) {
-      if (p.f !== f && p.f - 1 !== f) continue;
-      const d = c.getImageData(p.x - 1, p.y - 1, 3, 3).data;
+      const at = p.f === f ? p.on : p.f - 1 === f ? p.off : null;
+      if (!at) continue;
+      const d = c.getImageData(at.x - 1, at.y - 1, 3, 3).data;
       let r = 0, g = 0, b = 0;
       for (let k = 0; k < d.length; k += 4) { r += d[k]!; g += d[k + 1]!; b += d[k + 2]!; }
       pixel.set(`${p.e.id}@${f}`, [r / 9, g / 9, b / 9]);

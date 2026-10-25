@@ -17,6 +17,12 @@ export type Theme = {
   noteBoxActive: string;
   noteText: string;
   playhead: string;
+  /** Look-ahead rings. */
+  ghost: string;
+  /** Technique glyphs (arcs, arrows, PM). */
+  glyph: string;
+  badge: string;
+  badgeText: string;
 };
 
 export const DARK_THEME: Theme = {
@@ -39,6 +45,10 @@ export const DARK_THEME: Theme = {
   noteBoxActive: '#ffcc1a',
   noteText: '#f4f4f6',
   playhead: '#ff4d6d',
+  ghost: '#7fd1ff',
+  glyph: '#e9f6ff',
+  badge: '#2a3140',
+  badgeText: '#f4f4f6',
 };
 
 /** TikTok / Shorts UI overlays. Editable constants (CLAUDE.md §4, P17). */

@@ -1,6 +1,8 @@
 /** Dev-only page logic for `npm run golden` and pipeline debugging. Not part of the app build. */
 import { DEFAULT_SOUND_PACK } from '../../src/audio/soundpacks';
+import { buildArrangement, NO_TEACH, type TeachOptions } from '../../src/engine/arrange';
 import { buildTimeline, DEFAULT_BUILD } from '../../src/engine/buildTimeline';
+import type { RenderStyle } from '../../src/render/style';
 import { loadAlphaTex } from '../../src/import/alphatab';
 import { defaultFrameSettings, drawFrame } from '../../src/render/drawFrame';
 import { loadRenderFonts } from '../../src/render/fonts';
@@ -12,6 +14,21 @@ async function sha256(data: Uint8ClampedArray): Promise<string> {
 }
 
 const harness = {
+  /** PNG data URLs of drawFrame output for a style / teach arrangement (visual review). */
+  async renderFrames(text: string, frames: number[], style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH) {
+    await loadRenderFonts();
+    const { timeline } = buildArrangement(() => loadAlphaTex(text), { trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs, tailMs: DEFAULT_BUILD.tailMs, teach });
+    const s = defaultFrameSettings(30, style);
+    const canvas = new OffscreenCanvas(s.width, s.height);
+    const ctx = canvas.getContext('2d', { alpha: false })!;
+    const out: string[] = [];
+    for (const f of frames) {
+      drawFrame(ctx, timeline, f, s);
+      const blob = await canvas.convertToBlob({ type: 'image/png' });
+      out.push(await new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(r.result as string); r.readAsDataURL(blob); }));
+    }
+    return { out, sections: timeline.sections ?? [], durationMs: timeline.durationMs };
+  },
   /** Timeline JSON + SHA-256 of drawFrame pixels for the given frames (30 fps). */
   async frameHashes(text: string, frames: number[]) {
     const fontOk = await loadRenderFonts();
@@ -33,6 +50,7 @@ const harness = {
       {
         riff: { source: { kind: 'alphatex', text }, trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs },
         fps,
+        style: defaultFrameSettings(fps).style,
         soundMode: 'synth',
         soundFontUrl: DEFAULT_SOUND_PACK.url,
         modelUrl: new URL('/models/basic-pitch/model.json', location.href).href,

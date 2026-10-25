@@ -3,6 +3,9 @@ import Dexie, { type EntityTable } from 'dexie';
 import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
 import type { SoundMode } from '../workers/protocol';
+import type { RiffEdit } from '../engine/edits';
+import { NO_TEACH, type TeachOptions } from '../engine/arrange';
+import { DEFAULT_STYLE as DEFAULT_RENDER, type RenderStyle } from '../render/style';
 
 export type RiffSourceKind = 'alphatex' | 'gp' | 'ascii' | 'audio' | 'ai';
 
@@ -10,6 +13,8 @@ export type StyleSettings = {
   fps: 30 | 60;
   soundMode: SoundMode;
   leadInMs: number;
+  render: RenderStyle;
+  teach: TeachOptions;
 };
 
 export type RiffRecord = {
@@ -22,6 +27,10 @@ export type RiffRecord = {
   sourceBytes?: Uint8Array;
   fileName?: string;
   trackIndex: number;
+  /** Riff Review edits, replayed on the parsed score (audio follows). */
+  edits?: RiffEdit[];
+  /** The user confirmed the notes in Riff Review (accuracy gate). */
+  reviewed?: boolean;
   timelineCache?: Timeline;
   styleSettings: StyleSettings;
   demoId?: string;
@@ -81,7 +90,13 @@ export const DEFAULT_SETTINGS: AppSettings = {
   copyrightNoticeSeen: false,
 };
 
-export const DEFAULT_STYLE: StyleSettings = { fps: 30, soundMode: 'synth', leadInMs: 1000 };
+export const DEFAULT_STYLE: StyleSettings = { fps: 30, soundMode: 'synth', leadInMs: 1000, render: DEFAULT_RENDER, teach: NO_TEACH };
+
+/** Records from older versions lack newer fields: fill them with defaults. */
+export function styleOf(r: Pick<RiffRecord, 'styleSettings'>): StyleSettings {
+  const s = r.styleSettings ?? DEFAULT_STYLE;
+  return { ...DEFAULT_STYLE, ...s, render: { ...DEFAULT_RENDER, ...s.render }, teach: { ...NO_TEACH, ...s.teach } };
+}
 
 export async function getSettings(db: RiffReelDb): Promise<AppSettings> {
   return { ...DEFAULT_SETTINGS, ...((await db.settings.get('app')) ?? {}) };

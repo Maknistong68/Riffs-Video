@@ -6,7 +6,7 @@ import { formatBytes } from '../../components/format';
 import { Segmented } from '../../components/Segmented';
 import { Sheet } from '../../components/Sheet';
 import type { RiffSource } from '../../import/source';
-import { db, getSettings, newId, summarise, updateSettings, type RiffRecord } from '../../storage/db';
+import { db, getSettings, newId, styleOf, summarise, updateSettings, type RiffRecord } from '../../storage/db';
 import { requestPersistence, saveBlob } from '../../storage/opfs';
 import { updateRiff } from '../../storage/riffs';
 import { startExport, WorkerError, type ExportJob } from '../../workers/client';
@@ -92,8 +92,9 @@ function Rendering({ riff, source, fps, soundMode, onCancel }: { riff: RiffRecor
 
     const j = startExport(
       {
-        riff: { source, trackIndex: riff.trackIndex, leadInMs: riff.styleSettings.leadInMs, title: riff.title },
+        riff: { source, trackIndex: riff.trackIndex, leadInMs: styleOf(riff).leadInMs, title: riff.title, edits: riff.edits ?? [], teach: styleOf(riff).teach },
         fps,
+        style: styleOf(riff).render,
         soundMode,
         soundFontUrl: DEFAULT_SOUND_PACK.url,
         modelUrl: new URL(`${import.meta.env.BASE_URL}models/basic-pitch/model.json`, location.href).href,
