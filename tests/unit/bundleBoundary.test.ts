@@ -34,7 +34,7 @@ function imports(file: string): string[] {
 function resolveLocal(from: string, spec: string): string | null {
   if (!spec.startsWith('.')) return null;
   const base = resolve(dirname(from), spec);
-  for (const c of [base + '.ts', base + '.tsx', join(base, 'index.ts')]) if (existsSync(c)) return c;
+  for (const c of [base, base + '.ts', base + '.tsx', join(base, 'index.ts')]) if (existsSync(c) && statSync(c).isFile()) return c;
   return null;
 }
 
@@ -60,6 +60,19 @@ describe('UI bundle boundary', () => {
     it(f.replace(SRC, 'src'), () => {
       const chain = reachesHeavy(f);
       expect(chain && chain.map((p) => p.replace(SRC, 'src')).join(' → ')).toBeNull();
+    });
+  }
+});
+
+// Phase 4: the Claude API key lives only in the Edge Function. No app code (UI or worker) may
+// import the Anthropic SDK or the function's code — the app talks to the function over HTTP.
+const SERVER_ONLY = [/@anthropic-ai\/sdk/, /supabase\/functions/];
+describe('server-only code stays out of the app', () => {
+  for (const f of files(SRC)) {
+    it(f.replace(SRC, 'src'), () => {
+      const src = readFileSync(f, 'utf8');
+      const specs = [...src.matchAll(/(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]!);
+      expect(specs.filter((sp) => SERVER_ONLY.some((r) => r.test(sp)))).toEqual([]);
     });
   }
 });

@@ -3,6 +3,7 @@ import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
 import type { RiffSource } from '../import/source';
 import type { TranscribedRiff } from '../import/transcribeRiff';
+import type { AiNote, AiTabCheck } from '../import/aiRiff';
 import type { RiffEdit } from '../engine/edits';
 import type { TeachOptions } from '../engine/teach';
 import type { RenderStyle } from '../render/style';
@@ -30,6 +31,7 @@ export type TrackInfo = { index: number; name: string; strings: number };
 export type WorkerRequest =
   | { id: number; type: 'inspect'; source: RiffSource }
   | { id: number; type: 'timeline'; riff: RiffConfig }
+  | { id: number; type: 'checkAi'; alphaTex: string; notes: AiNote[] }
   | { id: number; type: 'transcribe'; pcm: Float32Array<ArrayBuffer>; sampleRate: number; modelUrl: string; tuning: number[]; capo: number; title: string }
   | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode; tone: ToneSettings }
   | {
@@ -55,6 +57,7 @@ export type WorkerResponse =
   | { id: number; type: 'inspected'; result: Inspected }
   | { id: number; type: 'prepared'; result: Prepared }
   | { id: number; type: 'timeline'; result: Timeline }
+  | { id: number; type: 'checkedAi'; result: AiTabCheck }
   | { id: number; type: 'transcribed'; result: TranscribedRiff }
   | { id: number; type: 'exported'; result: Exported }
   | { id: number; type: 'error'; message: string; details: string[] };

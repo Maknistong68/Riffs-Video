@@ -1,0 +1,7 @@
+# Supabase project config (only what RiffReel uses: one Edge Function, no tables).
+project_id = "riffreel"
+
+[functions.convert-tab]
+# The app calls the function with the project's public anon key (Authorization: Bearer ...).
+verify_jwt = true
+import_map = "./functions/convert-tab/deno.json"

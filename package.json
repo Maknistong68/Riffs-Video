@@ -1,17 +1,19 @@
 {
   "name": "riffreel",
   "version": "0.0.0",
-  "description": "RiffReel — on-device guitar riff video maker (PWA)",
+  "description": "RiffReel \u2014 on-device guitar riff video maker (PWA)",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/check-bundle-secrets.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "e2e": "playwright test --project=\"iPhone 15\" --project=\"Pixel 7\"",
     "golden": "playwright test --project=golden",
     "golden:update": "UPDATE_GOLDEN=1 playwright test --project=golden",
-    "accuracy": "vitest run --config vitest.accuracy.config.ts"
+    "accuracy": "vitest run --config vitest.accuracy.config.ts",
+    "check:secrets": "node scripts/check-bundle-secrets.mjs",
+    "ai:eval": "vitest run --config vitest.live.config.ts"
   },
   "repository": {
     "type": "git",
@@ -37,6 +39,7 @@
     "workbox-window": "^7.4.1"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",

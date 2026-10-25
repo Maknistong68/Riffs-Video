@@ -57,7 +57,10 @@ export function WriteScreen({ riffId }: { riffId?: string }) {
     const title = status.title || 'Untitled riff';
     if (riffId) {
       // New text invalidates note refs: start review over.
-      await updateRiff(riffId, { sourceText: text, title, isOriginal, timelineCache: undefined, edits: [], reviewed: false });
+      const prev = await db().riffs.get(riffId);
+      // A hand-fixed AI import is no longer a failed one.
+      const ai = prev?.ai ? { ai: { ...prev.ai, status: 'ok' as const, errors: [], message: 'Edited by you.' } } : {};
+      await updateRiff(riffId, { sourceText: text, title, isOriginal, timelineCache: undefined, edits: [], reviewed: false, ...ai });
       navigate({ name: 'review', riffId }, true);
     } else {
       const id = await createRiff({ title, artist: '', isOriginal, source: 'alphatex', sourceText: text, trackIndex: 0 });

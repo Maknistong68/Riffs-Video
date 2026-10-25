@@ -14,6 +14,7 @@ import { DEFAULT_BUILD } from '../engine/buildTimeline';
 import { applyEdits } from '../engine/edits';
 import { refKey } from '../engine/review';
 import { transcribeToRiff } from '../import/transcribeRiff';
+import { checkAiTab } from '../import/aiRiff';
 import { detectOnsets } from '../audio/onsets';
 import { rmsEnvelope } from '../audio/envelope';
 import { AUDIO_SAMPLE_RATE } from '../engine/time';
@@ -124,6 +125,10 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
       const detected = await transcribe(getModel(req.modelUrl), req.pcm, req.sampleRate, (f) => progress('transcribe', f * 0.9));
       const result = transcribeToRiff(detected, detectOnsets(req.pcm, req.sampleRate), { tuning: req.tuning, capo: req.capo, title: req.title }, rmsEnvelope(req.pcm, req.sampleRate));
       post({ id: req.id, type: 'transcribed', result });
+      return;
+    }
+    if (req.type === 'checkAi') {
+      post({ id: req.id, type: 'checkedAi', result: checkAiTab(req.alphaTex, req.notes) });
       return;
     }
     if (req.type === 'timeline') {

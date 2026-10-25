@@ -82,3 +82,14 @@ describe('looksLikeAsciiTab (text tab pasted into the alphaTex editor)', () => {
     expect(looksLikeAsciiTab('')).toBe(false);
   });
 });
+
+describe('notes written after the last bar line', () => {
+  it('are dropped, and a repeat in them is kept', () => {
+    const tab = `e|-----------------|\nB|-----------------|\nG|-------------5h7-|   (play twice)\nD|---------5h7-----|\nA|-----5h7---------|\nE|-5h8-------------|`;
+    const p = parseAsciiTab(tab);
+    expect(p.blocks).toBe(1);
+    expect(p.columns.length).toBe(16);
+    const once = parseAsciiTab(tab.replace('   (play twice)', '  <- the hook'));
+    expect(once.columns.length).toBe(8);
+  });
+});

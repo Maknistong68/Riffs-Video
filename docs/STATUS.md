@@ -1,5 +1,27 @@
 # Status
 
+## Phase 4 — AI import ✅ in emulation · ⏳ needs the user's Supabase project + key, and a real-device check
+
+### Acceptance
+| Criterion | Result |
+|---|---|
+| Malformed model output never crashes the app | ✅ unit: 10 model-failure shapes (refusal, truncated, non-JSON, wrong shape, bad notes, not a tab, SDK errors) in the function; 11 response shapes in the client; 9 alphaTex cases in the checker. e2e: HTML error page, broken alphaTex, refusal — no page errors |
+| All failures land in Riff Review with a clear message | ✅ model-answer failures → Riff Review card with the reason + "Fix the tab by hand" / "Paste as text tab" / "Try AI again". Transport problems (offline, rate limit, too long) stay on the form with the reason, since there is no answer to review |
+| API key never appears in the client bundle | ✅ `npm run build` runs `scripts/check-bundle-secrets.mjs` (key pattern, Anthropic endpoint/headers, the function's prompt, and the real key value if set); a unit test forbids any `src/` import of the SDK or `supabase/functions` |
+| Real conversion quality | ⏳ needs a deployed function: `npm run ai:eval` scores the 10 Phase 3 tabs (target mean F1 ≥ 0.9). Not run here: no API key in this environment |
+
+### What exists
+- `supabase/functions/convert-tab/` — Edge Function (Deno): official Anthropic SDK, `claude-opus-5-5`, structured
+  output (JSON schema), refusal fallback, streaming; CORS allow-list; per-device + per-IP rate limit (in memory, no
+  tables); every failure mapped to a JSON error + status. Type-checked with `deno check`; ran locally under Deno.
+- `src/import/ai.ts` — client: never throws, strict response validation, timeout, cancel, offline check.
+- `src/import/aiRiff.ts` (worker) — re-parses the alphaTex with alphaTab, builds + validates the timeline, maps the
+  model's per-note confidence onto score notes (bar/beat/string/fret, with a bar/string/fret fallback); unrated notes
+  are amber.
+- AI import screen (`#/ai`), Riff Review AI banner / failure card, Paste screen "Try AI import instead".
+- ASCII parser: words after the last bar line ("(play twice)") no longer break the block; "twice/x3" become repeats.
+- Setup guide: `docs/AI_IMPORT.md`.
+
 ## After Phase 3 — user requests: 3D guitar, real guitar tone, chord highlighting ✅ in emulation · ⏳ real-device check
 
 ### What exists

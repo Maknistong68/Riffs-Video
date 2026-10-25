@@ -58,6 +58,8 @@ export type RiffRecord = {
   rhythm?: { method: 'spacing' | 'taps' | 'tempo' | 'audio'; bpm: number; units: number[] };
   /** Per-note confidence 0..1 by note ref key (audio transcription / AI import). */
   noteConfidence?: Record<string, number>;
+  /** AI import (source 'ai'): what the user pasted and how the conversion went. */
+  ai?: AiImportInfo;
   /** Original recording (audio import), stored in OPFS — for comparison only, never exported. */
   recordingPath?: string;
   timelineCache?: Timeline;
@@ -65,6 +67,20 @@ export type RiffRecord = {
   demoId?: string;
   createdAt: number;
   updatedAt: number;
+};
+
+export type AiImportInfo = {
+  /** The text the user pasted (for "try again" / "paste as text tab"). */
+  originalText: string;
+  /** 'failed': the answer can't be used as-is; Riff Review explains why and offers ways on. */
+  status: 'ok' | 'failed';
+  message?: string;
+  /** alphaTab's complaints about the AI-written tab (line/column), if it didn't parse. */
+  errors?: string[];
+  warnings: string[];
+  rhythmGuessed: boolean;
+  tempoGuessed: boolean;
+  model?: string;
 };
 
 export type SyncProblem = { text: string; atMs?: number };
@@ -91,6 +107,8 @@ export type AppSettings = {
   demosSeeded: boolean;
   persistRequested: boolean;
   copyrightNoticeSeen: boolean;
+  /** Anonymous random id for AI-import rate limiting (no account, nothing personal). */
+  deviceId?: string;
 };
 
 export type StoredBlob = { path: string; blob: Blob };
@@ -132,6 +150,15 @@ export function styleOf(r: Pick<RiffRecord, 'styleSettings'>): StyleSettings {
 
 export async function getSettings(db: RiffReelDb): Promise<AppSettings> {
   return { ...DEFAULT_SETTINGS, ...((await db.settings.get('app')) ?? {}) };
+}
+
+/** The anonymous device id, created on first use. */
+export async function deviceId(db: RiffReelDb): Promise<string> {
+  const s = await getSettings(db);
+  if (s.deviceId) return s.deviceId;
+  const id = crypto.randomUUID();
+  await updateSettings(db, { deviceId: id });
+  return id;
 }
 
 export async function updateSettings(db: RiffReelDb, patch: Partial<Omit<AppSettings, 'id'>>): Promise<void> {

@@ -110,7 +110,10 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
         <span className="ico">🎙️</span>
         <span className="txt"><strong>Record or upload audio</strong><span className="dim small">Play the riff — RiffReel writes the tab</span></span>
       </button>
-      {soon('🤖', 'AI import', 'phase 4')}
+      <button className="option" onClick={() => { onClose(); navigate({ name: 'ai' }); }}>
+        <span className="ico">🤖</span>
+        <span className="txt"><strong>AI import</strong><span className="dim small">Messy tab, chords or lyrics sheet — AI writes it out (needs internet)</span></span>
+      </button>
       {soon('🎲', 'Generate original riff', 'a later phase')}
     </Sheet>
   );

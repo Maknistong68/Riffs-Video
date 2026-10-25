@@ -3,7 +3,7 @@ import { navigate } from '../../app/router';
 import { tuningLabel } from '../../engine/tuning';
 import { AsciiTabError, parseAsciiTab, spacingRhythm, type ParsedAsciiTab } from '../../import/asciiTab';
 import { asciiToAlphaTex } from '../../import/asciiToAlphaTex';
-import { takePastedText } from '../../import/pasteHandoff';
+import { handOffToAi, takePastedText } from '../../import/pasteHandoff';
 import { createRiff } from '../../storage/riffs';
 
 const EXAMPLE = `e|-----------------|-----------------|
@@ -72,7 +72,12 @@ export function PasteScreen() {
       {!text && (
         <button className="btn" onClick={() => setText(EXAMPLE)}>Try an example</button>
       )}
-      {result && 'error' in result && <div className="errors" role="alert">{result.error}</div>}
+      {result && 'error' in result && (
+        <div className="errors" role="alert">
+          <span>{result.error}</span>
+          <button className="btn" onClick={() => { handOffToAi(text); navigate({ name: 'ai' }, true); }} data-testid="paste-try-ai">Try AI import instead</button>
+        </div>
+      )}
       {parsed && (
         <div className="card" data-testid="ascii-summary">
           <strong>{notes} notes</strong> in {parsed.columns.length} beats · {parsed.blocks} block{parsed.blocks === 1 ? '' : 's'}
@@ -99,7 +104,7 @@ export function PasteScreen() {
 }
 
 /** A plain text line above the tab is usually the song/riff name. */
-function firstTitleLine(text: string): string {
+export function firstTitleLine(text: string): string {
   const line = text.split(/\r?\n/).find((l) => l.trim() && !/[-|]{3,}/.test(l) && !/capo|tuning/i.test(l));
   return line?.trim().slice(0, 60) ?? '';
 }

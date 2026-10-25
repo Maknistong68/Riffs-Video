@@ -62,6 +62,20 @@ export function looksLikeAsciiTab(text: string): boolean {
   return false;
 }
 
+/**
+ * Words written after a tab line's last bar line ("   (play twice)", "  <- repeat") are notes
+ * to the reader, not notes to play. Drop them; a repeat count in them becomes "x2" etc.
+ */
+export function stripTrailingNote(line: string): string {
+  const bar = line.lastIndexOf('|');
+  if (bar < 0) return line;
+  const tail = line.slice(bar + 1);
+  if (!/^\s+\S/.test(tail) || /-{3,}/.test(tail) || !/[a-z(<]/i.test(tail)) return line;
+  if (/^\s*\(?\s*(?:[x×]\s*\d+|\d+\s*[x×])\s*\)?\s*$/i.test(tail)) return line; // "|  x2": the repeat parser reads it
+  const times = /\btwice\b/i.test(tail) ? 2 : /\bthrice\b/i.test(tail) ? 3 : Number(/(?:[x×]\s*(\d+)|(\d+)\s*(?:[x×]|times))/i.exec(tail)?.slice(1).find(Boolean) ?? 0);
+  return line.slice(0, bar + 1) + (times > 1 ? `x${times}` : '');
+}
+
 function isTabLine(line: string): boolean {
   const s = line.replace(/\s+[x×]\s*\d+\s*$|\s+\d+\s*[x×]\s*$/i, '');
   const m = LABEL.exec(s);
@@ -232,7 +246,7 @@ function resolveTuning(block: Block, text: string): { tuning: number[]; source: 
 }
 
 export function parseAsciiTab(text: string): ParsedAsciiTab {
-  const raw: RawLine[] = text.replace(/\t/g, '    ').split(/\r?\n/).map((t, index) => ({ text: t.replace(/\s+$/, ''), index }));
+  const raw: RawLine[] = text.replace(/\t/g, '    ').split(/\r?\n/).map((t, index) => ({ text: stripTrailingNote(t.replace(/\s+$/, '')), index }));
   const blocks = findBlocks(raw);
   if (blocks.length === 0) throw new AsciiTabError('No tab found. Paste lines like  e|---0---3---|  (one line per string).');
   const warnings: string[] = [];

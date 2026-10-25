@@ -18,6 +18,7 @@ import { NoteEditor } from './NoteEditor';
 import { TapRhythm } from './TapRhythm';
 import { parseAsciiTab, spacingRhythm } from '../../import/asciiTab';
 import { asciiToAlphaTex } from '../../import/asciiToAlphaTex';
+import { handOffToAi, handOffToPaste } from '../../import/pasteHandoff';
 
 const PX_PER_MS = 0.16;
 const ROW = 30;
@@ -44,6 +45,7 @@ function Review({ riff }: { riff: RiffRecord }) {
     }
   }, [riff.asciiText]);
   const rhythmGuessed = riff.source === 'ascii' && riff.rhythm?.method === 'spacing';
+  const aiFailed = riff.source === 'ai' && riff.ai?.status === 'failed';
 
   /** New rhythm → regenerate the alphaTex from the pasted tab (note refs change, so edits reset). */
   const applyRhythm = async (r: { units: number[] | null; bpm: number; method: 'taps' | 'tempo' }) => {
@@ -118,7 +120,36 @@ function Review({ riff }: { riff: RiffRecord }) {
         matches the tab.
       </p>
 
-      {error && <div className="errors" role="alert">{error.map((m, i) => <span key={i}>{m}</span>)}</div>}
+      {error && !aiFailed && <div className="errors" role="alert">{error.map((m, i) => <span key={i}>{m}</span>)}</div>}
+      {riff.source === 'ai' && riff.ai && (aiFailed ? (
+        <div className="errors" role="alert" data-testid="ai-failed">
+          <strong>AI import didn’t work</strong>
+          <span>{riff.ai.message ?? 'The AI answer could not be used.'}</span>
+          {(riff.ai.errors ?? []).slice(0, 5).map((m, i) => <span key={i} className="small">{m}</span>)}
+          <div className="row wrap" style={{ marginTop: 8, gap: 8 }}>
+            {riff.sourceText ? <button className="btn" onClick={() => navigate({ name: 'write', riffId: riff.id })} data-testid="ai-edit-tex">Fix the tab by hand</button> : null}
+            <button className="btn" onClick={() => { handOffToPaste(riff.ai!.originalText); navigate({ name: 'paste' }); }} data-testid="ai-as-paste">Paste as text tab</button>
+            <button className="btn" onClick={() => { handOffToAi(riff.ai!.originalText); navigate({ name: 'ai' }); }} data-testid="ai-retry">Try AI again</button>
+          </div>
+        </div>
+      ) : (
+        <div className={riff.ai.rhythmGuessed || warnCount > 0 ? 'notice' : 'card'} data-testid="ai-banner">
+          <span>
+            Written out by AI from your text.{' '}
+            {warnCount > 0 ? `${warnCount} note${warnCount === 1 ? '' : 's'} marked amber need a look. ` : ''}
+            {riff.ai.rhythmGuessed ? 'The rhythm was guessed — play it and fix note lengths in the editor. ' : ''}
+            {riff.ai.tempoGuessed ? `Tempo guessed (${t?.tempoMap[0] ? Math.round(t.tempoMap[0].bpm) : '?'} bpm). ` : ''}
+          </span>
+          {riff.ai.warnings.length > 0 && (
+            <ul className="small" style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+              {riff.ai.warnings.slice(0, 6).map((w, i) => <li key={i}>{w}</li>)}
+            </ul>
+          )}
+          <div className="row" style={{ marginTop: 8 }}>
+            <button className="btn ghost small" onClick={() => { handOffToPaste(riff.ai!.originalText); navigate({ name: 'paste' }); }}>Not right? Paste as text tab</button>
+          </div>
+        </div>
+      ))}
       {riff.source === 'audio' && (
         <div className="card" data-testid="audio-banner">
           <span>
@@ -145,8 +176,9 @@ function Review({ riff }: { riff: RiffRecord }) {
         <div className="errors">{prepared.editErrors.map((m, i) => <span key={i}>Edit skipped: {m}</span>)}</div>
       )}
 
+      {!aiFailed && (<>
       <div className="card row spread" data-testid="review-summary">
-        <span><strong>{noteCount}</strong> notes · {bars.length} bars</span>
+        <span><strong>{noteCount}</strong> note{noteCount === 1 ? '' : 's'} · {bars.length} bar{bars.length === 1 ? '' : 's'}</span>
         <span>
           {errorCount > 0 ? <span className="bad">● {errorCount} impossible</span> : <span className="good">✓ all playable</span>}
           {warnCount > 0 && <span className="warn"> · ● {warnCount} unsure</span>}
@@ -193,6 +225,7 @@ function Review({ riff }: { riff: RiffRecord }) {
           Undo
         </button>
       </div>
+      </>)}
       {edits.length > 0 && (
         <button className="btn ghost small" onClick={() => void updateRiff(riff.id, { edits: [], timelineCache: undefined })}>
           Reset {edits.length} edit{edits.length === 1 ? '' : 's'}
@@ -209,7 +242,7 @@ function Review({ riff }: { riff: RiffRecord }) {
           navigate({ name: 'studio', riffId: riff.id }, true);
         }}
       >
-        {errorCount > 0 ? `Fix ${errorCount} impossible note${errorCount === 1 ? '' : 's'} first` : 'Looks right — open Studio'}
+        {aiFailed ? 'Fix the tab first' : errorCount > 0 ? `Fix ${errorCount} impossible note${errorCount === 1 ? '' : 's'} first` : 'Looks right — open Studio'}
       </button>
 
       {selectedNote && t && (

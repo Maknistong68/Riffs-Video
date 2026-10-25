@@ -1,6 +1,7 @@
 /** Promise API over the render worker. One long-lived worker for inspect/prepare; one per export. */
 import type { Timeline } from '../engine/timeline';
 import type { TranscribedRiff } from '../import/transcribeRiff';
+import type { AiNote, AiTabCheck } from '../import/aiRiff';
 import type { Exported, ExportStage, Inspected, Prepared, RiffConfig, WorkerRequest, WorkerResponse } from './protocol';
 
 export class WorkerError extends Error {
@@ -57,6 +58,11 @@ export function transcribeAudio(req: Omit<Extract<WorkerRequest, { type: 'transc
   return channel
     .call<TranscribedRiff>({ type: 'transcribe', ...req }, (_s, f) => onProgress(f))
     .finally(() => channel.worker.terminate());
+}
+
+/** Re-parse and validate an AI-written alphaTex (alphaTab lives in the worker). */
+export function checkAiTabInWorker(alphaTex: string, notes: AiNote[]): Promise<AiTabCheck> {
+  return sharedChannel().call<AiTabCheck>({ type: 'checkAi', alphaTex, notes });
 }
 
 export function buildRiffTimeline(riff: RiffConfig): Promise<Timeline> {

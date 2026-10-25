@@ -11,6 +11,7 @@
 | @fontsource/inter (Inter) | SIL OFL 1.1 | Bundled render font (deterministic frames) |
 | three (three.js) | MIT | 3D guitar neck (lazy-loaded; procedural geometry, no model files) |
 | Freeverb reverb algorithm (Jezar at Dreampoint) | Public domain | Re-implemented in `src/audio/fx.ts` (comb/allpass tunings) |
+| @anthropic-ai/sdk | MIT | Server only: the `convert-tab` Edge Function calls Claude (never in the app bundle) |
 | react, react-dom | MIT | UI |
 | dexie, dexie-react-hooks | Apache-2.0 | IndexedDB |
 | vite-plugin-pwa / workbox | MIT | Service worker, offline precache |
