@@ -174,7 +174,8 @@ export function generateRiff(o: GenOptions): GeneratedRiff {
       if (!a || !b || a.palmMute || prev?.hammerToNext || prev?.slideToNext) continue;
       const d = b.fret - a.fret;
       if (a.stringIdx === b.stringIdx && d !== 0 && Math.abs(d) <= 3 && columns[i]!.units <= 2 && rnd() < 0.6) a.hammerToNext = true;
-      else if (a.stringIdx === b.stringIdx && Math.abs(d) >= 2 && rnd() < 0.2) a.slideToNext = true;
+      // Slides need a fretted start and end (you can't slide off or onto an open string).
+      else if (a.stringIdx === b.stringIdx && a.fret > 0 && b.fret > 0 && Math.abs(d) >= 2 && rnd() < 0.2) a.slideToNext = true;
     }
     if (o.difficulty === 'hard' || o.genre === 'blues') {
       const cand = columns.filter((c) => c.notes[0] && c.units >= 4 && c.notes[0].stringIdx <= 2 && !c.notes[0].hammerToNext && !c.notes[0].slideToNext && inScale(tuning[c.notes[0].stringIdx]! + c.notes[0].fret + 2));

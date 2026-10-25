@@ -48,6 +48,7 @@ describe('generateRiff', () => {
           const notes = body.split(/\s+/).filter((x) => /^\d+\.\d/.test(x));
           for (let i = 1; i < notes.length; i++) expect(/\{(h|sl)\}/.test(notes[i - 1]!) && /\{(h|sl)\}/.test(notes[i]!), `${r.title}: chain at ${notes[i]}\n${r.alphaTex}`).toBe(false);
           if (body.includes(':16')) expect(r.bpm).toBeLessThanOrEqual(120);
+          for (let i = 0; i + 1 < notes.length; i++) if (notes[i]!.includes('{sl}')) expect(notes[i]!.startsWith('0.') || notes[i + 1]!.startsWith('0.'), `${r.title}: slide with an open string\n${r.alphaTex}`).toBe(false);
           // Ends on the root, with vibrato.
           const last = t.events[t.events.length - 1]!;
           expect((((last.midi - key) % 12) + 12) % 12).toBe(0);
@@ -78,5 +79,25 @@ describe('riffOfTheDay', () => {
     expect(riffOfTheDay(new Date(2026, 9, 25, 23))).toEqual(a);
     expect(riffOfTheDay(new Date(2026, 9, 26, 8)).seed).not.toBe(a.seed);
     expect(a).toMatchObject({ difficulty: 'medium', bars: 4 });
+  });
+});
+
+describe('generateRiff over many seeds (structure only)', () => {
+  it('never slides with an open string, chains legato, or puts a technique on a chord', () => {
+    for (const g of GEN_GENRES) {
+      for (const d of ['easy', 'medium', 'hard'] as const) {
+        for (let seed = 1; seed <= 150; seed++) {
+          const r = generateRiff({ genre: g.id, difficulty: d, bars: 2, seed: seed * 7919 });
+          const body = r.alphaTex.split('\n').slice(5).join(' ');
+          expect(body, r.alphaTex).not.toMatch(/\([^)]*\{[^}]*\b(h|sl)\b[^}]*\}[^)]*\)/);
+          const notes = body.split(/\s+/).filter((x) => /^\d+\.\d/.test(x));
+          for (let i = 0; i + 1 < notes.length; i++) {
+            const tech = /\{(h|sl)\}/;
+            if (notes[i]!.includes('{sl}')) expect(notes[i]!.startsWith('0.') || notes[i + 1]!.startsWith('0.'), r.alphaTex).toBe(false);
+            if (i > 0) expect(tech.test(notes[i - 1]!) && tech.test(notes[i]!), r.alphaTex).toBe(false);
+          }
+        }
+      }
+    }
   });
 });
