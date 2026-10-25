@@ -47,11 +47,12 @@ export function WriteScreen({ riffId }: { riffId?: string }) {
     if (text === null || !status.ok) return;
     const title = status.title || 'Untitled riff';
     if (riffId) {
-      await updateRiff(riffId, { sourceText: text, title, isOriginal, timelineCache: undefined });
-      navigate({ name: 'studio', riffId }, true);
+      // New text invalidates note refs: start review over.
+      await updateRiff(riffId, { sourceText: text, title, isOriginal, timelineCache: undefined, edits: [], reviewed: false });
+      navigate({ name: 'review', riffId }, true);
     } else {
       const id = await createRiff({ title, artist: '', isOriginal, source: 'alphatex', sourceText: text, trackIndex: 0 });
-      navigate({ name: 'studio', riffId: id }, true);
+      navigate({ name: 'review', riffId: id }, true);
     }
   };
 
@@ -90,7 +91,7 @@ export function WriteScreen({ riffId }: { riffId?: string }) {
         <input type="checkbox" checked={isOriginal} onChange={(e) => setIsOriginal(e.target.checked)} />
       </label>
       <button className="btn primary block" disabled={!status.ok} onClick={() => void save()} data-testid="save-riff">
-        {status.ok ? 'Save & open studio' : 'Fix the errors above'}
+        {status.ok ? 'Save & review notes' : 'Fix the errors above'}
       </button>
     </main>
   );

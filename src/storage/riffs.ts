@@ -25,6 +25,7 @@ export async function seedDemos(): Promise<void> {
       trackIndex: 0,
       styleSettings: { ...DEFAULT_STYLE, fps: s.defaultFps },
       demoId: demo.id,
+      reviewed: true,
       createdAt: now - i,
       updatedAt: now - i,
     })),

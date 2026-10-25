@@ -22,7 +22,7 @@ const STAGES: { key: ExportStage | 'verify'; label: string }[] = [
   { key: 'verify', label: 'Checking sync (listening to the result)' },
 ];
 
-export function ExportFlow({ riff, source, onClose }: { riff: RiffRecord; source: RiffSource; onClose: () => void }) {
+export function ExportFlow({ riff, source, durationMs, onClose }: { riff: RiffRecord; source: RiffSource; durationMs: number; onClose: () => void }) {
   const [phase, setPhase] = useState<'sheet' | 'rendering'>('sheet');
   const [platform, setPlatform] = useState<Platform>('tiktok');
   const [fps, setFps] = useState(riff.styleSettings.fps);
@@ -33,7 +33,7 @@ export function ExportFlow({ riff, source, onClose }: { riff: RiffRecord; source
     void getSettings(db()).then((s) => setShowNotice(!riff.isOriginal && !s.copyrightNoticeSeen));
   }, [riff.isOriginal]);
 
-  const duration = (riff.timelineCache?.durationMs ?? 10_000) / 1000;
+  const duration = durationMs / 1000;
   const estSize = duration * (fps === 60 ? 220_000 : 140_000);
   const estTime = Math.ceil(duration * fps * 0.02 + duration * 1.5 + 6);
 
@@ -60,7 +60,7 @@ export function ExportFlow({ riff, source, onClose }: { riff: RiffRecord; source
         onClick={() => {
           haptic();
           if (showNotice) void updateSettings(db(), { copyrightNoticeSeen: true });
-          void updateRiff(riff.id, { styleSettings: { ...riff.styleSettings, fps, soundMode } });
+          void updateRiff(riff.id, { styleSettings: { ...styleOf(riff), fps, soundMode } });
           setPhase('rendering');
         }}
       >

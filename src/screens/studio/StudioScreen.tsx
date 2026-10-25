@@ -4,11 +4,15 @@ import { navigate } from '../../app/router';
 import { DEFAULT_SOUND_PACK, SOUND_PACKS } from '../../audio/soundpacks';
 import { formatDuration } from '../../components/format';
 import { Segmented } from '../../components/Segmented';
+import { difficultyLabel, hardestBar } from '../../engine/difficulty';
+import type { RiffEdit } from '../../engine/edits';
 import { frameToMs } from '../../engine/time';
 import { tuningLabel } from '../../engine/tuning';
 import { defaultFrameSettings, drawFrame } from '../../render/drawFrame';
 import { loadRenderFonts } from '../../render/fonts';
-import { db, type RiffRecord, type StyleSettings } from '../../storage/db';
+import { SKIN_IDS, SKINS } from '../../render/skins';
+import { LAYOUTS, type DifficultyBadge, type LayoutId, type RenderStyle } from '../../render/style';
+import { db, styleOf, type RiffRecord, type StyleSettings } from '../../storage/db';
 import { riffSource, updateRiff } from '../../storage/riffs';
 import { inspectSource, prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared, SoundMode, TrackInfo } from '../../workers/protocol';
@@ -17,63 +21,106 @@ import { usePreview } from './usePreview';
 
 type Tab = 'guitar' | 'sound' | 'layout' | 'text' | 'teach';
 
+const TUNINGS: Record<number, { name: string; tuning: number[] }[]> = {
+  6: [
+    { name: 'Standard', tuning: [64, 59, 55, 50, 45, 40] },
+    { name: 'Drop D', tuning: [64, 59, 55, 50, 45, 38] },
+    { name: 'Eb standard', tuning: [63, 58, 54, 49, 44, 39] },
+    { name: 'D standard', tuning: [62, 57, 53, 48, 43, 38] },
+    { name: 'Open G', tuning: [62, 59, 55, 50, 43, 38] },
+    { name: 'DADGAD', tuning: [62, 57, 55, 50, 45, 38] },
+  ],
+  7: [{ name: '7-string standard', tuning: [64, 59, 55, 50, 45, 40, 35] }],
+  4: [
+    { name: 'Bass standard', tuning: [43, 38, 33, 28] },
+    { name: 'Bass drop D', tuning: [43, 38, 33, 26] },
+  ],
+};
+
 /** S5: live preview + style controls. */
-export function StudioScreen({ riffId, atMs }: { riffId: string; atMs?: number }) {
+export function StudioScreen({ riffId, atMs, openExport = false }: { riffId: string; atMs?: number; openExport?: boolean }) {
   const riff = useLiveQuery(() => db().riffs.get(riffId), [riffId]);
-  if (riff === undefined) return <main className="screen no-nav"><p className="dim">Loading…</p></main>;
-  return <Studio riff={riff} {...(atMs !== undefined ? { atMs } : {})} />;
+  useEffect(() => {
+    // Accuracy gate: notes must be confirmed in Riff Review before styling.
+    if (riff && !riff.reviewed && !riff.demoId) navigate({ name: 'review', riffId }, true);
+  }, [riff, riffId]);
+  if (riff === undefined || riff === null || (!riff.reviewed && !riff.demoId)) return <main className="screen no-nav"><p className="dim">Loading…</p></main>;
+  return <Studio riff={riff} {...(atMs !== undefined ? { atMs } : {})} openExport={openExport} />;
 }
 
-function Studio({ riff, atMs }: { riff: RiffRecord; atMs?: number }) {
-  const style = riff.styleSettings;
+function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; openExport: boolean }) {
+  // Optimistic style: controls update instantly; IndexedDB catches up in the background.
+  const stored = styleOf(riff);
+  const [style, setLocalStyle] = useState(stored);
+  const storedKey = JSON.stringify(stored);
+  useEffect(() => setLocalStyle(JSON.parse(storedKey) as StyleSettings), [storedKey]);
+  const render = style.render;
+  const edits = riff.edits ?? [];
   const [prepared, setPrepared] = useState<Prepared | null>(null);
   const [error, setError] = useState<string[] | null>(null);
   const [tracks, setTracks] = useState<TrackInfo[]>([]);
   const [tab, setTab] = useState<Tab>('guitar');
   const [showSafe, setShowSafe] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [exporting, setExporting] = useState(openExport);
   const [fontReady, setFontReady] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const source = useMemo(() => riffSource(riff), [riff.sourceText, riff.sourceBytes, riff.fileName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => void loadRenderFonts().then(() => setFontReady(true)), []);
-
   useEffect(() => {
     void inspectSource(source).then((i) => setTracks(i.tracks), () => undefined);
   }, [source]);
 
-  // Build timeline + synth audio in the worker whenever anything that affects them changes.
+  // Timeline + synth audio (incl. teach passes) from the worker whenever they could change.
+  const teachKey = JSON.stringify(style.teach);
+  const editsKey = JSON.stringify(edits);
   useEffect(() => {
     let live = true;
     setError(null);
     prepareRiff({
-      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title },
+      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, edits, teach: style.teach },
       soundFontUrl: DEFAULT_SOUND_PACK.url,
       soundMode: style.soundMode,
     }).then(
       (p) => {
         if (!live) return;
         setPrepared(p);
-        if (JSON.stringify(p.timeline) !== JSON.stringify(riff.timelineCache)) void updateRiff(riff.id, { timelineCache: p.timeline });
+        if (!style.teach.slowMo && !style.teach.loopHardest && JSON.stringify(p.timeline) !== JSON.stringify(riff.timelineCache)) {
+          void updateRiff(riff.id, { timelineCache: p.timeline });
+        }
       },
       (e: unknown) => live && setError(e instanceof WorkerError ? [e.message, ...e.details] : [String(e)]),
     );
     return () => {
       live = false;
     };
-  }, [source, riff.trackIndex, riff.title, style.leadInMs, style.soundMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [source, riff.trackIndex, riff.title, style.leadInMs, style.soundMode, teachKey, editsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fps = style.fps;
   const pv = usePreview(prepared, fps, atMs ?? 0);
-  const settings = useMemo(() => ({ ...defaultFrameSettings(fps), showSafeZones: showSafe }), [fps, showSafe]);
+  const settings = useMemo(() => ({ ...defaultFrameSettings(fps, render), showSafeZones: showSafe }), [fps, render, showSafe]);
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (ctx && prepared) drawFrame(ctx, prepared.timeline, pv.frame, settings);
   }, [prepared, pv.frame, settings, fontReady]);
 
-  const setStyle = (patch: Partial<StyleSettings>) => void updateRiff(riff.id, { styleSettings: { ...style, ...patch } });
+  const setStyle = (patch: Partial<StyleSettings>) => {
+    const next = { ...style, ...patch };
+    setLocalStyle(next);
+    void updateRiff(riff.id, { styleSettings: next });
+  };
+  const setRender = (patch: Partial<RenderStyle>) => setStyle({ render: { ...render, ...patch } });
+  /** Tuning / capo are score edits too (the sound changes with them); keep only the latest of each kind. */
+  const setGlobalEdit = (e: Extract<RiffEdit, { kind: 'tuning' | 'capo' }>) =>
+    void updateRiff(riff.id, { edits: [...edits.filter((x) => x.kind !== e.kind), e], timelineCache: undefined });
+
   const t = prepared?.timeline;
+  const base = riff.timelineCache ?? t;
+  const suggested = base ? difficultyLabel(base) : null;
+  const hardest = base ? hardestBar(base) : null;
+  const tunings = TUNINGS[t?.tuning.length ?? 6] ?? [];
+  const tuningPreset = tunings.find((x) => x.tuning.join() === t?.tuning.join())?.name ?? 'custom';
 
   return (
     <main className="screen no-nav studio">
@@ -89,11 +136,7 @@ function Studio({ riff, atMs }: { riff: RiffRecord; atMs?: number }) {
         <canvas ref={canvasRef} width={settings.width} height={settings.height} data-testid="preview" aria-label="Video preview" />
       </div>
 
-      {error && (
-        <div className="errors" role="alert">
-          {error.map((m, i) => <span key={i}>{m}</span>)}
-        </div>
-      )}
+      {error && <div className="errors" role="alert">{error.map((m, i) => <span key={i}>{m}</span>)}</div>}
       {prepared && prepared.warnings.length > 0 && (
         <div className="notice small">Some notes could not be matched to playback: {prepared.warnings.slice(0, 3).join('; ')}</div>
       )}
@@ -117,17 +160,39 @@ function Studio({ riff, atMs }: { riff: RiffRecord; atMs?: number }) {
       <section className="panel card" role="tabpanel">
         {tab === 'guitar' && (
           <>
+            <label className="field">
+              <span>Guitar</span>
+              <select className="input" value={render.skin} onChange={(e) => setRender({ skin: e.target.value as RenderStyle['skin'] })} aria-label="Guitar skin">
+                {SKIN_IDS.map((id) => <option key={id} value={id}>{SKINS[id].name}</option>)}
+              </select>
+            </label>
             {tracks.length > 1 && (
               <label className="field">
                 <span>Track</span>
-                <select className="input" value={riff.trackIndex} onChange={(e) => void updateRiff(riff.id, { trackIndex: Number(e.target.value) })}>
+                <select className="input" value={riff.trackIndex} onChange={(e) => void updateRiff(riff.id, { trackIndex: Number(e.target.value), edits: [], reviewed: false })}>
                   {tracks.map((tr) => <option key={tr.index} value={tr.index}>{tr.name} ({tr.strings} strings)</option>)}
                 </select>
               </label>
             )}
-            <div className="row spread"><span className="dim">Tuning</span><strong>{t ? tuningLabel(t.tuning, t.capo) : '…'}</strong></div>
-            <div className="row spread"><span className="dim">Skin</span><strong>Strat</strong></div>
-            <p className="dim small">Tuning and capo come from the file. More skins and left-handed mode arrive in phase 2.</p>
+            {tunings.length > 0 && (
+              <label className="field">
+                <span>Tuning (retunes the strings: same frets, new pitches)</span>
+                <select className="input" value={tuningPreset} onChange={(e) => { const p = tunings.find((x) => x.name === e.target.value); if (p) setGlobalEdit({ kind: 'tuning', tuning: p.tuning }); }} aria-label="Tuning">
+                  {tuningPreset === 'custom' && <option value="custom">{t ? tuningLabel(t.tuning, 0) : 'From file'}</option>}
+                  {tunings.map((x) => <option key={x.name} value={x.name}>{x.name}</option>)}
+                </select>
+              </label>
+            )}
+            <div className="row spread">
+              <span>Capo</span>
+              <div className="row">
+                <button className="btn" aria-label="Capo down" disabled={!t || t.capo <= 0} onClick={() => t && setGlobalEdit({ kind: 'capo', capo: t.capo - 1 })}>−</button>
+                <strong style={{ minWidth: 28, textAlign: 'center' }}>{t?.capo ?? 0}</strong>
+                <button className="btn" aria-label="Capo up" disabled={!t || t.capo >= 12} onClick={() => t && setGlobalEdit({ kind: 'capo', capo: t.capo + 1 })}>+</button>
+              </div>
+            </div>
+            <label className="switch"><span>Left-handed (mirror the neck)</span><input type="checkbox" checked={render.leftHanded} onChange={(e) => setRender({ leftHanded: e.target.checked })} /></label>
+            <button className="btn" onClick={() => navigate({ name: 'review', riffId: riff.id })}>Edit notes (Riff Review)</button>
           </>
         )}
         {tab === 'sound' && (
@@ -144,12 +209,18 @@ function Studio({ riff, atMs }: { riff: RiffRecord; atMs?: number }) {
         )}
         {tab === 'layout' && (
           <>
-            <div className="row spread"><span className="dim">Preset</span><strong>Classic</strong></div>
-            <label className="switch">
-              <span>Show TikTok safe zones</span>
-              <input type="checkbox" checked={showSafe} onChange={(e) => setShowSafe(e.target.checked)} />
-            </label>
-            <p className="dim small">Neck-Overlay, Split and Close-up presets arrive in phase 2.</p>
+            <div className="field">
+              <span>Preset</span>
+              <div className="grid">
+                {LAYOUTS.map((l) => (
+                  <button key={l.id} className={`btn ${render.layout === l.id ? 'primary' : ''}`} style={{ minHeight: 48, fontSize: 15 }} aria-pressed={render.layout === l.id} onClick={() => setRender({ layout: l.id as LayoutId })}>
+                    {l.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <label className="switch"><span>Show next notes (look-ahead)</span><input type="checkbox" checked={render.lookAhead} onChange={(e) => setRender({ lookAhead: e.target.checked })} /></label>
+            <label className="switch"><span>Show TikTok safe zones (preview only)</span><input type="checkbox" checked={showSafe} onChange={(e) => setShowSafe(e.target.checked)} /></label>
           </>
         )}
         {tab === 'text' && (
@@ -158,18 +229,32 @@ function Studio({ riff, atMs }: { riff: RiffRecord; atMs?: number }) {
               <span>Title</span>
               <input className="input" defaultValue={riff.title} onBlur={(e) => e.target.value.trim() && e.target.value !== riff.title && void updateRiff(riff.id, { title: e.target.value.trim() })} />
             </label>
-            <label className="switch">
-              <span>This is my original riff</span>
-              <input type="checkbox" checked={riff.isOriginal} onChange={(e) => void updateRiff(riff.id, { isOriginal: e.target.checked })} />
+            <label className="field">
+              <span>Artist credit</span>
+              <input className="input" defaultValue={render.credit} placeholder="e.g. Original by @you" onBlur={(e) => e.target.value !== render.credit && setRender({ credit: e.target.value.trim() })} />
             </label>
+            <div className="field">
+              <span>Difficulty badge{suggested ? ` (suggested: ${suggested})` : ''}</span>
+              <Segmented<DifficultyBadge> label="Difficulty badge" value={render.difficulty} onChange={(v) => setRender({ difficulty: v })} options={[{ value: 'none', label: 'None' }, { value: 'Easy', label: 'Easy' }, { value: 'Medium', label: 'Medium' }, { value: 'Hard', label: 'Hard' }]} />
+            </div>
+            <label className="switch"><span>This is my original riff</span><input type="checkbox" checked={riff.isOriginal} onChange={(e) => void updateRiff(riff.id, { isOriginal: e.target.checked })} /></label>
           </>
         )}
-        {tab === 'teach' && <p className="dim">Slow-mo passes, loop the hardest bar, finger numbers and pick arrows arrive in phase 2.</p>}
+        {tab === 'teach' && (
+          <>
+            <label className="switch"><span>Slow-mo passes (50% → 75% → 100%)</span><input type="checkbox" checked={style.teach.slowMo} onChange={(e) => setStyle({ teach: { ...style.teach, slowMo: e.target.checked } })} data-testid="teach-slowmo" /></label>
+            <label className="switch">
+              <span>Loop hardest bar ×3{hardest ? ` (bar ${hardest.barIndex + 1})` : ''}</span>
+              <input type="checkbox" checked={style.teach.loopHardest} onChange={(e) => setStyle({ teach: { ...style.teach, loopHardest: e.target.checked } })} data-testid="teach-loop" />
+            </label>
+            <label className="switch"><span>Finger numbers on the dots</span><input type="checkbox" checked={render.fingerNumbers} onChange={(e) => setRender({ fingerNumbers: e.target.checked })} /></label>
+            <label className="switch"><span>Pick strokes (from the file)</span><input type="checkbox" checked={render.pickArrows} onChange={(e) => setRender({ pickArrows: e.target.checked })} /></label>
+            <label className="switch"><span>Note names</span><input type="checkbox" checked={render.noteNames} onChange={(e) => setRender({ noteNames: e.target.checked })} /></label>
+          </>
+        )}
       </section>
 
-      {exporting && prepared && (
-        <ExportFlow riff={riff} source={source} onClose={() => setExporting(false)} />
-      )}
+      {exporting && prepared && <ExportFlow riff={riff} source={source} durationMs={prepared.timeline.durationMs} onClose={() => setExporting(false)} />}
     </main>
   );
 }

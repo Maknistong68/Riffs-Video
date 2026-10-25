@@ -6,7 +6,8 @@ export type Route =
   | { name: 'exports' }
   | { name: 'settings' }
   | { name: 'write'; riffId?: string }
-  | { name: 'studio'; riffId: string; atMs?: number }
+  | { name: 'review'; riffId: string }
+  | { name: 'studio'; riffId: string; atMs?: number; openExport?: boolean }
   | { name: 'result'; exportId: string };
 
 export function parseRoute(hash: string): Route {
@@ -20,10 +21,17 @@ export function parseRoute(hash: string): Route {
       return { name: 'settings' };
     case 'write':
       return parts[1] ? { name: 'write', riffId: parts[1] } : { name: 'write' };
+    case 'review':
+      return parts[1] ? { name: 'review', riffId: parts[1] } : { name: 'library' };
     case 'riff':
       if (parts[1]) {
         const at = params.get('t');
-        return at !== null ? { name: 'studio', riffId: parts[1], atMs: Number(at) } : { name: 'studio', riffId: parts[1] };
+        return {
+          name: 'studio',
+          riffId: parts[1],
+          ...(at !== null ? { atMs: Number(at) } : {}),
+          ...(params.get('export') === '1' ? { openExport: true } : {}),
+        };
       }
       return { name: 'library' };
     case 'result':
@@ -43,8 +51,15 @@ export function href(r: Route): string {
       return '#/settings';
     case 'write':
       return r.riffId ? `#/write/${r.riffId}` : '#/write';
-    case 'studio':
-      return `#/riff/${r.riffId}${r.atMs !== undefined ? `?t=${Math.round(r.atMs)}` : ''}`;
+    case 'review':
+      return `#/review/${r.riffId}`;
+    case 'studio': {
+      const q = new URLSearchParams();
+      if (r.atMs !== undefined) q.set('t', String(Math.round(r.atMs)));
+      if (r.openExport) q.set('export', '1');
+      const qs = q.toString();
+      return `#/riff/${r.riffId}${qs ? `?${qs}` : ''}`;
+    }
     case 'result':
       return `#/result/${r.exportId}`;
   }

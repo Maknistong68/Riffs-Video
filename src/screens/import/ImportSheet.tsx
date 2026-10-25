@@ -27,7 +27,7 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
       ...(p.source.kind === 'alphatex' ? { sourceText: p.source.text } : { sourceBytes: p.source.bytes, fileName: p.source.name }),
     });
     onClose();
-    navigate({ name: 'studio', riffId: id });
+    navigate({ name: 'review', riffId: id });
   };
 
   const onFile = async (file: File) => {

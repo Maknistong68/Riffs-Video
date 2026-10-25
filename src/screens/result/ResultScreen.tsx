@@ -44,6 +44,7 @@ export function ResultScreen({ exportId }: { exportId: string }) {
       </div>
       <div className="row">
         <button className="btn" style={{ flex: 1 }} onClick={() => navigate({ name: 'studio', riffId: meta.riffId })}>Edit</button>
+        <button className="btn" style={{ flex: 1 }} onClick={() => navigate({ name: 'studio', riffId: meta.riffId, openExport: true })}>Re-export</button>
         <button className="btn danger" style={{ flex: 1 }} onClick={async () => { await deleteExport(meta.id); navigate({ name: 'exports' }); }}>Delete</button>
       </div>
       <p className="dim small">{formatDuration(meta.durationMs)} · {meta.fps} fps · {formatBytes(meta.sizeBytes)} · 1080×1920</p>

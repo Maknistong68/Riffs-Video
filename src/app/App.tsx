@@ -4,6 +4,7 @@ import { CompatScreen } from '../screens/compat/CompatScreen';
 import { ExportsScreen } from '../screens/exports/ExportsScreen';
 import { LibraryScreen } from '../screens/library/LibraryScreen';
 import { ResultScreen } from '../screens/result/ResultScreen';
+import { ReviewScreen } from '../screens/review/ReviewScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { StudioScreen } from '../screens/studio/StudioScreen';
 import { WriteScreen } from '../screens/write/WriteScreen';
@@ -31,7 +32,10 @@ export function App() {
       {route.name === 'exports' && <ExportsScreen />}
       {route.name === 'settings' && <SettingsScreen compat={compat} />}
       {route.name === 'write' && <WriteScreen {...(route.riffId ? { riffId: route.riffId } : {})} />}
-      {route.name === 'studio' && <StudioScreen key={route.riffId} riffId={route.riffId} {...(route.atMs !== undefined ? { atMs: route.atMs } : {})} />}
+      {route.name === 'review' && <ReviewScreen key={route.riffId} riffId={route.riffId} />}
+      {route.name === 'studio' && (
+        <StudioScreen key={route.riffId} riffId={route.riffId} {...(route.atMs !== undefined ? { atMs: route.atMs } : {})} openExport={route.openExport ?? false} />
+      )}
       {route.name === 'result' && <ResultScreen exportId={route.exportId} />}
       {withNav && <BottomNav route={route} onPlus={() => setImportOpen(true)} />}
       {importOpen && <ImportSheet onClose={() => setImportOpen(false)} />}
