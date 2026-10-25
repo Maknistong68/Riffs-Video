@@ -25,254 +25,425 @@
   "durationMs": 7533.333333333333,
   "events": [
    {
-    "id": "p0-b0-n2",
+    "id": "p0:0.0.0.2",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 0,
+     "note": 2
+    },
     "startMs": 1000,
     "durationMs": 666.6666666666665,
     "stringIdx": 3,
     "fret": 2,
     "midi": 52,
     "tech": [],
-    "chordId": "c0-0"
+    "chordId": "c0:0.0.0",
+    "finger": 1
    },
    {
-    "id": "p0-b0-n1",
+    "id": "p0:0.0.0.1",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 0,
+     "note": 1
+    },
     "startMs": 1000,
     "durationMs": 666.6666666666665,
     "stringIdx": 4,
     "fret": 2,
     "midi": 47,
     "tech": [],
-    "chordId": "c0-0"
+    "chordId": "c0:0.0.0",
+    "finger": 1
    },
    {
-    "id": "p0-b0-n0",
+    "id": "p0:0.0.0.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 1000,
     "durationMs": 666.6666666666665,
     "stringIdx": 5,
     "fret": 0,
     "midi": 40,
     "tech": [],
-    "chordId": "c0-0"
+    "chordId": "c0:0.0.0"
    },
    {
-    "id": "p0-b1-n5",
+    "id": "p0:0.0.1.2",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 1,
+     "note": 2
+    },
     "startMs": 1666.6666666666665,
     "durationMs": 666.6666666666665,
     "stringIdx": 3,
     "fret": 5,
     "midi": 55,
     "tech": [],
-    "chordId": "c0-1"
+    "chordId": "c0:0.0.1",
+    "finger": 4
    },
    {
-    "id": "p0-b1-n4",
+    "id": "p0:0.0.1.1",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 1,
+     "note": 1
+    },
     "startMs": 1666.6666666666665,
     "durationMs": 666.6666666666665,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
     "tech": [],
-    "chordId": "c0-1"
+    "chordId": "c0:0.0.1",
+    "finger": 4
    },
    {
-    "id": "p0-b1-n3",
+    "id": "p0:0.0.1.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 1666.6666666666665,
     "durationMs": 666.6666666666665,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
     "tech": [],
-    "chordId": "c0-1"
+    "chordId": "c0:0.0.1",
+    "finger": 2
    },
    {
-    "id": "p0-b2-n8",
+    "id": "p0:0.0.2.2",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 2,
+     "note": 2
+    },
     "startMs": 2333.333333333333,
     "durationMs": 333.33333333333394,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
     "tech": [],
-    "chordId": "c0-2"
+    "chordId": "c0:0.0.2",
+    "finger": 3
    },
    {
-    "id": "p0-b2-n7",
+    "id": "p0:0.0.2.1",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 2,
+     "note": 1
+    },
     "startMs": 2333.333333333333,
     "durationMs": 333.33333333333394,
     "stringIdx": 3,
     "fret": 7,
     "midi": 57,
     "tech": [],
-    "chordId": "c0-2"
+    "chordId": "c0:0.0.2",
+    "finger": 3
    },
    {
-    "id": "p0-b2-n6",
+    "id": "p0:0.0.2.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 2333.333333333333,
     "durationMs": 333.33333333333394,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
     "tech": [],
-    "chordId": "c0-2"
+    "chordId": "c0:0.0.2",
+    "finger": 1
    },
    {
-    "id": "p0-b3-n11",
+    "id": "p0:0.0.3.2",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 3,
+     "note": 2
+    },
     "startMs": 2666.666666666667,
     "durationMs": 333.33333333333303,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
     "tech": [],
-    "chordId": "c0-3"
+    "chordId": "c0:0.0.3",
+    "finger": 3
    },
    {
-    "id": "p0-b3-n10",
+    "id": "p0:0.0.3.1",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 3,
+     "note": 1
+    },
     "startMs": 2666.666666666667,
     "durationMs": 333.33333333333303,
     "stringIdx": 3,
     "fret": 7,
     "midi": 57,
     "tech": [],
-    "chordId": "c0-3"
+    "chordId": "c0:0.0.3",
+    "finger": 3
    },
    {
-    "id": "p0-b3-n9",
+    "id": "p0:0.0.3.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 2666.666666666667,
     "durationMs": 333.33333333333303,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
     "tech": [],
-    "chordId": "c0-3"
+    "chordId": "c0:0.0.3",
+    "finger": 1
    },
    {
-    "id": "p0-b4-n14",
+    "id": "p0:0.0.4.2",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 4,
+     "note": 2
+    },
     "startMs": 3000,
     "durationMs": 666.6666666666665,
     "stringIdx": 3,
     "fret": 5,
     "midi": 55,
     "tech": [],
-    "chordId": "c0-4"
+    "chordId": "c0:0.0.4",
+    "finger": 3
    },
    {
-    "id": "p0-b4-n13",
+    "id": "p0:0.0.4.1",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 4,
+     "note": 1
+    },
     "startMs": 3000,
     "durationMs": 666.6666666666665,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
     "tech": [],
-    "chordId": "c0-4"
+    "chordId": "c0:0.0.4",
+    "finger": 3
    },
    {
-    "id": "p0-b4-n12",
+    "id": "p0:0.0.4.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 3000,
     "durationMs": 666.6666666666665,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
     "tech": [],
-    "chordId": "c0-4"
+    "chordId": "c0:0.0.4",
+    "finger": 1
    },
    {
-    "id": "p1-b5-n17",
+    "id": "p1:1.0.0.2",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 0,
+     "note": 2
+    },
     "startMs": 3666.6666666666665,
     "durationMs": 666.6666666666674,
     "stringIdx": 0,
     "fret": 0,
     "midi": 64,
     "tech": [],
-    "chordId": "c1-5"
+    "chordId": "c1:1.0.0"
    },
    {
-    "id": "p1-b5-n16",
+    "id": "p1:1.0.0.1",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 0,
+     "note": 1
+    },
     "startMs": 3666.6666666666665,
     "durationMs": 666.6666666666674,
     "stringIdx": 1,
     "fret": 1,
     "midi": 60,
     "tech": [],
-    "chordId": "c1-5"
+    "chordId": "c1:1.0.0",
+    "finger": 1
    },
    {
-    "id": "p1-b5-n15",
+    "id": "p1:1.0.0.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 3666.6666666666665,
     "durationMs": 666.6666666666674,
     "stringIdx": 2,
     "fret": 0,
     "midi": 55,
     "tech": [],
-    "chordId": "c1-5"
+    "chordId": "c1:1.0.0"
    },
    {
-    "id": "p1-b6-n20",
+    "id": "p1:1.0.1.2",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 1,
+     "note": 2
+    },
     "startMs": 4333.333333333334,
     "durationMs": 666.6666666666661,
     "stringIdx": 0,
     "fret": 2,
     "midi": 66,
     "tech": [],
-    "chordId": "c1-6"
+    "chordId": "c1:1.0.1",
+    "finger": 2
    },
    {
-    "id": "p1-b6-n19",
+    "id": "p1:1.0.1.1",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 1,
+     "note": 1
+    },
     "startMs": 4333.333333333334,
     "durationMs": 666.6666666666661,
     "stringIdx": 1,
     "fret": 3,
     "midi": 62,
     "tech": [],
-    "chordId": "c1-6"
+    "chordId": "c1:1.0.1",
+    "finger": 3
    },
    {
-    "id": "p1-b6-n18",
+    "id": "p1:1.0.1.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 4333.333333333334,
     "durationMs": 666.6666666666661,
     "stringIdx": 2,
     "fret": 2,
     "midi": 57,
     "tech": [],
-    "chordId": "c1-6"
+    "chordId": "c1:1.0.1",
+    "finger": 2
    },
    {
-    "id": "p1-b7-n24",
+    "id": "p1:1.0.2.3",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 3
+    },
     "startMs": 5000,
     "durationMs": 666.666666666667,
     "stringIdx": 0,
     "fret": 2,
     "midi": 66,
     "tech": [],
-    "chordId": "c1-7"
+    "chordId": "c1:1.0.2",
+    "finger": 2
    },
    {
-    "id": "p1-b7-n23",
+    "id": "p1:1.0.2.2",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 2
+    },
     "startMs": 5000,
     "durationMs": 666.666666666667,
     "stringIdx": 1,
     "fret": 3,
     "midi": 62,
     "tech": [],
-    "chordId": "c1-7"
+    "chordId": "c1:1.0.2",
+    "finger": 3
    },
    {
-    "id": "p1-b7-n22",
+    "id": "p1:1.0.2.1",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 1
+    },
     "startMs": 5000,
     "durationMs": 666.666666666667,
     "stringIdx": 2,
     "fret": 2,
     "midi": 57,
     "tech": [],
-    "chordId": "c1-7"
+    "chordId": "c1:1.0.2",
+    "finger": 2
    },
    {
-    "id": "p1-b7-n21",
+    "id": "p1:1.0.2.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 5000,
     "durationMs": 666.666666666667,
     "stringIdx": 3,
     "fret": 0,
     "midi": 50,
     "tech": [],
-    "chordId": "c1-7"
+    "chordId": "c1:1.0.2"
    }
   ],
   "bars": [
@@ -287,12 +458,34 @@
   ]
  },
  "frames": {
-  "0": "8a7df79a69bd7136f280b8c3a47b55780e63209796010684ca4047a2be7e3e72",
-  "30": "025c819872ca997ab499c04e3a757dc8ff1a7f46c73479ecc5b0b8a144de3917",
-  "34": "693c95044b2199976aa3564dfbee7f4e400c2eb16023851cf60d13146bdbec75",
-  "50": "7311c3fd71d7c12be1cd296e0e19a3a9cbdb98a601b64c65682a6fb287cbbc8e",
-  "54": "c4318b71671c6031f4b820f5f310273d98c544846ce931b7ea69fe4aa42e778a",
-  "71": "a40f1624fd356142c769ad1dad7421d075cd7b57f6697a8bfa5b31fefa367be0",
-  "75": "5fc4a90898b77e8b70928ff2ab28bf0dcb07e949b33095bdec709a9664731fd7"
+  "0": "d29aad21bb1b135dd2bd4455996da706c5a52af0fa678e99ad69f9d4e54a6dd0",
+  "30": "faa7bcd89b2d1db8bdd9e02e2b4e18776ce2efe6642bfebd4a4a1dcc878c3f61",
+  "34": "ecb32bf9135131d81f5bf3e1d25ef235672a803e2d3a98879422421387cf043f",
+  "50": "12956c9036ec54aa8ac428ed857950c1242ef97ebd7e979904640487eb2bd558",
+  "54": "8bf43196cba35d7f5a200540823ec41808b9f4e434e71bf5b84862d2d871aa2e",
+  "71": "85af3abd983f7481e76668f4e65d902bb4aa7ae0b691857b6a783cdb6bf6ca7d",
+  "75": "f8a388f99e7b420364264f6a90eb08b47110cde6e31426415bdf6a5366bbaa96"
+ },
+ "variant": {
+  "style": {
+   "layout": "split",
+   "skin": "acoustic",
+   "noteNames": true
+  },
+  "teach": {
+   "slowMo": false,
+   "loopHardest": false
+  },
+  "fps": 60,
+  "sections": [],
+  "frames": {
+   "0": "33a15adc36cc7591dfa62c3ae74d0819c2d78e721c91a60b8bd7f7fa2968afd7",
+   "30": "c8109ed71f1f4ec7b53db47b221b556dcda67bc8687b833ce1072496a25debaa",
+   "34": "75f2c0a0c2f679ac7b80507acf047480f54005514f7af434a3cb3330b1cdb049",
+   "50": "388e596763db31ce78dcc8b29c9b3e1de8ac104a0765f45736b7514c9627994a",
+   "54": "0d28779018ad16887d9ddd9211bbc69fb4ecb3866486c5bd1e0bb60036eff943",
+   "71": "78a0e9be2553c19c7843f99664527c8d2618a1a0d324cfc99df8049e7a5d266f",
+   "75": "5a7eddef8e567b09ce60323ccd69adcca52fb6a31a7faf6efc81c40a620855e0"
+  }
  }
 }

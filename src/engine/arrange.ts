@@ -11,8 +11,8 @@ import { hardestBar } from './difficulty';
 import { AUDIO_SAMPLE_RATE, msToSample, sampleToMs } from './time';
 import type { NoteEvent, Timeline } from './timeline';
 
-export type TeachOptions = { slowMo: boolean; loopHardest: boolean };
-export const NO_TEACH: TeachOptions = { slowMo: false, loopHardest: false };
+import type { TeachOptions } from './teach';
+export { NO_TEACH, type TeachOptions } from './teach';
 
 export const SLOW_SPEEDS = [0.5, 0.75] as const;
 export const LOOP_COUNT = 3;

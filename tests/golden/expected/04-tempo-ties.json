@@ -33,115 +33,205 @@
   "durationMs": 14200,
   "events": [
    {
-    "id": "p0-b0-n0",
+    "id": "p0:0.0.0.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 1000,
     "durationMs": 750,
     "stringIdx": 1,
     "fret": 5,
     "midi": 64,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p0-b1-n1",
+    "id": "p0:0.0.1.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 1750,
     "durationMs": 750,
     "stringIdx": 1,
     "fret": 7,
     "midi": 66,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p0-b2-n2",
+    "id": "p0:0.0.2.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 2500,
     "durationMs": 375,
     "stringIdx": 1,
     "fret": 8,
     "midi": 67,
-    "tech": []
+    "tech": [],
+    "finger": 4
    },
    {
-    "id": "p0-b3-n3",
+    "id": "p0:0.0.3.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 2875,
     "durationMs": 375,
     "stringIdx": 1,
     "fret": 7,
     "midi": 66,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p0-b4-n4",
+    "id": "p0:0.0.4.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 3250,
     "durationMs": 1500,
     "stringIdx": 1,
     "fret": 5,
     "midi": 64,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p1-b6-n6",
+    "id": "p1:1.0.1.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 4750,
     "durationMs": 250,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p1-b7-n7",
+    "id": "p1:1.0.2.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 5000,
     "durationMs": 250,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p1-b8-n8",
+    "id": "p1:1.0.3.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 5250,
     "durationMs": 250,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p1-b9-n9",
+    "id": "p1:1.0.4.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 5500,
     "durationMs": 250,
     "stringIdx": 3,
     "fret": 7,
     "midi": 57,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p1-b10-n10",
+    "id": "p1:1.0.5.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 5750,
     "durationMs": 250,
     "stringIdx": 3,
     "fret": 5,
     "midi": 55,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p1-b11-n11",
+    "id": "p1:1.0.6.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 6,
+     "note": 0
+    },
     "startMs": 6000,
     "durationMs": 250,
     "stringIdx": 3,
     "fret": 7,
     "midi": 57,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p1-b12-n12",
+    "id": "p1:1.0.7.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 7,
+     "note": 0
+    },
     "startMs": 6250,
     "durationMs": 750,
     "stringIdx": 3,
     "fret": 5,
     "midi": 55,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p2-b13-n13",
+    "id": "p2:2.0.0.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 7000,
     "durationMs": 250,
     "stringIdx": 5,
@@ -150,7 +240,13 @@
     "tech": []
    },
    {
-    "id": "p2-b14-n14",
+    "id": "p2:2.0.1.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 7250,
     "durationMs": 250,
     "stringIdx": 5,
@@ -159,16 +255,29 @@
     "tech": []
    },
    {
-    "id": "p2-b15-n15",
+    "id": "p2:2.0.2.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 7500,
     "durationMs": 250,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
-    "tech": []
+    "tech": [],
+    "finger": 2
    },
    {
-    "id": "p2-b16-n16",
+    "id": "p2:2.0.3.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 7750,
     "durationMs": 250,
     "stringIdx": 5,
@@ -177,43 +286,70 @@
     "tech": []
    },
    {
-    "id": "p2-b17-n17",
+    "id": "p2:2.0.4.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 8000,
     "durationMs": 1000,
     "stringIdx": 5,
     "fret": 5,
     "midi": 45,
-    "tech": []
+    "tech": [],
+    "finger": 4
    },
    {
-    "id": "p3-b19-n21",
+    "id": "p3:3.0.0.2",
+    "ref": {
+     "bar": 3,
+     "voice": 0,
+     "beat": 0,
+     "note": 2
+    },
     "startMs": 9000,
     "durationMs": 4000,
     "stringIdx": 3,
     "fret": 2,
     "midi": 52,
     "tech": [],
-    "chordId": "c3-19"
+    "chordId": "c3:3.0.0",
+    "finger": 1
    },
    {
-    "id": "p3-b19-n20",
+    "id": "p3:3.0.0.1",
+    "ref": {
+     "bar": 3,
+     "voice": 0,
+     "beat": 0,
+     "note": 1
+    },
     "startMs": 9000,
     "durationMs": 4000,
     "stringIdx": 4,
     "fret": 2,
     "midi": 47,
     "tech": [],
-    "chordId": "c3-19"
+    "chordId": "c3:3.0.0",
+    "finger": 1
    },
    {
-    "id": "p3-b19-n19",
+    "id": "p3:3.0.0.0",
+    "ref": {
+     "bar": 3,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 9000,
     "durationMs": 4000,
     "stringIdx": 5,
     "fret": 0,
     "midi": 40,
     "tech": [],
-    "chordId": "c3-19"
+    "chordId": "c3:3.0.0"
    }
   ],
   "bars": [
@@ -236,22 +372,79 @@
   ]
  },
  "frames": {
-  "0": "a64130838d354c193484fa2eb9e2e3149a20fa98340e041a1d79f69418767251",
-  "30": "44dd007f777b14566f9f29c2063f215e2af60a00e370c1fab096926609d8eda0",
-  "34": "842430f29c9059694b5d42e9e1c7288b4b0c37e8e19e75d8cfb61bba2d0e02a0",
-  "53": "cf68b15743d2f378deb983b7023c020960abcb41abda0ccf06d6bf8689839631",
-  "57": "4eb2beb304e463dee1aa126d9dacab3445dec63410ec6fc230a7dd4bdf0a07dc",
-  "75": "fdb97a88ec789db5bf36353209f125a3682812364e55a456640738b9959179de",
-  "79": "12b273a7e0d19d8a6420e64b4db264bdf541c75b1605afb46c82969fa54ce16d",
-  "87": "914edca879150e125775fe101f80d9aa2ecee01bc4ba3a81d6f7706f58e54bfd",
-  "91": "b84b36176b225ddb984dbd641bdc5e06dbd5bc04dc610e8d5d57ddbde7da6b31",
-  "98": "95b7e0564418d28e172d46b370751b2aa23927673267e0a2f79da65632c6c97b",
-  "102": "edb6d84383a544e11a3ca76da80927857f069514f4be80a8be4bffd1730b91d5",
-  "143": "7f47dac8ac45b3d3eefdac26177eb1b084f533be6d04a992367bdab1caf65259",
-  "147": "632903e64642388a277e64b136286a55749e4aa391348d50ef8e0600dcfd5765",
-  "150": "c8ca017f6217b3760f4eea83ed64381906343a09a338a31449f152403f8d95fa",
-  "154": "cacbb3401e8e0e2c4140261b93b77ae69aa80731f643c4b9af52739f94aa9a33",
-  "158": "060e22c0618e2cdf7b9960a8ffea3b94262c3f86986546a2368fe9971b8d76b9",
-  "162": "d4fec3b9532505c45d8b6858dbfac4f5da42452ac3100b0e05cacd6c3eb2092c"
+  "0": "9248e95e000525a6860e2deafac3c25321f5fb95dd127e1ba90e81e6727177ea",
+  "30": "c4ccda965372a8285bae73f55204309b4400f2a011e2b96cf76925a7e2b10323",
+  "34": "824fc5e1eb95043fe70140d1aebadd3726929b4c6d94038fd52a124b751cdad3",
+  "53": "cad8b606c753c7a7fe84914df4aa4b80f7991a5d8929e1f3eddeec4d6c058291",
+  "57": "ad9a56bbd5756e5cf690689143550cd3161387e1b1777766cf9cefd04b1041d4",
+  "75": "265c1df8cd37ac388e9e271f94fa028dd766765730161fa616fcbe3a4529ad64",
+  "79": "cb1192fc455536935e1d42641e15d8769f4bf90e21796c7cde384b59aa3a1d32",
+  "87": "35b55c283c4f5e3d8f61ce0b696bf29943389810bbf3c4043082706844a010b1",
+  "91": "19e35baa767e71eee3b225e1fa6c91b6e67bd610ef047df1d6a9b0e944c60634",
+  "98": "014a9e8ca77531e8cabce772adad6d52d9238a6edfdd6c1722c444752269244a",
+  "102": "ed09a4506f6b3cfe225f96946d1ecd51310c2f1ed00ef1b602408533baa1879e",
+  "143": "11036ba3085ca05d68ff07d793a412b6ca2e084e74c8cbda51fb127775d352c1",
+  "147": "184abc5d6588a13bf1cb5eb468f3bf003bf9905658b43643ad0adb5459e23406",
+  "150": "7806832dd7489b27418cc239f1c46ac6fd5da52a87b84240779e8ea3d3ede9f4",
+  "154": "98431ebaeef15dee66aea3158b1c5bc5176e719ddf0be82ad9194b9684a16c2f",
+  "158": "338ab8e9c86f9e880bc7b279bb2bbbbdba2971ed4945f51442f50e1ef075549f",
+  "162": "2657487715dc8de4cf63634df9a7c0f5198cc7c53ea6ec7d8c89a40f3b5039c7"
+ },
+ "variant": {
+  "style": {
+   "layout": "classic",
+   "skin": "classical",
+   "leftHanded": true
+  },
+  "teach": {
+   "slowMo": false,
+   "loopHardest": true
+  },
+  "fps": 60,
+  "sections": [
+   {
+    "startMs": 1000,
+    "endMs": 4000,
+    "label": "Loop 1/3 · bar 2"
+   },
+   {
+    "startMs": 4000,
+    "endMs": 7000,
+    "label": "Loop 2/3 · bar 2"
+   },
+   {
+    "startMs": 7000,
+    "endMs": 10000,
+    "label": "Loop 3/3 · bar 2"
+   },
+   {
+    "startMs": 10800,
+    "endMs": 22800,
+    "label": "Full speed"
+   }
+  ],
+  "frames": {
+   "0": "c957c3fbb2025ad39376932b1f1711887580184e39e8f66f758d86234612b8de",
+   "48": "7e5fbf325ebc53aa246a83852246bc3f2bcfb648ff2b00508736d04d1074b6cf",
+   "53": "439b623d0fe8537f336885d583ea44ce24f69457feb01b6790c0456c3696a2df",
+   "57": "2f96c595a549de7093e1d50a33b1d2b5983296947f0719fff0e8e885ce191052",
+   "60": "56b24e393b6535d019d57c57447cd7b028d73fb13c77c7277095c7c789fd6f40",
+   "64": "37c7303a8d4c1d3ad34466df7779a073b0cb51f5e837e544b709bf5c66bce219",
+   "68": "d5cd6b5eeb063a2575caf95abbd1a46b1f3e510038d7c742d1030fb24593b149",
+   "72": "a5c840ffa1412c905a2fd3ac2dfe5bc2bcf213dd87ccc64de011a04729e5640a",
+   "75": "bfd1c572bb984d8ab7f6f34555dad6f597633cc913f743ba9f0cc8dcb55c699a",
+   "79": "70c403b2fc1534f842071a918ba52ffe2c1ae4500563d9103cf01daa8d2b69e4",
+   "83": "92beef96ba3e0471c2458b4f1ecf4661e07c6e1f4ee469cd31d37097b533b841",
+   "87": "d2f6712e55d347fa79400117914514caa39ff209fa7fc3e03b2d6540dd647a2e",
+   "90": "b60d8fce0a1a9b1d3da63b20df65d4f29f18e03c3e2a3f701bf615ced2feff26",
+   "94": "4058c089dd9f7f7cfba0e6cebeda2d24abe31c4a49473fe89c634725d8ea52a6",
+   "98": "5fd61411c01caad1ca00e256425fe150da30562385db91ad9ec3a651566f739e",
+   "102": "8809de552a1ae95a431b7303755d348c0a6b2ba7eec4f820a38a0d2554cc5edf",
+   "138": "5940f48081ea7fd3f279abf4a2ecbbc57307a23559d8c5d0991c11457a2384c1",
+   "143": "e00dee4430b57343879fcc31c23ac120f245c4fae7e3dd198c91b0b67b1a8ca4",
+   "147": "17ec5a1eb580f339a26ff41af84558f310b70b0721fa34382cdaf93ce9f0a94c",
+   "228": "9a3af9bf1c7aba360ba9e59df4f78a33b447e1e88f38e2882a63c0ef6f595525",
+   "342": "eb0b4781217638c1868e1febb2faa868f811d1bd6cc51b26efd080d94c4ed447"
+  }
  }
 }

@@ -4,7 +4,7 @@ import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
 import type { SoundMode } from '../workers/protocol';
 import type { RiffEdit } from '../engine/edits';
-import { NO_TEACH, type TeachOptions } from '../engine/arrange';
+import { NO_TEACH, type TeachOptions } from '../engine/teach';
 import { DEFAULT_STYLE as DEFAULT_RENDER, type RenderStyle } from '../render/style';
 
 export type RiffSourceKind = 'alphatex' | 'gp' | 'ascii' | 'audio' | 'ai';

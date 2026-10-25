@@ -30,10 +30,13 @@ const harness = {
     return { out, sections: timeline.sections ?? [], durationMs: timeline.durationMs };
   },
   /** Timeline JSON + SHA-256 of drawFrame pixels for the given frames (30 fps). */
-  async frameHashes(text: string, frames: number[]) {
+  async frameHashes(text: string, frames: number[], style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH) {
     const fontOk = await loadRenderFonts();
-    const { timeline } = buildTimeline(loadAlphaTex(text), { ...DEFAULT_BUILD, trackIndex: 0 });
-    const s = defaultFrameSettings(30);
+    const timeline =
+      teach.slowMo || teach.loopHardest
+        ? buildArrangement(() => loadAlphaTex(text), { trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs, tailMs: DEFAULT_BUILD.tailMs, teach }).timeline
+        : buildTimeline(loadAlphaTex(text), { ...DEFAULT_BUILD, trackIndex: 0 }).timeline;
+    const s = defaultFrameSettings(30, style);
     const canvas = new OffscreenCanvas(s.width, s.height);
     const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true })!;
     const hashes: string[] = [];
@@ -44,13 +47,13 @@ const harness = {
     return { fontOk, timeline, hashes };
   },
   /** Full on-device export through the real worker; returns report + size (no MP4 bytes). */
-  async exportRiff(text: string, fps: 30 | 60) {
+  async exportRiff(text: string, fps: 30 | 60, style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH) {
     const stages: string[] = [];
     const job = startExport(
       {
-        riff: { source: { kind: 'alphatex', text }, trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs },
+        riff: { source: { kind: 'alphatex', text }, trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs, teach },
         fps,
-        style: defaultFrameSettings(fps).style,
+        style: defaultFrameSettings(fps, style).style,
         soundMode: 'synth',
         soundFontUrl: DEFAULT_SOUND_PACK.url,
         modelUrl: new URL('/models/basic-pitch/model.json', location.href).href,

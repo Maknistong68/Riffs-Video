@@ -29,7 +29,13 @@
   "durationMs": 17472.727272727272,
   "events": [
    {
-    "id": "p0-b0-n0",
+    "id": "p0:0.0.0.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 1000,
     "durationMs": 272.72727272727275,
     "stringIdx": 5,
@@ -38,7 +44,13 @@
     "tech": []
    },
    {
-    "id": "p0-b1-n1",
+    "id": "p0:0.0.1.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 1272.7272727272727,
     "durationMs": 272.72727272727275,
     "stringIdx": 5,
@@ -47,16 +59,29 @@
     "tech": []
    },
    {
-    "id": "p0-b2-n2",
+    "id": "p0:0.0.2.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 1545.4545454545455,
     "durationMs": 272.7272727272725,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p0-b3-n3",
+    "id": "p0:0.0.3.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 1818.181818181818,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
@@ -65,16 +90,29 @@
     "tech": []
    },
    {
-    "id": "p0-b4-n4",
+    "id": "p0:0.0.4.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 2090.909090909091,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
     "fret": 5,
     "midi": 45,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p0-b5-n5",
+    "id": "p0:0.0.5.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 2363.636363636364,
     "durationMs": 272.72727272727207,
     "stringIdx": 5,
@@ -83,16 +121,29 @@
     "tech": []
    },
    {
-    "id": "p0-b6-n6",
+    "id": "p0:0.0.6.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 6,
+     "note": 0
+    },
     "startMs": 2636.363636363636,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p0-b7-n7",
+    "id": "p0:0.0.7.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 7,
+     "note": 0
+    },
     "startMs": 2909.090909090909,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
@@ -101,43 +152,77 @@
     "tech": []
    },
    {
-    "id": "p1-b8-n8",
+    "id": "p1:1.0.0.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 3181.818181818182,
     "durationMs": 272.7272727272725,
     "stringIdx": 4,
     "fret": 7,
     "midi": 52,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p1-b9-n9",
+    "id": "p1:1.0.1.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 3454.5454545454545,
     "durationMs": 272.727272727273,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p1-b10-n10",
+    "id": "p1:1.0.2.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 3727.2727272727275,
     "durationMs": 272.7272727272725,
     "stringIdx": 4,
     "fret": 3,
     "midi": 48,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p1-b11-n11",
+    "id": "p1:1.0.3.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 4000,
     "durationMs": 272.72727272727207,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p1-b12-n12",
+    "id": "p1:1.0.4.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 4272.727272727272,
     "durationMs": 545.454545454546,
     "stringIdx": 5,
@@ -146,7 +231,13 @@
     "tech": []
    },
    {
-    "id": "p2-b0-n0",
+    "id": "p2:0.0.0.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 5363.636363636364,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
@@ -155,7 +246,13 @@
     "tech": []
    },
    {
-    "id": "p2-b1-n1",
+    "id": "p2:0.0.1.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 5636.363636363637,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
@@ -164,16 +261,29 @@
     "tech": []
    },
    {
-    "id": "p2-b2-n2",
+    "id": "p2:0.0.2.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 5909.09090909091,
     "durationMs": 272.72727272727207,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p2-b3-n3",
+    "id": "p2:0.0.3.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 6181.818181818182,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
@@ -182,16 +292,29 @@
     "tech": []
    },
    {
-    "id": "p2-b4-n4",
+    "id": "p2:0.0.4.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 6454.545454545455,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
     "fret": 5,
     "midi": 45,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p2-b5-n5",
+    "id": "p2:0.0.5.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 6727.272727272728,
     "durationMs": 272.72727272727207,
     "stringIdx": 5,
@@ -200,16 +323,29 @@
     "tech": []
    },
    {
-    "id": "p2-b6-n6",
+    "id": "p2:0.0.6.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 6,
+     "note": 0
+    },
     "startMs": 7000,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p2-b7-n7",
+    "id": "p2:0.0.7.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 7,
+     "note": 0
+    },
     "startMs": 7272.727272727273,
     "durationMs": 272.727272727273,
     "stringIdx": 5,
@@ -218,43 +354,77 @@
     "tech": []
    },
    {
-    "id": "p3-b8-n8",
+    "id": "p3:1.0.0.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 7545.454545454546,
     "durationMs": 272.72727272727207,
     "stringIdx": 4,
     "fret": 7,
     "midi": 52,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p3-b9-n9",
+    "id": "p3:1.0.1.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 7818.181818181818,
     "durationMs": 272.7272727272739,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p3-b10-n10",
+    "id": "p3:1.0.2.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 8090.909090909092,
     "durationMs": 272.72727272727207,
     "stringIdx": 4,
     "fret": 3,
     "midi": 48,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p3-b11-n11",
+    "id": "p3:1.0.3.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 8363.636363636364,
     "durationMs": 272.72727272727207,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p3-b12-n12",
+    "id": "p3:1.0.4.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 8636.363636363636,
     "durationMs": 545.454545454546,
     "stringIdx": 5,
@@ -263,193 +433,340 @@
     "tech": []
    },
    {
-    "id": "p4-b14-n13",
+    "id": "p4:2.0.0.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 9727.272727272728,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p4-b15-n14",
+    "id": "p4:2.0.1.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 9863.636363636364,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p4-b16-n15",
+    "id": "p4:2.0.2.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 10000,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p4-b17-n16",
+    "id": "p4:2.0.3.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 10136.363636363636,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p4-b18-n17",
+    "id": "p4:2.0.4.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 10272.727272727272,
     "durationMs": 272.7272727272739,
     "stringIdx": 3,
     "fret": 5,
     "midi": 55,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p4-b19-n18",
+    "id": "p4:2.0.5.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 10545.454545454546,
     "durationMs": 272.7272727272739,
     "stringIdx": 3,
     "fret": 7,
     "midi": 57,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p4-b20-n19",
+    "id": "p4:2.0.6.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 6,
+     "note": 0
+    },
     "startMs": 10818.18181818182,
     "durationMs": 545.4545454545441,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p5-b14-n13",
+    "id": "p5:2.0.0.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 11909.090909090908,
     "durationMs": 136.36363636363785,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p5-b15-n14",
+    "id": "p5:2.0.1.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 12045.454545454546,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p5-b16-n15",
+    "id": "p5:2.0.2.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 12181.818181818182,
     "durationMs": 136.36363636363785,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p5-b17-n16",
+    "id": "p5:2.0.3.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 12318.18181818182,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p5-b18-n17",
+    "id": "p5:2.0.4.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 12454.545454545456,
     "durationMs": 272.72727272727207,
     "stringIdx": 3,
     "fret": 5,
     "midi": 55,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p5-b19-n18",
+    "id": "p5:2.0.5.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 12727.272727272728,
     "durationMs": 272.72727272727207,
     "stringIdx": 3,
     "fret": 7,
     "midi": 57,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p5-b20-n19",
+    "id": "p5:2.0.6.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 6,
+     "note": 0
+    },
     "startMs": 13000,
     "durationMs": 545.454545454546,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p6-b14-n13",
+    "id": "p6:2.0.0.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 14090.909090909092,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p6-b15-n14",
+    "id": "p6:2.0.1.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 14227.272727272728,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p6-b16-n15",
+    "id": "p6:2.0.2.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 14363.636363636364,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 5,
     "midi": 60,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p6-b17-n16",
+    "id": "p6:2.0.3.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 14500,
     "durationMs": 136.36363636363603,
     "stringIdx": 2,
     "fret": 7,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p6-b18-n17",
+    "id": "p6:2.0.4.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 14636.363636363636,
     "durationMs": 272.7272727272739,
     "stringIdx": 3,
     "fret": 5,
     "midi": 55,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p6-b19-n18",
+    "id": "p6:2.0.5.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 14909.09090909091,
     "durationMs": 272.72727272727207,
     "stringIdx": 3,
     "fret": 7,
     "midi": 57,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p6-b20-n19",
+    "id": "p6:2.0.6.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 6,
+     "note": 0
+    },
     "startMs": 15181.818181818182,
     "durationMs": 545.454545454546,
     "stringIdx": 4,
     "fret": 5,
     "midi": 50,
-    "tech": []
+    "tech": [],
+    "finger": 1
    }
   ],
   "bars": [
@@ -484,22 +801,90 @@
   ]
  },
  "frames": {
-  "0": "0415e5b6974ea5aa32d9ad8ba8c8670264b303012baf06f65e251fa69cb6dedf",
-  "30": "bb18aefdf1451287f48238b7f3864621e22dbfa27e2b92fd3d868bc01a2742bf",
-  "34": "1fd09126c5db51a0f6644a2f8b3cd9db0337b74c0bc93187e2ffca64fbd27734",
-  "39": "14d3f0d2f8046dc311c296f71bdb0b8cd392e321ccb0510a4f4aa30171a687f5",
-  "43": "8356e0e502632108d05ac22b3f9ccfe6e0d19058ede87b80df51f9c00372dfc0",
-  "47": "3867a2e1c4957b80a73cb47481258c1a4d6e76b6b9ad96db0b3b860ff0c944a0",
-  "51": "c148465f06a18efc9b067a75bbb43e3eb0bf573f79e90a3a28ebe1c295357ecf",
-  "55": "57f255f396e16431f41b7e7ecfdfe797d45a7921b02da47ccbf3c3e9784da03b",
-  "59": "3ff6b8a2bd3f4a1b0b58966f1f432075fab5d1e539df5f86599f16628fc5cfad",
-  "63": "2c8612dd43439b9c20aa15352d0a7766e5148cace69d3c972a27f04a71ecbfc8",
-  "67": "185beae229c2f544da88e880c4828f407876678f92be648855eaf8931c3e72fc",
-  "71": "dde6c83e4a683560dfacd2be2359b484806153766f70c6c35673010594d1a78d",
-  "75": "72e8224984a3f5358b0d97ab33446068ee10b01476e2ae6d7973323f7400af63",
-  "80": "d9188d0fa2235a3e1d7de366aae68404420d3799ecb06b02d84ec13c8570b42c",
-  "84": "67689a5182050612f3e1bb895869bf325f4e0103e9d89b82fa723004b34bf450",
-  "88": "6d451930c7fcc1a4def79a9c260faf43bdf53a4903f2aaa112326f601f1c8df2",
-  "92": "32b5527b26233c684ab009c43890ff3c94dc9cdcfe92064f76268d11bcf62b92"
+  "0": "da2742a48e01da8e29229ac3c2cd1f0e3e37ba95c1dd5ca674ae32f80895bc9f",
+  "30": "4a18e087d7c0043be00e91d2677dbce43f84b01c750ba8e8b42d732dad1d71e6",
+  "34": "a59f21789d38fdcc3b58127ec8c38d5dfde3e1d22e8d117a7623180b80b717fe",
+  "39": "f36e49cf7f46c875b7b7775e489a8ed7710385d3bb603df6d0562bc7fc7f18b6",
+  "43": "484b2f1c1b887b679ba2c26014720e25d15fafa55511e698eb2e66754f05fda2",
+  "47": "2814a6b9b3d144482fa9e84e7fb2251a4f826badf6752f8226cca7f12e0ceb05",
+  "51": "8599f2d82b0089e64f54d99308b373e59e7f6175c867519c17241c9053318946",
+  "55": "8639cc348527ac9e4739d9b40c36a66ae69157bb0c93e58ea6ef43ba2aa64202",
+  "59": "069ca0d1d50ee0656527ef889fb70590eb89401a79fabbefcd8ec90cf3f855c7",
+  "63": "8941c3e24c0abb656582e6b3d0d85efc4b4f061bbe41d656031b3efbfca64c44",
+  "67": "25d8fd638279ddde901a2f2560df2c88ab963ddb30ccd141adefa58c5ca79067",
+  "71": "ded035735d1af60c754eb4d25bc8a5f11720e81fcfa9926c56e395683e7950e2",
+  "75": "bcbdbf03cbac29a23fc5f719dea0334f384e0db37f8a0a0d11a1a9b5378051eb",
+  "80": "019b18ca699c637b3c55de44567464b2dc56777f9c6d5ab72276172fe0b68320",
+  "84": "a07ce5127abf812b3cdc183335b89170715736531e6d411bc00cee9255327d65",
+  "88": "74a0368e03bb0cff3251efaca2528902e1434b294916cd7cf48a4d87ff861c65",
+  "92": "5758f36bb17a44a80bdf178fb1e5400fab650d56721aaf0637e10aa487d7db39"
+ },
+ "variant": {
+  "style": {
+   "layout": "closeup",
+   "skin": "strat"
+  },
+  "teach": {
+   "slowMo": true,
+   "loopHardest": true
+  },
+  "fps": 30,
+  "sections": [
+   {
+    "startMs": 1000,
+    "endMs": 31545.458333333332,
+    "label": "Slow · 50%"
+   },
+   {
+    "startMs": 32345.458333333332,
+    "endMs": 52709.104166666664,
+    "label": "Slow · 75%"
+   },
+   {
+    "startMs": 53509.104166666664,
+    "endMs": 55690.916666666664,
+    "label": "Loop 1/3 · bar 3"
+   },
+   {
+    "startMs": 55690.916666666664,
+    "endMs": 57872.729166666664,
+    "label": "Loop 2/3 · bar 3"
+   },
+   {
+    "startMs": 57872.729166666664,
+    "endMs": 60054.541666666664,
+    "label": "Loop 3/3 · bar 3"
+   },
+   {
+    "startMs": 60854.541666666664,
+    "endMs": 76127.27083333333,
+    "label": "Full speed"
+   }
+  ],
+  "frames": {
+   "0": "b84f50da29db77cbcdb776100766433b9dddca2a01e66dff2d4499739fa0618c",
+   "30": "4867332f62ced2155d0459487d45f244d52d7cf40ec66e75e5bc836040131196",
+   "34": "4d56454c240754d2b299b1c55f107b783c082954b4229effa58888f3c369173c",
+   "47": "f3a5ae61e1ff4189f36c77da0447c9d8d07ab0387462154a96805240ef2e5c02",
+   "48": "ccf635b83da5566a45cb58327eb176ba480518598bb175d9106ac1478430054c",
+   "51": "da422947193369f42830957627b42dd45e4a68a4789a36627cbbd8de5420c534",
+   "63": "a93611e0dab0ba27c7dfb1476b1f665756c5b6b91b079b01cb3356b1444caaa0",
+   "67": "062616433fdfd9730df186e013865bd35316ea933d15fe94f0332bf69827cc33",
+   "80": "72beb0159c03c1426ab26cc0e9d7d5267fa18cd2916a094f85257b2dc2198731",
+   "84": "c7015da4857c24fa00f4be6952a5cf5822f7183ad7b1ce70497382b594fa1774",
+   "96": "ba8af7f39a84e0a711f90f2e67e263bd2f44828d45fb14f745002c9f2eadf628",
+   "100": "37328b4ad6c536ef4ac8782302fee57908bafbf7fbfc998fd6013b9a0e44191c",
+   "112": "91aee7d967277c2704490a7fafa83953240e067a211f5ffda29044f22910795c",
+   "116": "0f2d783613e930c5cd3bb1846db6817eb8052ef1146b363e5a7c165bdb98af8d",
+   "129": "1ddb9719c15e0bb79cdeb9dfa5ae94f75cdbc31779b42a4bb374f5762247053d",
+   "133": "d70349524bfbaca413557d6ad76d6c48837719ac064480c9984c3495a7a72b25",
+   "145": "97ae8d85de1c7a41430edaee0fb4a209fc78a299b07ab379e720447ea1744bd1",
+   "149": "7d2732e47b30c14ce83c1706509d5626e8a81dee657e45c595474489b20244ad",
+   "989": "69fb2a0a99e3f5ef69f86982af69d62bd127357d93b6845391a0da1cc413b486",
+   "1624": "e0786a43c52c7800d4a402e416e551aaade41615dceb59e519a2574db69bfdf2",
+   "1689": "96e63bc46efebe7f5a2ef5b9d710d5cafba008208e9056e9a275a245b4793ef4",
+   "1755": "0f8741bc330ea430e6a5b2c2e145f376a56cdfff1a5f9d9a30fbfb23af8447b2",
+   "1844": "4dac2b1d5727a074fedb8ea3d0b7b55ead5b320d88debf681e550f9f8519014c"
+  }
  }
 }

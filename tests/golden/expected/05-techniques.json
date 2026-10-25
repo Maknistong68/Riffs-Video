@@ -25,7 +25,13 @@
   "durationMs": 9700,
   "events": [
    {
-    "id": "p0-b0-n0",
+    "id": "p0:0.0.0.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 1000,
     "durationMs": 83.33333333333326,
     "stringIdx": 5,
@@ -36,7 +42,13 @@
     ]
    },
    {
-    "id": "p0-b1-n1",
+    "id": "p0:0.0.1.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 1312.5,
     "durationMs": 83.33333333333326,
     "stringIdx": 5,
@@ -47,7 +59,13 @@
     ]
    },
    {
-    "id": "p0-b2-n2",
+    "id": "p0:0.0.2.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 1625,
     "durationMs": 83.33333333333348,
     "stringIdx": 5,
@@ -58,7 +76,13 @@
     ]
    },
    {
-    "id": "p0-b3-n3",
+    "id": "p0:0.0.3.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 1937.5,
     "durationMs": 83.33333333333348,
     "stringIdx": 5,
@@ -69,16 +93,29 @@
     ]
    },
    {
-    "id": "p0-b4-n4",
+    "id": "p0:0.0.4.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 2250,
     "durationMs": 312.5,
     "stringIdx": 2,
     "fret": 5,
     "midi": 62,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p0-b5-n5",
+    "id": "p0:0.0.5.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 2562.5,
     "durationMs": 312.5,
     "stringIdx": 2,
@@ -86,19 +123,33 @@
     "midi": 64,
     "tech": [
      "hammer"
-    ]
+    ],
+    "finger": 3
    },
    {
-    "id": "p0-b6-n6",
+    "id": "p0:0.0.6.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 6,
+     "note": 0
+    },
     "startMs": 2875,
     "durationMs": 312.5,
     "stringIdx": 2,
     "fret": 7,
     "midi": 64,
-    "tech": []
+    "tech": [],
+    "finger": 3
    },
    {
-    "id": "p0-b7-n7",
+    "id": "p0:0.0.7.0",
+    "ref": {
+     "bar": 0,
+     "voice": 0,
+     "beat": 7,
+     "note": 0
+    },
     "startMs": 3187.5,
     "durationMs": 312.5,
     "stringIdx": 2,
@@ -106,10 +157,17 @@
     "midi": 62,
     "tech": [
      "pull"
-    ]
+    ],
+    "finger": 1
    },
    {
-    "id": "p1-b8-n8",
+    "id": "p1:1.0.0.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 3500,
     "durationMs": 625,
     "stringIdx": 1,
@@ -117,10 +175,17 @@
     "midi": 66,
     "tech": [
      "slide"
-    ]
+    ],
+    "finger": 1
    },
    {
-    "id": "p1-b9-n9",
+    "id": "p1:1.0.1.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 3812.5,
     "durationMs": 312.5,
     "stringIdx": 1,
@@ -129,10 +194,17 @@
     "tech": [
      "slide"
     ],
-    "legato": true
+    "legato": true,
+    "finger": 4
    },
    {
-    "id": "p1-b10-n10",
+    "id": "p1:1.0.2.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 4125,
     "durationMs": 625,
     "stringIdx": 2,
@@ -141,10 +213,17 @@
     "tech": [
      "bend"
     ],
-    "bendSemitones": 2
+    "bendSemitones": 2,
+    "finger": 3
    },
    {
-    "id": "p1-b11-n11",
+    "id": "p1:1.0.3.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 4750,
     "durationMs": 312.5,
     "stringIdx": 0,
@@ -152,19 +231,33 @@
     "midi": 76,
     "tech": [
      "vibrato"
-    ]
+    ],
+    "finger": 1
    },
    {
-    "id": "p1-b12-n12",
+    "id": "p1:1.0.4.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 4,
+     "note": 0
+    },
     "startMs": 5062.5,
     "durationMs": 312.5,
     "stringIdx": 0,
     "fret": 10,
     "midi": 76,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p1-b13-n13",
+    "id": "p1:1.0.5.0",
+    "ref": {
+     "bar": 1,
+     "voice": 0,
+     "beat": 5,
+     "note": 0
+    },
     "startMs": 5375,
     "durationMs": 625,
     "stringIdx": 5,
@@ -173,7 +266,13 @@
     "tech": []
    },
    {
-    "id": "p2-b14-n16",
+    "id": "p2:2.0.0.2",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 0,
+     "note": 2
+    },
     "startMs": 6000,
     "durationMs": 83.33333333333303,
     "stringIdx": 3,
@@ -182,10 +281,16 @@
     "tech": [
      "palmMute"
     ],
-    "chordId": "c2-14"
+    "chordId": "c2:2.0.0"
    },
    {
-    "id": "p2-b14-n15",
+    "id": "p2:2.0.0.1",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 0,
+     "note": 1
+    },
     "startMs": 6000,
     "durationMs": 83.33333333333303,
     "stringIdx": 4,
@@ -194,10 +299,16 @@
     "tech": [
      "palmMute"
     ],
-    "chordId": "c2-14"
+    "chordId": "c2:2.0.0"
    },
    {
-    "id": "p2-b14-n14",
+    "id": "p2:2.0.0.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 0,
+     "note": 0
+    },
     "startMs": 6000,
     "durationMs": 83.33333333333303,
     "stringIdx": 5,
@@ -206,10 +317,16 @@
     "tech": [
      "palmMute"
     ],
-    "chordId": "c2-14"
+    "chordId": "c2:2.0.0"
    },
    {
-    "id": "p2-b15-n17",
+    "id": "p2:2.0.1.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 1,
+     "note": 0
+    },
     "startMs": 6625,
     "durationMs": 625,
     "stringIdx": 2,
@@ -217,19 +334,33 @@
     "midi": 69,
     "tech": [
      "harmonic"
-    ]
+    ],
+    "finger": 3
    },
    {
-    "id": "p2-b16-n18",
+    "id": "p2:2.0.2.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 2,
+     "note": 0
+    },
     "startMs": 7250,
     "durationMs": 625,
     "stringIdx": 5,
     "fret": 3,
     "midi": 43,
-    "tech": []
+    "tech": [],
+    "finger": 1
    },
    {
-    "id": "p2-b17-n19",
+    "id": "p2:2.0.3.0",
+    "ref": {
+     "bar": 2,
+     "voice": 0,
+     "beat": 3,
+     "note": 0
+    },
     "startMs": 7875,
     "durationMs": 625,
     "stringIdx": 5,
@@ -237,7 +368,8 @@
     "midi": 45,
     "tech": [
      "hammer"
-    ]
+    ],
+    "finger": 3
    }
   ],
   "bars": [
@@ -256,22 +388,93 @@
   ]
  },
  "frames": {
-  "0": "11544f45e07db86bd57434eabe0b0a2a9656397160cebe6b4513009873c4429b",
-  "30": "8874d461b61869774002d845a24222fc7f8c620e232b666c21e9b8f02fd3341a",
-  "34": "7ad56e88ceda293e7e45a530dba9c635b9d65b49205b6cd30cdd292968795cd8",
-  "40": "9531c3b9c841100d5bf8cdeb2f8101d1c3bd1faa3e6d5867d7694a20fbb9275a",
-  "44": "cab13d4cf3eefd252da3157ae0387eaa6d6cbb65c4fc986bec1f5426475da261",
-  "49": "70dec9a7560494c2e966215f879e926b2e0be5a34ae923a6ef007b29335af0a8",
-  "53": "84d27208afac7855df9ff6a23d1509b593bad79319393486f2da95c6ba1267e7",
-  "59": "e133380e8e4991b671bd0b1615aa2cfd92cc988162e5a7a3d29ac11ff84f4477",
-  "63": "83462cbde980c064a47cb157de956b5eabfee94f3b9c8377b3952f885d1e0eca",
-  "68": "a8ba961db9f46521d973411877e3f4a097e7e9c4f6295a096e55de752eac9401",
-  "72": "70a7d7bfb87786e8f1f3c5c64d40b6e816ac2201d3d3ee4c3f2be3d83fefd2cd",
-  "77": "2eed0394ebccde51fcc6152c44fd2b23768b44a14e5ddf9b49fcc40a17e748d4",
-  "81": "674ea31651a578c92825728f0c6beac657d9f5daf4e653879b99a5fe10cca10b",
-  "87": "0ec18ab639d10f4fc32b5d852371daf870868b301312ee463204cf304552d94d",
-  "91": "d8698d0be8e30df65da636b951d3107aef9cc4dbaa47d6fff1ba0d7420b703cb",
-  "96": "9ad8176bcc1fcf2973abe433d1bc3c380aa7a8051d36bb3421ec4b6fa4e9e613",
-  "100": "97daebbbb76899099b8398be0cf4506acaa8fb6607df2eea526c41625856cb62"
+  "0": "e61c83427fea15092c69c6687533fa14b5ee6ae59393c2840538796d98ff18a0",
+  "30": "1cd4cd8c6af34b8fdee6991d038f4adfd2d6ab667b7ccf6efdba30786a6dd046",
+  "34": "628565ebc97cb65e1c266159962a4916ae5267c87f83ad10cd7ca46ab726759a",
+  "40": "eeb9c4abc42ecb1607bdabaf94a89221ecaa665cab1afa28d00e25472fefe37e",
+  "44": "3721d358a5adb61f0c3a5ab62f5188b874c336718206351857f802d595921b6b",
+  "49": "ac10827e76ec5ff48ddea2d164e50fce8491ebd1acc4a34acdf4ff3d6d39b9f0",
+  "53": "26127a1475f4edbe27932d0296c9f1d69c2f913ff61e140a88bf958639c12055",
+  "59": "91f8e58eb5173fd96586c7e47256f1b4bbe172addd7c9ccd70d1d842e60e6b52",
+  "63": "02bbc91f751e50d4835356a43d0608978f60f1f2540c94edaf21074d7301e05d",
+  "68": "b9644f14c5e57fb4516910f12cba2ec3dd194eccca82c9a9b7372627b08c47c5",
+  "72": "25a933a0d0d956d0de5b3bc7325bb2a9f1f4796014660a32233b5f35073a717f",
+  "77": "b7cb7a9cebeaf1603a7a9ecae80410f9c1b56e20193541d16b050b1430c8affa",
+  "81": "00b9db7b3f2dc40ef68f742d25fe9b9c1c95b36dbaaa4e0cfd2d38b4cdab8218",
+  "87": "8357f3ac2d6f841693266228c958225362645099ff2ff337a7301f74fd0ca1e8",
+  "91": "45719c0b74a72be394b6bdaa1b4d65a28594be2c3a18bf1d01cce1b7f0d7fb97",
+  "96": "830fef09f1101fdfc0740db6d50f867e327b4f6dc20fa26b476b2628cf3b62dc",
+  "100": "40fdfaed20a3970cdc4afced3b3948574f4a753a51cd442099640f5e76821f49"
+ },
+ "variant": {
+  "style": {
+   "layout": "classic",
+   "skin": "seven",
+   "difficulty": "Medium",
+   "credit": "Golden riff",
+   "fingerNumbers": true
+  },
+  "teach": {
+   "slowMo": true,
+   "loopHardest": true
+  },
+  "fps": 30,
+  "sections": [
+   {
+    "startMs": 1000,
+    "endMs": 16000,
+    "label": "Slow · 50%"
+   },
+   {
+    "startMs": 16800,
+    "endMs": 26800,
+    "label": "Slow · 75%"
+   },
+   {
+    "startMs": 27600,
+    "endMs": 30100,
+    "label": "Loop 1/3 · bar 1"
+   },
+   {
+    "startMs": 30100,
+    "endMs": 32600,
+    "label": "Loop 2/3 · bar 1"
+   },
+   {
+    "startMs": 32600,
+    "endMs": 35100,
+    "label": "Loop 3/3 · bar 1"
+   },
+   {
+    "startMs": 35900,
+    "endMs": 43400,
+    "label": "Full speed"
+   }
+  ],
+  "frames": {
+   "0": "d287e81a332cce10a70053945a05bbb211a16cb8c71c3fc631fc822ba93d4bf5",
+   "30": "651412c09926beb5be5c4264a3a00433e488579c451d5a9a18f7191327ff9e76",
+   "34": "1ac6b4214720b74ce3a118d2194e919dde96446bf07d0bbf7433dfe52b7c924d",
+   "48": "e75b9ef28a45bb5e9691db2f75c96aafc07414b89fec5ca9d56be5e530c06f9b",
+   "49": "f3461dceca28349bb4abf4b741f635dc9aaa36eb1facc6bc7d0c4f9c00a771ab",
+   "53": "38c985bb1b2c4c04fad38868d98bb4ad77c27a77b6d0f55de167bf828da45028",
+   "68": "11d94badd04ed75de03db27bee59112b62d8cc1bf58d2fe3e11a45d99f6ae1e6",
+   "72": "13181e3735dbde674569c50693dc9edece88b9154f9e09588534b7345757f8d7",
+   "87": "890e2e69f7b37e9f10d76d052b224c0186ec5c6bb3f1bc6de12a89b4df59e66e",
+   "91": "2fd93a659cec2aa78fb9edbfbb0bf07c19adadd0295ac4f5754c9279f43587d9",
+   "105": "342712f2cb7ea0519eb55ea05c95d5bebf75c4b4cb4509a66e12451b8223c4e8",
+   "109": "8c88223725650c7b63b56f9ef1aa5f9f3a982ac2b7d45afc756f05b9e4bfdb0d",
+   "124": "e54ae9e0711c54fbced41670e053c5ed44f9182f85ac676579d73e231fee64e4",
+   "128": "4f1f389a1ecc5672da70aabb4db4e53d8e47bcb3977dad6fc36539741f8a1598",
+   "143": "8bea8a401eaecbf078d5c2d79a345ea025b0d3a8fd29398d1ad92c1ad4bedf7e",
+   "147": "3546674230bef8a9af11ed92456535541b97929ad5eb5afcba892dfd4fa4b584",
+   "162": "478f1a56b99c1a76ab41d4358aeb3f7f8ed72260ec45117c3bbbdffeedcba9c7",
+   "166": "c840c9d0e42daf738946125f2013d0e6cd71255bd344d025d2655fe9a8c4a5eb",
+   "522": "c0acb34a11a0a2fd2adf67d1d345a70c1ffdee57f67f0e966b720d259d6074b3",
+   "846": "5c6cbf7d60dae02c8932e221aceecb26fd3f1651a2fe2a35f66527769255b28f",
+   "921": "8e0d028864926f561f7e6a15932650eddc7e88358e3c85b6a8689be822800dd6",
+   "996": "6d8f6aa3a37e299bb5dac8dcd391cdba2756ad171a4cd87e54656665467b4c4a",
+   "1095": "5bcd2dc0857f5f5b97d81b289ab8bd3c70caf00d74b56b8202b705ec80c94112"
+  }
  }
 }

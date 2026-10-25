@@ -50,6 +50,41 @@ export function cameraCenter(t: Timeline, ms: number): number {
   return 2.5;
 }
 
+/** Notes that must be inside the close-up window: sounding now or starting very soon. */
+const MUST_SHOW_AHEAD_MS = 250;
+
+/**
+ * Left edge of the close-up window: the smooth camera, nudged just enough that every note
+ * sounding now (or about to) is fully in view — a struck note is never off-screen.
+ */
+export function closeupWindow(t: Timeline, ms: number): number {
+  const maxFrom = 24 - CLOSEUP_SPAN;
+  let from = Math.max(0, Math.min(maxFrom, cameraCenter(t, ms) - CLOSEUP_SPAN / 2));
+  const sounding: number[] = [];
+  const upcoming: number[] = [];
+  for (let i = upperBound(t.events, ms + MUST_SHOW_AHEAD_MS) - 1; i >= 0; i--) {
+    const e = t.events[i]!;
+    if (e.startMs < ms - 8000) break; // nothing rings that long
+    if (e.fret === 0) continue;
+    if (e.startMs > ms) upcoming.push(e.fret);
+    else if (ms < e.startMs + e.durationMs) sounding.push(e.fret);
+  }
+  // Fit upcoming notes only where that doesn't push a sounding note out; sounding notes win.
+  const fit = (frets: number[]) => {
+    if (!frets.length) return;
+    const hi = Math.max(...frets);
+    const lo = Math.min(...frets) - 1;
+    if (hi > from + CLOSEUP_SPAN) from = hi - CLOSEUP_SPAN;
+    if (lo < from) from = lo;
+  };
+  const inView = (frets: number[], f: number) => frets.every((x) => x - 1 >= f - 1e-9 && x <= f + CLOSEUP_SPAN + 1e-9);
+  const before = from;
+  fit(upcoming);
+  if (!inView(sounding, from)) from = before;
+  fit(sounding);
+  return Math.max(0, Math.min(maxFrom, from));
+}
+
 export function layoutGeometry(s: FrameSettings, t: Timeline, ms: number): LayoutGeometry {
   const right = s.width - s.safeZones.rightPx;
   const bottom = s.height - s.safeZones.bottomPx;
@@ -85,8 +120,7 @@ export function layoutGeometry(s: FrameSettings, t: Timeline, ms: number): Layou
         numbersOnNeck: false,
       };
     case 'closeup': {
-      const center = cameraCenter(t, ms);
-      const from = Math.max(0, Math.min(24 - CLOSEUP_SPAN, center - CLOSEUP_SPAN / 2));
+      const from = closeupWindow(t, ms);
       return {
         neck: { ...neckBox(600, 500), fromFret: from, toFret: from + CLOSEUP_SPAN, strings, mirror },
         lane: lane(1190, bottom - 40),

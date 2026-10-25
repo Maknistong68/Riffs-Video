@@ -18,11 +18,12 @@ describe('reviewBars', () => {
 });
 
 describe('noteFlags', () => {
-  it('flags impossible chord stretches in red', () => {
-    const t = tl(':4 (1.6 9.5) 3.1');
+  it('flags unreachable chords in red, very wide ones in amber', () => {
+    const t = tl(':4 (1.6 12.5) (1.6 7.5) 3.1');
     const flags = noteFlags(t);
     expect(flags.get(refKey(t.events[0]!.ref!))?.[0]).toMatchObject({ level: 'error' });
-    expect(flags.get(refKey(t.events[2]!.ref!))).toBeUndefined();
+    expect(flags.get(refKey(t.events[2]!.ref!))?.[0]).toMatchObject({ level: 'warn' });
+    expect(flags.get(refKey(t.events[4]!.ref!))).toBeUndefined();
   });
   it('flags low confidence in amber', () => {
     const t = tl(':4 1.6 3.1');

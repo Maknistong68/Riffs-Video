@@ -7,6 +7,10 @@ export type ReviewNote = NoteEvent & { ref: NoteRef; barStartMs: number; barEndM
 export type ReviewBar = { index: number; startMs: number; endMs: number; notes: ReviewNote[] };
 export type Flag = { level: 'error' | 'warn'; message: string };
 
+/** Fret distance (max − min) above which a chord shape is flagged. */
+export const WIDE_SPAN = 4;
+export const UNREACHABLE_SPAN = 8;
+
 export const refKey = (r: NoteRef) => `${r.bar}.${r.voice}.${r.beat}.${r.note}`;
 
 /** Each score bar once (its first play), with the notes it contains. */
@@ -43,14 +47,17 @@ export function noteFlags(t: Timeline): Map<string, Flag[]> {
     const e = issue.eventId ? byId.get(issue.eventId) : undefined;
     if (e) add(e, { level: 'error', message: issue.message });
   }
-  // Chord shapes no hand can reach.
+  // Chord stretches: very wide is a warning (it is playable for some hands); beyond any hand is an error.
   const chords = new Map<string, NoteEvent[]>();
   for (const e of t.events) if (e.chordId) chords.set(e.chordId, [...(chords.get(e.chordId) ?? []), e]);
   for (const notes of chords.values()) {
     const fretted = notes.filter((n) => n.fret > 0).map((n) => n.fret);
-    if (fretted.length > 1 && Math.max(...fretted) - Math.min(...fretted) > 5) {
-      for (const n of notes) add(n, { level: 'error', message: 'Chord stretches more than 6 frets' });
-    }
+    const span = fretted.length > 1 ? Math.max(...fretted) - Math.min(...fretted) : 0;
+    const f: Flag | null =
+      span > UNREACHABLE_SPAN ? { level: 'error', message: `Chord spans ${span + 1} frets: no hand can reach that` }
+      : span > WIDE_SPAN ? { level: 'warn', message: `Very wide stretch (${span + 1} frets)` }
+      : null;
+    if (f) for (const n of notes) add(n, f);
   }
   for (const e of t.events) {
     if (e.fret > MAX_FRET) add(e, { level: 'error', message: `Fret above ${MAX_FRET}` });

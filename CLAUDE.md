@@ -78,9 +78,11 @@ type Timeline = {
   durationMs: number;
   events: NoteEvent[];       // sorted by startMs, repeats already expanded
   bars: { index: number; startMs: number }[];
+  sections?: { startMs: number; endMs: number; label: string }[]; // teach passes ("Slow · 50%")
 };
 type NoteEvent = {
   id: string;
+  ref?: { bar: number; voice: number; beat: number; note: number }; // stable score address (edits)
   startMs: number;           // relative to start of video (includes leadInMs)
   durationMs: number;
   stringIdx: number;         // 0 = high e … 5 = low E (display order) — see pitfall P5

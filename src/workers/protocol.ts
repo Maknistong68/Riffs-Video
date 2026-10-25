@@ -3,7 +3,7 @@ import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
 import type { RiffSource } from '../import/source';
 import type { RiffEdit } from '../engine/edits';
-import type { TeachOptions } from '../engine/arrange';
+import type { TeachOptions } from '../engine/teach';
 import type { RenderStyle } from '../render/style';
 
 export type SoundMode = 'synth' | 'synth-click';

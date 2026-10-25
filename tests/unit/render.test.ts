@@ -96,6 +96,18 @@ describe('close-up camera', () => {
     }
   });
 
+  it('never leaves a sounding note outside the window, even on big jumps', () => {
+    const jumpy = { ...t, events: t.events.map((e, i) => ({ ...e, fret: i % 2 ? 1 : 14, midi: (t.tuning[e.stringIdx] ?? 0) + (i % 2 ? 1 : 14), durationMs: 200 })) };
+    const s = defaultFrameSettings(30, { layout: 'closeup' });
+    for (const e of jumpy.events) {
+      for (const ms of [e.startMs, e.startMs + 100]) {
+        const n = layoutGeometry(s, jumpy, ms).neck;
+        expect(e.fret - 1).toBeGreaterThanOrEqual(n.fromFret - 1e-9);
+        expect(e.fret).toBeLessThanOrEqual(n.toFret + 1e-9);
+      }
+    }
+  });
+
   it('centres on the frets being played', () => {
     const high = { ...t, events: t.events.map((e) => ({ ...e, fret: e.fret + 10, midi: e.midi + 10 })) };
     expect(cameraCenter(high, high.events[3]!.startMs)).toBeGreaterThan(9);
