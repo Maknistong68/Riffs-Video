@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aiConfig, convertTabWithAI, isAnswerFailure, parseConvertResponse, type AiResult } from '../../src/import/ai';
+import { aiConfig, convertTabWithAI, generateRiffWithAI, isAnswerFailure, parseConvertResponse, type AiResult } from '../../src/import/ai';
 import { handleRequest } from '../../supabase/functions/convert-tab/handler';
 import { DEFAULT_LIMITS, RateLimiter } from '../../supabase/functions/convert-tab/rateLimit';
 
@@ -105,5 +105,31 @@ describe('convertTabWithAI', () => {
   it('answer failures go to Riff Review, transport failures stay on the form', () => {
     expect(['not_a_tab', 'model_refused', 'model_failed', 'bad_response'].every((c) => isAnswerFailure(c as never))).toBe(true);
     expect(['offline', 'network', 'timeout', 'rate_limited', 'too_long', 'not_configured'].some((c) => isAnswerFailure(c as never))).toBe(false);
+  });
+});
+
+describe('generateRiffWithAI', () => {
+  const deps = { config: CONFIG, deviceId: 'device-1234' };
+  it('stays offline-safe and bounded', async () => {
+    let called = false;
+    const spy = (async () => ((called = true), new Response('{}'))) as typeof fetch;
+    const brief = { genre: 'rock' as const, difficulty: 'easy' as const, bars: 2 };
+    expect(await generateRiffWithAI(brief, { ...deps, config: null, fetchFn: spy })).toMatchObject({ ok: false, code: 'not_configured' });
+    expect(await generateRiffWithAI(brief, { ...deps, online: false, fetchFn: spy })).toMatchObject({ ok: false, code: 'offline' });
+    expect(await generateRiffWithAI({ ...brief, idea: 'x'.repeat(501) }, { ...deps, fetchFn: spy })).toMatchObject({ ok: false, code: 'too_long' });
+    expect(called).toBe(false);
+  });
+  it('sends the brief through the real handler, which passes it to the model as mode "generate"', async () => {
+    let seen: unknown;
+    const fn = (async (url: string, init?: RequestInit) =>
+      handleRequest(new Request(url, init), {
+        convert: async (req) => ((seen = req), { ...OK_BODY, ok: true }),
+        limiter: new RateLimiter(DEFAULT_LIMITS),
+        allowedOrigins: ['*'],
+        now: () => 0,
+      })) as typeof fetch;
+    const r = await generateRiffWithAI({ genre: 'metal', difficulty: 'hard', bars: 4, idea: ' chuggy ' }, { ...deps, fetchFn: fn });
+    expect(r).toMatchObject({ ok: true, alphaTex: OK_BODY.alphaTex });
+    expect(seen).toEqual({ text: '', deviceId: 'device-1234', mode: 'generate', brief: { genre: 'metal', difficulty: 'hard', bars: 4, idea: 'chuggy' } });
   });
 });

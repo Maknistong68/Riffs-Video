@@ -1,5 +1,39 @@
 # Status
 
+## Phase 6 — Creative extras ✅ in emulation (whole backlog) · ⏳ real-device check
+
+| Backlog item | Where | Checked by |
+|---|---|---|
+| Hook-first intro (full speed, then teach) | Studio › Teach; `engine/arrange.ts` | unit, golden `p6-metal-overlays`, e2e (68/68 in sync) |
+| Difficulty auto-score | Text › Difficulty "Auto"; `engine/difficulty` | unit |
+| Camera zoom follows hand | 3D camera "Follow" + Close-up layout (Phase 5) | unit, golden |
+| Genre themes (rock / metal / blues / funk / lo-fi / acoustic) | Layout › Genre: colours + tone + drums | unit (dot contrast), golden, e2e |
+| "Guess the song?" opener + outro reveal | Text › Opener | golden, e2e (52/52) |
+| Original riff generator + riff of the day | 🎲 in the Create sheet (`#/generate`); `engine/generate.ts` | unit (21: playable, in scale, deterministic, every genre × difficulty), e2e → Review → export in sync |
+| AI-generated original riff | Generate › "AI (Claude)"; edge function `mode: "generate"` | unit (function + client), e2e with mocked endpoint |
+| Same riff in 3 positions | Teach; `engine/positions.ts` | unit, golden `p6-lofi-positions`, e2e |
+| Drum / metronome backing | Sound › Drums (mixed after amp FX) | unit, golden |
+| End-of-video fretboard heatmap | Layout › Heatmap | golden, e2e |
+| Bar counter + progress | Layout › Bar counter (in the header) | golden |
+| Auto title / caption / hashtags | Result › Caption card; passed to Web Share | unit, e2e |
+| Batch export queue | Library ⋯ › Add to export queue; Exports › Queue (survives reloads, wake lock) | e2e (2 riffs, both in sync) |
+| Part 1 / Part 2 end cards | Teach › Split into parts (queues Part videos) + Text › End card | unit, e2e |
+| Split screen with standard notation | Split layout (Phase 2) | golden |
+| Practice link page | Text › Practice link; `#/p/<data>` (riff in the link, no server): slower, loop, save | unit (round-trips all goldens), e2e |
+
+Fixes found on the way: Basic Pitch now falls back to the CPU when the WebGL backend fails mid-run
+(seen as "Failed to compile fragment shader" on a long export in software GL).
+
+## Phase 5 — 3D ✅ in emulation · ⏳ mid-range Android speed check
+
+| Criterion | Result |
+|---|---|
+| Procedural three.js neck (fretboard, frets, inlays, strings, shaped headstock + tuners), no model files | ✅ `render/three/neck3d.ts`, lazy chunk |
+| Camera rigs: front, low angle, follow hand, slow orbit (+ angled, from above, player's view, down the neck), drag to turn | ✅ same `drawFrame` contract; golden 3D variants |
+| 3D export passes Sync Report | ✅ golden 02/03/05 in 3D (software WebGL) |
+| ≥ 0.5× real time on a mid-range Android | ⏳ the app measures it on first 3D use (Settings › Speed shows the ratio) — please report it |
+| Automatic 2D fallback on slow devices | ✅ below 0.5× the Studio switches to Flat 2D with "Use 3D anyway"; export ETA uses the measured speed |
+
 ## Phase 4 — AI import ✅ in emulation · ⏳ needs the user's Supabase project + key, and a real-device check
 
 ### Acceptance

@@ -188,3 +188,4 @@ textarea.input { padding: 12px 14px; min-height: 260px; font-family: ui-monospac
 .center { text-align: center; }
 .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
 .queue-item { min-height: 52px; border-top: 1px solid var(--line); padding-top: 8px; }
+.tab-preview { margin: 8px 0; padding: 10px 12px; border-radius: 10px; background: var(--bg); font: 600 13px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-x: auto; white-space: pre; color: var(--text); }

@@ -122,6 +122,24 @@ export async function convertTabWithAI(input: { text: string; title?: string }, 
   if (text.length > MAX_AI_TEXT_CHARS) return fail('too_long', `That text is too long (max ${MAX_AI_TEXT_CHARS.toLocaleString('en')} characters). Paste just the riff.`);
   if (deps.online === false) return fail('offline', 'AI import needs an internet connection. Paste text tab works offline.');
 
+  return post({ text, deviceId: deps.deviceId, ...(input.title?.trim() ? { title: input.title.trim() } : {}) }, deps.config, deps, 'The AI took too long. Try a shorter piece of tab.');
+}
+
+export type AiGenGenre = 'rock' | 'metal' | 'blues' | 'funk' | 'lofi' | 'acoustic';
+export type AiGenBrief = { genre: AiGenGenre; difficulty: 'easy' | 'medium' | 'hard'; bars: number; idea?: string };
+export const MAX_AI_IDEA_CHARS = 500;
+
+/** Phase 6: ask the Edge Function for an ORIGINAL riff from a brief. Same answer checks; never rejects. */
+export async function generateRiffWithAI(brief: AiGenBrief, deps: ConvertDeps): Promise<AiResult> {
+  if (!deps.config) return fail('not_configured', 'AI riffs aren’t set up in this version of the app. The offline generator works without it.');
+  const idea = brief.idea?.trim();
+  if (idea && idea.length > MAX_AI_IDEA_CHARS) return fail('too_long', `Keep the idea under ${MAX_AI_IDEA_CHARS} characters.`);
+  if (deps.online === false) return fail('offline', 'AI riffs need an internet connection. The offline generator works without it.');
+  const body = { deviceId: deps.deviceId, mode: 'generate', brief: { genre: brief.genre, difficulty: brief.difficulty, bars: brief.bars, ...(idea ? { idea } : {}) } };
+  return post(body, deps.config, deps, 'The AI took too long. Try again.');
+}
+
+async function post(body: Record<string, unknown>, config: AiConfig, deps: ConvertDeps, timeoutMessage: string): Promise<AiResult> {
   const ctrl = new AbortController();
   const onAbort = () => ctrl.abort();
   deps.signal?.addEventListener('abort', onAbort);
@@ -131,16 +149,16 @@ export async function convertTabWithAI(input: { text: string; title?: string }, 
     ctrl.abort();
   }, deps.timeoutMs ?? TIMEOUT_MS);
   try {
-    const res = await (deps.fetchFn ?? fetch)(deps.config.url, {
+    const res = await (deps.fetchFn ?? fetch)(config.url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${deps.config.anonKey}`, apikey: deps.config.anonKey },
-      body: JSON.stringify({ text, deviceId: deps.deviceId, ...(input.title?.trim() ? { title: input.title.trim() } : {}) }),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.anonKey}`, apikey: config.anonKey },
+      body: JSON.stringify(body),
       signal: ctrl.signal,
     });
     const bodyText = await res.text();
     return parseConvertResponse(res.status, bodyText, res.headers.get('retry-after'));
   } catch {
-    if (timedOut) return fail('timeout', 'The AI took too long. Try a shorter piece of tab.');
+    if (timedOut) return fail('timeout', timeoutMessage);
     if (deps.signal?.aborted) return fail('network', 'Cancelled.');
     return fail('network', 'Could not reach the AI service. Check your connection and try again.');
   } finally {

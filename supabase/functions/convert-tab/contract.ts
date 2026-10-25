@@ -7,7 +7,12 @@ export const MAX_TEXT_CHARS = 20_000;
 export const MAX_ALPHATEX_CHARS = 120_000;
 export const MAX_NOTES = 4000;
 
-export type ConvertRequest = { text: string; deviceId: string; title?: string };
+import { GEN_DIFFICULTIES, GEN_GENRES, type GenerateBrief } from './prompt.ts';
+
+export const MAX_IDEA_CHARS = 500;
+
+/** mode 'generate' (phase 6): no user tab — the model writes an original riff from the brief. */
+export type ConvertRequest = { text: string; deviceId: string; title?: string; mode?: 'convert' | 'generate'; brief?: GenerateBrief };
 
 export type ModelNote = { bar: number; beat: number; string: number; fret: number; confidence: number };
 
@@ -51,6 +56,18 @@ const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInt
 export function parseRequest(body: unknown): { ok: true; value: ConvertRequest } | { ok: false; code: 'bad_request' | 'too_long'; message: string } {
   if (!isObj(body)) return { ok: false, code: 'bad_request', message: 'Send JSON with "text" and "deviceId".' };
   const { text, deviceId, title } = body;
+  if (body.mode === 'generate') {
+    if (typeof deviceId !== 'string' || !/^[A-Za-z0-9-]{8,64}$/.test(deviceId)) return { ok: false, code: 'bad_request', message: 'Missing device id.' };
+    const b = body.brief;
+    if (!isObj(b) || !GEN_GENRES.includes(b.genre as never) || !GEN_DIFFICULTIES.includes(b.difficulty as never) || !isInt(b.bars) || b.bars < 1 || b.bars > 8) {
+      return { ok: false, code: 'bad_request', message: 'Pick a genre, a difficulty and 1–8 bars.' };
+    }
+    if (b.idea !== undefined && typeof b.idea !== 'string') return { ok: false, code: 'bad_request', message: 'The idea must be text.' };
+    if (typeof b.idea === 'string' && b.idea.length > MAX_IDEA_CHARS) return { ok: false, code: 'too_long', message: `Keep the idea under ${MAX_IDEA_CHARS} characters.` };
+    const idea = typeof b.idea === 'string' && b.idea.trim() ? b.idea.trim() : undefined;
+    const brief = { genre: b.genre, difficulty: b.difficulty, bars: b.bars, ...(idea ? { idea } : {}) } as GenerateBrief;
+    return { ok: true, value: { text: '', deviceId, mode: 'generate', brief } };
+  }
   if (typeof text !== 'string' || !text.trim()) return { ok: false, code: 'bad_request', message: 'Paste some tab text first.' };
   if (text.length > MAX_TEXT_CHARS) return { ok: false, code: 'too_long', message: `That text is too long (max ${MAX_TEXT_CHARS.toLocaleString('en')} characters). Paste just the riff.` };
   if (typeof deviceId !== 'string' || !/^[A-Za-z0-9-]{8,64}$/.test(deviceId)) return { ok: false, code: 'bad_request', message: 'Missing device id.' };

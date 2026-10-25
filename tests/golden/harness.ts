@@ -1,4 +1,5 @@
 /** Dev-only page logic for `npm run golden` and pipeline debugging. Not part of the app build. */
+import { DEFAULT_DRUMS, type DrumPattern } from '../../src/audio/drums';
 import { DEFAULT_SOUND_PACK } from '../../src/audio/soundpacks';
 import { programOf, tonePreset } from '../../src/audio/tone';
 import { buildArrangement, NO_TEACH, type TeachOptions } from '../../src/engine/arrange';
@@ -34,12 +35,12 @@ const harness = {
     return { out, sections: timeline.sections ?? [], durationMs: timeline.durationMs };
   },
   /** Timeline JSON + SHA-256 of drawFrame pixels for the given frames (30 fps). */
-  async frameHashes(text: string, frames: number[], style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH) {
+  async frameHashes(text: string, frames: number[], style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH, timing: { leadInMs?: number; tailMs?: number } = {}) {
     const fontOk = await loadRenderFonts();
     if (style.view === '3d' && !(await ensureNeck3d())) throw new Error('WebGL unavailable');
     const timeline =
       !isPlainTeach(teach)
-        ? buildArrangement(() => loadAlphaTex(text), { trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs, tailMs: DEFAULT_BUILD.tailMs, teach }).timeline
+        ? buildArrangement(() => loadAlphaTex(text), { trackIndex: 0, leadInMs: timing.leadInMs ?? DEFAULT_BUILD.leadInMs, tailMs: timing.tailMs ?? DEFAULT_BUILD.tailMs, teach }).timeline
         : buildTimeline(loadAlphaTex(text), { ...DEFAULT_BUILD, trackIndex: 0 }).timeline;
     const s = defaultFrameSettings(30, style);
     const canvas = new OffscreenCanvas(s.width, s.height);
@@ -52,16 +53,17 @@ const harness = {
     return { fontOk, timeline, hashes };
   },
   /** Full on-device export through the real worker; returns report + size (no MP4 bytes). */
-  async exportRiff(text: string, fps: 30 | 60, style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH, tonePresetId = 'clean') {
+  async exportRiff(text: string, fps: 30 | 60, style: Partial<RenderStyle> = {}, teach: TeachOptions = NO_TEACH, tonePresetId = 'clean', timing: { leadInMs?: number; tailMs?: number } = {}, drums?: DrumPattern) {
     const tone = tonePreset(tonePresetId);
     const stages: string[] = [];
     const job = startExport(
       {
-        riff: { source: { kind: 'alphatex', text }, trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs, teach, program: programOf(tone.instrument) },
+        riff: { source: { kind: 'alphatex', text }, trackIndex: 0, leadInMs: timing.leadInMs ?? DEFAULT_BUILD.leadInMs, ...(timing.tailMs !== undefined ? { tailMs: timing.tailMs } : {}), teach, program: programOf(tone.instrument) },
         fps,
         style: defaultFrameSettings(fps, style).style,
         soundMode: 'synth',
         tone,
+        ...(drums ? { drums: { ...DEFAULT_DRUMS, pattern: drums } } : {}),
         soundFontUrl: DEFAULT_SOUND_PACK.url,
         modelUrl: new URL('/models/basic-pitch/model.json', location.href).href,
       },

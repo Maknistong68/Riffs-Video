@@ -4,7 +4,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { validateModelOutput, type ConvertRequest, type ConvertResponse } from './contract.ts';
-import { OUTPUT_SCHEMA, SYSTEM_PROMPT, userMessage } from './prompt.ts';
+import { GENERATE_SYSTEM_PROMPT, OUTPUT_SCHEMA, SYSTEM_PROMPT, generateMessage, userMessage } from './prompt.ts';
 
 export const DEFAULT_MODEL = 'claude-opus-5-5';
 export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
@@ -15,6 +15,7 @@ export type ClaudeOptions = { model: string; effort: Effort };
 export type MessagesClient = Pick<Anthropic, 'beta'>;
 
 export async function convertWithClaude(client: MessagesClient, req: ConvertRequest, opts: ClaudeOptions): Promise<ConvertResponse> {
+  const generating = req.mode === 'generate' && req.brief !== undefined;
   let message: Anthropic.Beta.BetaMessage;
   try {
     const stream = client.beta.messages.stream({
@@ -23,9 +24,9 @@ export async function convertWithClaude(client: MessagesClient, req: ConvertRequ
       // Refusal fallback: if the safety classifiers decline, the API re-runs on a suitable model.
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      system: SYSTEM_PROMPT,
+      system: generating ? GENERATE_SYSTEM_PROMPT : SYSTEM_PROMPT,
       output_config: { effort: opts.effort, format: { type: 'json_schema', schema: OUTPUT_SCHEMA } },
-      messages: [{ role: 'user', content: userMessage(req.text, req.title) }],
+      messages: [{ role: 'user', content: generating ? generateMessage(req.brief!) : userMessage(req.text, req.title) }],
     });
     message = await stream.finalMessage();
   } catch (e) {
@@ -40,7 +41,7 @@ export async function convertWithClaude(client: MessagesClient, req: ConvertRequ
   }
 
   if (message.stop_reason === 'refusal') {
-    return fail('model_refused', 'The AI declined to convert this text. Try the Paste text tab option instead.');
+    return fail('model_refused', generating ? 'The AI declined to write this riff. Try another idea.' : 'The AI declined to convert this text. Try the Paste text tab option instead.');
   }
   if (message.stop_reason === 'max_tokens') {
     return fail('model_failed', 'That tab is too long to convert in one go. Paste one section (a riff or a verse) at a time.');
@@ -54,6 +55,7 @@ export async function convertWithClaude(client: MessagesClient, req: ConvertRequ
   }
   const out = validateModelOutput(json);
   if (!out.ok) return fail('model_failed', `The AI answer was incomplete (${out.reason}). Try again.`);
+  if (generating && !out.value.alphaTex.trim()) return fail('model_failed', 'The AI did not write a riff. Try again.');
   if (out.value.notATab || !out.value.alphaTex.trim()) {
     return fail('not_a_tab', 'No guitar tab found in that text. Paste the tab itself (lines like e|--0--3--|).');
   }

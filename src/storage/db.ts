@@ -90,6 +90,8 @@ export type AiImportInfo = {
   rhythmGuessed: boolean;
   tempoGuessed: boolean;
   model?: string;
+  /** Phase 6: an original riff the AI wrote from a brief (originalText = the user's idea). */
+  generated?: boolean;
 };
 
 export type SyncProblem = { text: string; atMs?: number };

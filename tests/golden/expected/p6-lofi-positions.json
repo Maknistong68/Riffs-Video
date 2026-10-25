@@ -1,0 +1,64 @@
+{
+ "variant": {
+  "base": "01-pentatonic-run.atex",
+  "style": {
+   "view": "2d",
+   "layout": "overlay",
+   "theme": "lofi",
+   "barCounter": true
+  },
+  "teach": {
+   "slowMo": false,
+   "loopHardest": false,
+   "positions": true
+  },
+  "fps": 30,
+  "tone": "lofi",
+  "drums": "lofi",
+  "timing": {
+   "leadInMs": 1000,
+   "tailMs": 0
+  }
+ },
+ "sections": [
+  {
+   "startMs": 1000,
+   "endMs": 5800,
+   "label": "As written · open position"
+  },
+  {
+   "startMs": 6600,
+   "endMs": 11400,
+   "label": "Position 2 · frets 3–8"
+  },
+  {
+   "startMs": 12200,
+   "endMs": 17000,
+   "label": "Position 3 · frets 3–12"
+  }
+ ],
+ "durationMs": 17000,
+ "frames": {
+  "0": "ca05fd851d7f8223930cd0837ae6f125474506d431268a42225494a1a2274d99",
+  "24": "81bdcea37ff6b3cc901e7ee1c9cdc4009c8d46d7d37c41f75a4e9033fd3d9345",
+  "30": "1c071d5ac6f86e29531b3bfead620c1fbbbf22632bfc022b621a8910c52ee7ef",
+  "34": "3d48205bba39cb9344db3424910fffc35b9767b519207a688c7b8e5399e02e61",
+  "39": "b49b90cdf0fd5b3987363b045dbd82cf945dde1a69b6bb2f34adaaf2e9cc4797",
+  "43": "6ad9935cf8eb467ee68b981902fcb0763d475b8baa4503e08303bfffe8739741",
+  "48": "6e059eda8c0e7786eb32fad0758f7cb43c108c1b40c01938e4e179872a572e65",
+  "52": "2011f4bf5b9faaf935074e8be30deaf6be29b83f61a1f0bbacdb6a37b45d68c0",
+  "57": "34b2e4b4c56a83700b3a19ea9a164a491bdf00b7eb7f609dac29930581fda7ea",
+  "61": "4e2f62940eba61e113aa9698068c1195514f3151130c9cb343165ed04d5abc4d",
+  "66": "52ad5678c5beec7705c89ce63f26775010a9a15d7b524305171424cd9e631f53",
+  "70": "ba706e82bdf1fbea580a34ca99707390b1f10c17700762e47e98cde43cdc8722",
+  "75": "b560ff39a203d6af3c4d6944662ad7d94352842d61a781f44903baece27dd620",
+  "79": "3bebab6780fdf37b2bd29a1eea08d7941d1a94f437e1b263057c430c18ddbc52",
+  "84": "c7b889ab13a5b1edbfcfe20922a8eca273c5219e9f62b27821ed354048204691",
+  "88": "91303b6a1729e291e93661beba21010ace57d3497b095203ae22b129c39e17fd",
+  "93": "b847fe07ab6359f3918e1d33647451f8cf5a216b2873cc3a1eec2a30b6829a15",
+  "97": "72d42cb80b2a894fc0a78c4ed948be5b4ce3a2242198097197f66b7d97c8258e",
+  "216": "d774fea2c5e89d7527aff18f5c6308aeaa1ce9383a3c2315f2aa9bc934ad8aff",
+  "384": "43b6a61df81a43818f8465b7e99feb078f6e464ca8c6ba1bc1eeb0939db2c72f",
+  "474": "d8e8e0974821ac0c40c3e9f84515bc96c6d5710cb08a205b28c6637cb1ed92e3"
+ }
+}

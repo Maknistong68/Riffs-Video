@@ -14,6 +14,7 @@ import type { TeachOptions } from '../../src/engine/arrange';
 import { firstFrameAtOrAfter } from '../../src/engine/time';
 import type { Timeline } from '../../src/engine/timeline';
 import type { RenderStyle } from '../../src/render/style';
+import type { DrumPattern } from '../../src/audio/drums';
 
 const riffDir = join(import.meta.dirname, 'riffs');
 const expectedDir = join(import.meta.dirname, 'expected');
@@ -32,10 +33,39 @@ const VARIANTS: Record<string, Variant> = {
   '05-techniques.atex': { style: { view: '3d', camera: { yaw: -14, pitch: 60, motion: 'static' }, layout: 'classic', skin: 'seven', difficulty: 'Medium', credit: 'Golden riff', fingerNumbers: true }, teach: { slowMo: true, loopHardest: true }, fps: 30, tone: 'metal' },
 };
 
+/**
+ * Phase 6 looks on top of two golden riffs: genre theme + drums + bar counter + guess opener / outro
+ * reveal + heatmap + follow card, and hook-first + same riff in 3 positions. Same three checks.
+ */
+// Same values as src/render/overlays.ts (not imported: it pulls in browser-only font modules).
+const OPENER_LEAD_IN_MS = 3200;
+const OUTRO_MS = 3200;
+type P6Variant = Variant & { base: string; drums: DrumPattern; timing: { leadInMs: number; tailMs: number } };
+const P6_VARIANTS: Record<string, P6Variant> = {
+  'p6-metal-overlays': {
+    base: '02-chords.atex',
+    style: { view: '2d', layout: 'classic', theme: 'metal', barCounter: true, heatmap: true, opener: 'guess', endCard: { kind: 'follow', text: '@riffreel' } },
+    teach: { slowMo: false, loopHardest: false, hookFirst: true },
+    fps: 30,
+    tone: 'metal',
+    drums: 'metal',
+    timing: { leadInMs: OPENER_LEAD_IN_MS, tailMs: OUTRO_MS },
+  },
+  'p6-lofi-positions': {
+    base: '01-pentatonic-run.atex',
+    style: { view: '2d', layout: 'overlay', theme: 'lofi', barCounter: true },
+    teach: { slowMo: false, loopHardest: false, positions: true },
+    fps: 30,
+    tone: 'lofi',
+    drums: 'lofi',
+    timing: { leadInMs: 1000, tailMs: 0 },
+  },
+};
+
 type HashResult = { fontOk: boolean; timeline: Timeline; hashes: string[] };
 type Harness = {
-  frameHashes(text: string, frames: number[], style?: Partial<RenderStyle>, teach?: TeachOptions): Promise<HashResult>;
-  exportRiff(text: string, fps: 30 | 60, style?: Partial<RenderStyle>, teach?: TeachOptions, tone?: string): Promise<{ report: { ok: boolean; matched: number; total: number; maxAbsErrorMs: number; matches: { ok: boolean; detail: string }[] } }>;
+  frameHashes(text: string, frames: number[], style?: Partial<RenderStyle>, teach?: TeachOptions, timing?: { leadInMs?: number; tailMs?: number }): Promise<HashResult>;
+  exportRiff(text: string, fps: 30 | 60, style?: Partial<RenderStyle>, teach?: TeachOptions, tone?: string, timing?: { leadInMs?: number; tailMs?: number }, drums?: DrumPattern): Promise<{ report: { ok: boolean; matched: number; total: number; maxAbsErrorMs: number; matches: { ok: boolean; detail: string }[] } }>;
 };
 
 /** Start, the first 8 note onsets, a few frames into each, and one frame per teach section. */
@@ -80,6 +110,31 @@ for (const file of readdirSync(riffDir).filter((f) => f.endsWith('.atex')).sort(
 
     const { report } = await call('exportRiff', text, variant.fps, variant.style, variant.teach, variant.tone);
     console.log(`${file} [${variant.style.layout}, ${variant.tone} tone, ${JSON.stringify(variant.teach)}, ${variant.fps} fps]: ${report.matched}/${report.total} matched, max error ${report.maxAbsErrorMs.toFixed(1)} ms`);
+    if (!report.ok) console.log(report.matches.filter((m) => !m.ok).map((m) => m.detail).slice(0, 10));
+    expect(report.ok, 'Sync Report must be green').toBe(true);
+  });
+}
+
+for (const [name, v] of Object.entries(P6_VARIANTS)) {
+  test(name, async ({ page }) => {
+    const text = readFileSync(join(riffDir, v.base), 'utf8');
+    await page.goto('/golden.html');
+    await page.waitForFunction(() => 'harness' in window);
+    const call = <K extends keyof Harness>(k: K, ...args: Parameters<Harness[K]>) =>
+      page.evaluate(([k, args]) => ((window as unknown as { harness: Record<string, (...a: unknown[]) => unknown> }).harness[k]!(...args)), [k, args] as const) as ReturnType<Harness[K]>;
+    const probe = await call('frameHashes', text, [0], v.style, v.teach, v.timing);
+    expect(probe.fontOk).toBe(true);
+    const t = probe.timeline;
+    // Opener, every section, and the outro (reveal / heatmap / end card) when there is one.
+    const frames = [...new Set([...pickFrames(t), firstFrameAtOrAfter(800, 30), firstFrameAtOrAfter(t.durationMs - 1200, 30)])].sort((a, b) => a - b);
+    const styled = await call('frameHashes', text, frames, v.style, v.teach, v.timing);
+    const actual = { variant: v, sections: styled.timeline.sections ?? [], durationMs: styled.timeline.durationMs, frames: Object.fromEntries(frames.map((f, i) => [f, styled.hashes[i]])) };
+    const path = join(expectedDir, `${name}.json`);
+    if (update || !existsSync(path)) writeFileSync(path, JSON.stringify(actual, null, 1) + '\n');
+    expect(actual, 'phase 6 frames differ from snapshot').toEqual(JSON.parse(readFileSync(path, 'utf8')));
+
+    const { report } = await call('exportRiff', text, v.fps, v.style, v.teach, v.tone, v.timing, v.drums);
+    console.log(`${name} [${v.tone} tone, ${v.drums} drums, ${JSON.stringify(v.teach)}]: ${report.matched}/${report.total} matched, max error ${report.maxAbsErrorMs.toFixed(1)} ms`);
     if (!report.ok) console.log(report.matches.filter((m) => !m.ok).map((m) => m.detail).slice(0, 10));
     expect(report.ok, 'Sync Report must be green').toBe(true);
   });

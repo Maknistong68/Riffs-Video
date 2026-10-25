@@ -15,6 +15,7 @@ const patterns = [
   [/x-api-key/i, 'Anthropic auth header'],
   [/anthropic-version/i, 'Anthropic API header'],
   [/You convert guitar or bass tablature/, 'Edge Function prompt (server-only code in the bundle)'],
+  [/You write short, ORIGINAL guitar riffs/, 'Edge Function generate prompt (server-only code in the bundle)'],
 ];
 const secret = process.env.ANTHROPIC_API_KEY;
 if (secret && secret.length >= 8) patterns.push([new RegExp(secret.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'the actual ANTHROPIC_API_KEY value']);

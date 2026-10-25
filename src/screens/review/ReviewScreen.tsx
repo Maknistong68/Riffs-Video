@@ -123,19 +123,25 @@ function Review({ riff }: { riff: RiffRecord }) {
       {error && !aiFailed && <div className="errors" role="alert">{error.map((m, i) => <span key={i}>{m}</span>)}</div>}
       {riff.source === 'ai' && riff.ai && (aiFailed ? (
         <div className="errors" role="alert" data-testid="ai-failed">
-          <strong>AI import didn’t work</strong>
+          <strong>{riff.ai.generated ? 'The AI riff didn’t work' : 'AI import didn’t work'}</strong>
           <span>{riff.ai.message ?? 'The AI answer could not be used.'}</span>
           {(riff.ai.errors ?? []).slice(0, 5).map((m, i) => <span key={i} className="small">{m}</span>)}
           <div className="row wrap" style={{ marginTop: 8, gap: 8 }}>
             {riff.sourceText ? <button className="btn" onClick={() => navigate({ name: 'write', riffId: riff.id })} data-testid="ai-edit-tex">Fix the tab by hand</button> : null}
-            <button className="btn" onClick={() => { handOffToPaste(riff.ai!.originalText); navigate({ name: 'paste' }); }} data-testid="ai-as-paste">Paste as text tab</button>
-            <button className="btn" onClick={() => { handOffToAi(riff.ai!.originalText); navigate({ name: 'ai' }); }} data-testid="ai-retry">Try AI again</button>
+            {riff.ai.generated ? (
+              <button className="btn" onClick={() => navigate({ name: 'generate' })} data-testid="ai-retry">Generate another</button>
+            ) : (
+              <>
+                <button className="btn" onClick={() => { handOffToPaste(riff.ai!.originalText); navigate({ name: 'paste' }); }} data-testid="ai-as-paste">Paste as text tab</button>
+                <button className="btn" onClick={() => { handOffToAi(riff.ai!.originalText); navigate({ name: 'ai' }); }} data-testid="ai-retry">Try AI again</button>
+              </>
+            )}
           </div>
         </div>
       ) : (
         <div className={riff.ai.rhythmGuessed || warnCount > 0 ? 'notice' : 'card'} data-testid="ai-banner">
           <span>
-            Written out by AI from your text.{' '}
+            {riff.ai.generated ? 'An original riff written by AI — play it before you style it.' : 'Written out by AI from your text.'}{' '}
             {warnCount > 0 ? `${warnCount} note${warnCount === 1 ? '' : 's'} marked amber need a look. ` : ''}
             {riff.ai.rhythmGuessed ? 'The rhythm was guessed — play it and fix note lengths in the editor. ' : ''}
             {riff.ai.tempoGuessed ? `Tempo guessed (${t?.tempoMap[0] ? Math.round(t.tempoMap[0].bpm) : '?'} bpm). ` : ''}
@@ -146,7 +152,11 @@ function Review({ riff }: { riff: RiffRecord }) {
             </ul>
           )}
           <div className="row" style={{ marginTop: 8 }}>
-            <button className="btn ghost small" onClick={() => { handOffToPaste(riff.ai!.originalText); navigate({ name: 'paste' }); }}>Not right? Paste as text tab</button>
+            {riff.ai.generated ? (
+              <button className="btn ghost small" onClick={() => navigate({ name: 'generate' })}>Not your style? Generate another</button>
+            ) : (
+              <button className="btn ghost small" onClick={() => { handOffToPaste(riff.ai!.originalText); navigate({ name: 'paste' }); }}>Not right? Paste as text tab</button>
+            )}
           </div>
         </div>
       ))}

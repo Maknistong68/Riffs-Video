@@ -67,13 +67,6 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
     );
   }
 
-  const soon = (ico: string, title: string, phase: string) => (
-    <button className="option" disabled>
-      <span className="ico">{ico}</span>
-      <span className="txt"><strong>{title}</strong><span className="dim small">Coming in {phase}</span></span>
-    </button>
-  );
-
   return (
     <Sheet onClose={onClose} label="Create riff">
       <h2>New riff</h2>
@@ -114,7 +107,10 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
         <span className="ico">🤖</span>
         <span className="txt"><strong>AI import</strong><span className="dim small">Messy tab, chords or lyrics sheet — AI writes it out (needs internet)</span></span>
       </button>
-      {soon('🎲', 'Generate original riff', 'a later phase')}
+      <button className="option" onClick={() => { onClose(); navigate({ name: 'generate' }); }} data-testid="open-generate">
+        <span className="ico">🎲</span>
+        <span className="txt"><strong>Generate original riff</strong><span className="dim small">Riff of the day, or pick a style — yours to post, no copyright worries</span></span>
+      </button>
     </Sheet>
   );
 }

@@ -35,7 +35,7 @@ const SCALES: Record<string, number[]> = {
 
 const GENRE: Record<GenGenre, { scales: string[]; keys: number[]; bpm: [number, number]; drop?: boolean }> = {
   rock: { scales: ['minor pentatonic'], keys: [4, 9, 2, 7], bpm: [96, 132] },
-  metal: { scales: ['phrygian', 'minor pentatonic'], keys: [4, 2], bpm: [110, 160], drop: true },
+  metal: { scales: ['phrygian', 'minor pentatonic'], keys: [4, 2], bpm: [110, 144], drop: true },
   blues: { scales: ['blues'], keys: [4, 9, 7], bpm: [70, 96] },
   funk: { scales: ['dorian', 'minor pentatonic'], keys: [4, 9, 2], bpm: [92, 112] },
   lofi: { scales: ['dorian', 'major pentatonic'], keys: [0, 7, 2, 9], bpm: [70, 88] },
@@ -72,6 +72,12 @@ export function riffOfTheDaySeed(d: Date): number {
   return h;
 }
 
+/** Today's riff: genre and seed from the date, medium, 4 bars. */
+export function riffOfTheDay(d: Date): GenOptions {
+  const seed = riffOfTheDaySeed(d);
+  return { genre: GEN_GENRES[seed % GEN_GENRES.length]!.id, difficulty: 'medium', bars: 4, seed };
+}
+
 type Spot = { stringIdx: number; fret: number; midi: number };
 
 export function generateRiff(o: GenOptions): GeneratedRiff {
@@ -82,7 +88,11 @@ export function generateRiff(o: GenOptions): GeneratedRiff {
   const scale = SCALES[scaleName]!;
   const keyPc = pick(g.keys);
   const tuning = g.drop && rnd() < 0.5 ? DROP_D : STANDARD;
-  const bpm = o.bpm ?? Math.round((g.bpm[0] + rnd() * (g.bpm[1] - g.bpm[0])) / 2) * 2;
+  const rhythms = RHYTHMS[o.genre][o.difficulty];
+  // 16th notes stay ≥ 125 ms long: faster than that, attacks on the low strings smear together and the
+  // Sync Report can't confirm every note (a user-chosen tempo is kept as asked).
+  const maxBpm = rhythms.some((r) => r.some((x, k) => (r[k + 1] ?? 16) - x === 1)) ? 120 : g.bpm[1];
+  const bpm = o.bpm ?? Math.round((g.bpm[0] + rnd() * (Math.min(g.bpm[1], maxBpm) - g.bpm[0])) / 2) * 2;
 
   // Hand position: the root on the low string (open position when it's the open string).
   const lowOpen = tuning[tuning.length - 1]!;
@@ -104,7 +114,6 @@ export function generateRiff(o: GenOptions): GeneratedRiff {
   const pool = [...byPitch.values()].sort((a, b) => a.midi - b.midi).slice(0, o.difficulty === 'easy' ? 8 : 12);
   const rootIdx = Math.max(0, pool.findIndex((p) => (((p.midi - keyPc) % 12) + 12) % 12 === 0));
 
-  const rhythms = RHYTHMS[o.genre][o.difficulty];
   const motif = pick(rhythms);
   const columns: WriterColumn[] = [];
   let idx = rootIdx;
@@ -135,12 +144,34 @@ export function generateRiff(o: GenOptions): GeneratedRiff {
     if (onsets[0]! > 0) columns.splice(columns.length - onsets.length, 0, { notes: [], units: onsets[0]! });
   }
 
+  // Verifiable by ear: the same pitch twice in quick succession reads as one long note to the Sync
+  // Report's pitch tracker (it hears the first attack only), so a short note never repeats its pitch.
+  const unitMs = 60_000 / bpm / 4;
+  const pitchOf = (n: WriterNote) => tuning[n.stringIdx]! + n.fret;
+  for (let i = 1; i < columns.length; i++) {
+    const prevCol = columns[i - 1]!;
+    const a = prevCol.notes[0];
+    const b = columns[i]!.notes[0];
+    if (!a || !b || prevCol.notes.length > 1 || columns[i]!.notes.length > 1 || pitchOf(a) !== pitchOf(b) || prevCol.units * unitMs >= 300) continue;
+    // Move whichever note is not the final resolution to a neighbouring scale note.
+    const target = i === columns.length - 1 ? a : b;
+    const at = pool.findIndex((p) => p.midi === pitchOf(target));
+    const alt = pool[at + 1 < pool.length ? at + 1 : at - 1]!;
+    target.stringIdx = alt.stringIdx;
+    target.fret = alt.fret;
+    target.palmMute = undefined;
+  }
+  // Palm-muted notes need some length to be heard (and checked) under distortion.
+  for (const c of columns) if (c.notes[0]?.palmMute && c.units * unitMs < 180) c.notes[0].palmMute = undefined;
+
   // Techniques (medium/hard): hammer-ons/pull-offs within a string, a slide, a bend to a scale note.
   if (o.difficulty !== 'easy') {
     for (let i = 0; i + 1 < columns.length; i++) {
       const a = columns[i]!.notes[0];
       const b = columns[i + 1]!.notes[0];
-      if (!a || !b || a.palmMute) continue;
+      // No legato chains: a note reached by a hammer/slide has no attack of its own, so it doesn't start another.
+      const prev = i > 0 ? columns[i - 1]!.notes[0] : undefined;
+      if (!a || !b || a.palmMute || prev?.hammerToNext || prev?.slideToNext) continue;
       const d = b.fret - a.fret;
       if (a.stringIdx === b.stringIdx && d !== 0 && Math.abs(d) <= 3 && columns[i]!.units <= 2 && rnd() < 0.6) a.hammerToNext = true;
       else if (a.stringIdx === b.stringIdx && Math.abs(d) >= 2 && rnd() < 0.2) a.slideToNext = true;
@@ -156,7 +187,7 @@ export function generateRiff(o: GenOptions): GeneratedRiff {
   if (o.genre === 'metal') {
     for (const c of columns) {
       const n = c.notes[0];
-      if (n && n.stringIdx === tuning.length - 1 && !n.palmMute && c.units >= 2 && n.fret + 2 <= 15) {
+      if (n && n.stringIdx === tuning.length - 1 && !n.palmMute && !n.hammerToNext && !n.slideToNext && c.units >= 2 && n.fret + 2 <= 15) {
         const fifthString = tuning.length - 2;
         const fifthFret = tuning === DROP_D ? n.fret : n.fret + 2;
         c.notes.push({ stringIdx: fifthString, fret: fifthFret });

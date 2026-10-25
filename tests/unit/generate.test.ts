@@ -35,6 +35,19 @@ describe('generateRiff', () => {
           // One hand position: fretted notes within a 5-fret window.
           const frets = t.events.filter((e) => e.fret > 0).map((e) => e.fret);
           if (frets.length) expect(Math.max(...frets) - Math.min(...frets)).toBeLessThanOrEqual(5);
+          // Checkable by ear: a short note never repeats its pitch straight away (the pitch tracker would hear one note).
+          const singles = t.events.filter((e) => !e.chordId && !e.tech.includes('tieContinue'));
+          for (let i = 1; i < singles.length; i++) {
+            const a = singles[i - 1]!;
+            const b = singles[i]!;
+            if (b.startMs - a.startMs < 290) expect(b.midi, `${r.title}: repeated ${a.midi} at ${Math.round(b.startMs)} ms\n${r.alphaTex}`).not.toBe(a.midi);
+          }
+          // No legato chains, no hammer/slide out of a chord, and 16ths no faster than 125 ms.
+          const body = r.alphaTex.split('\n').slice(5).join(' ');
+          expect(body, r.alphaTex).not.toMatch(/\([^)]*\{[^}]*\b(h|sl)\b[^}]*\}[^)]*\)/);
+          const notes = body.split(/\s+/).filter((x) => /^\d+\.\d/.test(x));
+          for (let i = 1; i < notes.length; i++) expect(/\{(h|sl)\}/.test(notes[i - 1]!) && /\{(h|sl)\}/.test(notes[i]!), `${r.title}: chain at ${notes[i]}\n${r.alphaTex}`).toBe(false);
+          if (body.includes(':16')) expect(r.bpm).toBeLessThanOrEqual(120);
           // Ends on the root, with vibrato.
           const last = t.events[t.events.length - 1]!;
           expect((((last.midi - key) % 12) + 12) % 12).toBe(0);
@@ -55,5 +68,15 @@ describe('generateRiff', () => {
     const t = buildTimeline(loadAlphaTex(r.alphaTex), { ...DEFAULT_BUILD, trackIndex: 0 }).timeline;
     expect(t.bars.length).toBe(2);
     expect(t.tempoMap[0]!.bpm).toBe(80);
+  });
+});
+
+describe('riffOfTheDay', () => {
+  it('is the same all day and changes the next day', async () => {
+    const { riffOfTheDay } = await import('../../src/engine/generate');
+    const a = riffOfTheDay(new Date(2026, 9, 25, 8));
+    expect(riffOfTheDay(new Date(2026, 9, 25, 23))).toEqual(a);
+    expect(riffOfTheDay(new Date(2026, 9, 26, 8)).seed).not.toBe(a.seed);
+    expect(a).toMatchObject({ difficulty: 'medium', bars: 4 });
   });
 });

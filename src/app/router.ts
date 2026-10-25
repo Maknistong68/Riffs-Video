@@ -9,6 +9,7 @@ export type Route =
   | { name: 'paste' }
   | { name: 'audio' }
   | { name: 'ai' }
+  | { name: 'generate' }
   | { name: 'practice'; data: string }
   | { name: 'review'; riffId: string }
   | { name: 'studio'; riffId: string; atMs?: number; openExport?: boolean }
@@ -33,6 +34,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'audio' };
     case 'ai':
       return { name: 'ai' };
+    case 'generate':
+      return { name: 'generate' };
     case 'p':
       return parts[1] ? { name: 'practice', data: parts[1] } : { name: 'library' };
     case 'riff':
@@ -71,6 +74,8 @@ export function href(r: Route): string {
       return '#/audio';
     case 'ai':
       return '#/ai';
+    case 'generate':
+      return '#/generate';
     case 'practice':
       return `#/p/${r.data}`;
     case 'studio': {

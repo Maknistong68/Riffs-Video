@@ -7,6 +7,7 @@ import { ResultScreen } from '../screens/result/ResultScreen';
 import { ReviewScreen } from '../screens/review/ReviewScreen';
 import { PasteScreen } from '../screens/paste/PasteScreen';
 import { AiImportScreen } from '../screens/ai/AiImportScreen';
+import { GenerateScreen } from '../screens/generate/GenerateScreen';
 import { PracticeScreen } from '../screens/practice/PracticeScreen';
 import { AudioImportScreen } from '../screens/audio/AudioImportScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
@@ -40,6 +41,7 @@ export function App() {
       {route.name === 'write' && <WriteScreen {...(route.riffId ? { riffId: route.riffId } : {})} />}
       {route.name === 'paste' && <PasteScreen />}
       {route.name === 'ai' && <AiImportScreen />}
+      {route.name === 'generate' && <GenerateScreen />}
       {route.name === 'practice' && <PracticeScreen key={route.data} data={route.data} />}
       {route.name === 'audio' && <AudioImportScreen />}
       {route.name === 'review' && <ReviewScreen key={route.riffId} riffId={route.riffId} />}

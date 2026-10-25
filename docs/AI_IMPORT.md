@@ -54,3 +54,9 @@ instance (cost guard, not a hard quota — no database). Device ids are random, 
 Model: `claude-opus-5-5` with structured outputs (JSON schema) and server-side refusal fallback
 (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`): if the model's safety
 classifiers decline a request, the API retries it on a suitable model inside the same call.
+
+## AI riff generator (phase 6)
+The same function also writes **original** riffs: the Generate screen's "AI (Claude)" writer sends
+`{ deviceId, mode: "generate", brief: { genre, difficulty, bars, idea? } }`. No new deployment, secret
+or table is needed — it shares the rate limit and the answer goes through the same checks (alphaTab
+re-parse + `validateTimeline()`) and lands in Riff Review. The built-in generator (no AI) works offline.
