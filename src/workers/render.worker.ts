@@ -5,9 +5,10 @@
  */
 import { normaliseLoudness } from '../audio/mix';
 import { fetchSoundFont } from '../audio/soundpacks';
-import { renderSynth } from '../audio/synth';
+import { renderArrangement } from '../audio/synth';
 import { transcribe } from '../audio/transcribe';
-import { buildTimeline, DEFAULT_BUILD } from '../engine/buildTimeline';
+import { buildArrangement, NO_TEACH } from '../engine/arrange';
+import { DEFAULT_BUILD } from '../engine/buildTimeline';
 import { applyEdits } from '../engine/edits';
 import { AUDIO_SAMPLE_RATE } from '../engine/time';
 import { exportMp4, planExport } from '../export/exporter';
@@ -22,20 +23,30 @@ import type { ExportStage, RiffConfig, SoundMode, WorkerRequest, WorkerResponse 
 declare const self: DedicatedWorkerGlobalScope;
 const post = (m: WorkerResponse, transfer: Transferable[] = []) => self.postMessage(m, transfer);
 
+/** Source → edits → arrangement (teach passes) → one composite timeline. */
 function build(riff: RiffConfig) {
-  const score = loadRiffSource(riff.source);
-  const { errors: editErrors } = applyEdits(score, riff.trackIndex, riff.edits ?? []);
-  const opts = { ...DEFAULT_BUILD, trackIndex: riff.trackIndex, leadInMs: riff.leadInMs };
-  return { ...buildTimeline(score, riff.title ? { ...opts, title: riff.title } : opts), editErrors };
+  let editErrors: string[] = [];
+  const makeScore = () => {
+    const score = loadRiffSource(riff.source);
+    editErrors = applyEdits(score, riff.trackIndex, riff.edits ?? []).errors;
+    return score;
+  };
+  const arr = buildArrangement(makeScore, {
+    trackIndex: riff.trackIndex,
+    leadInMs: riff.leadInMs,
+    tailMs: DEFAULT_BUILD.tailMs,
+    teach: riff.teach ?? NO_TEACH,
+    ...(riff.title ? { title: riff.title } : {}),
+  });
+  return { arrangement: arr, timeline: arr.timeline, warnings: arr.warnings, editErrors };
 }
 
 async function renderAudio(riff: RiffConfig, built: ReturnType<typeof build>, totalSamples: number, soundFontUrl: string, mode: SoundMode, onProgress: (f: number) => void) {
   const soundFont = await fetchSoundFont(soundFontUrl);
-  const pcm = renderSynth(built.prepared, {
+  const pcm = renderArrangement(built.arrangement, {
     trackIndex: riff.trackIndex,
     sampleRate: AUDIO_SAMPLE_RATE,
     totalSamples,
-    leadInMs: built.timeline.leadInMs,
     soundFont,
     metronomeVolume: mode === 'synth-click' ? 1 : 0,
     onProgress,

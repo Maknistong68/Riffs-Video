@@ -53,6 +53,8 @@ export type Timeline = {
   /** Sorted by startMs, repeats already expanded. */
   events: NoteEvent[];
   bars: { index: number; startMs: number }[];
+  /** Teach passes ("Slow · 50%", "Loop 2/3 · bar 3"…), shown as captions. */
+  sections?: { startMs: number; endMs: number; label: string }[];
 };
 
 export const MAX_FRET = 24;

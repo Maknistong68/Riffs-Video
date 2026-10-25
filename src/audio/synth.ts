@@ -5,6 +5,7 @@
  */
 import { alphaTab, type PreparedScore } from '../import/alphatab';
 import { msToSample } from '../engine/time';
+import type { Arrangement } from '../engine/arrange';
 
 export type SynthOptions = {
   trackIndex: number;
@@ -14,6 +15,8 @@ export type SynthOptions = {
   soundFont: Uint8Array;
   /** 0 = off. alphaTab metronome ("Synth + click" mode). */
   metronomeVolume?: number;
+  /** Render only this play-order tick range (audio time 0 = range start). */
+  range?: { startTick: number; endTick: number };
   /** Called with 0..1 while rendering. */
   onProgress?: (fraction: number) => void;
 };
@@ -52,6 +55,12 @@ export function renderSynth(prepared: PreparedScore, opts: SynthOptions): Float3
   options.masterVolume = 1;
   options.metronomeVolume = opts.metronomeVolume ?? 0;
   options.useSyncPoints = false;
+  if (opts.range) {
+    const r = new alphaTab.synth.PlaybackRange();
+    r.startTick = opts.range.startTick;
+    r.endTick = opts.range.endTick;
+    options.playbackRange = r;
+  }
   // Only the chosen guitar track is audible: the Sync Report checks exactly these notes.
   for (const t of score.tracks) {
     const v = t.index === opts.trackIndex ? 1 : 0;
@@ -90,4 +99,51 @@ export function toMono(planar: Float32Array, channels: number): Float32Array<Arr
   const out = new Float32Array(n);
   for (let c = 0; c < channels; c++) for (let i = 0; i < n; i++) out[i]! += planar[c * n + i]! / channels;
   return out;
+}
+
+/**
+ * alphaTab silences every voice instantly when the song (or a playback range) ends, which
+ * clicks. Fade into that edge instead.
+ */
+const CUT_FADE_MS = 15;
+
+/** Render every arrangement part and place it at its exact sample offset (planar stereo). */
+export function renderArrangement(
+  arr: Arrangement,
+  opts: Omit<SynthOptions, 'totalSamples' | 'leadInMs' | 'range' | 'onProgress'> & { totalSamples: number; onProgress?: (f: number) => void },
+): Float32Array<ArrayBuffer> {
+  const n = opts.totalSamples;
+  const out = new Float32Array(n * SYNTH_CHANNELS);
+  const cache = new Map<string, Float32Array>();
+  arr.parts.forEach((part, k) => {
+    const len = Math.min(part.lengthSamples + part.ringSamples, n - part.startSample);
+    if (len <= 0) return;
+    const key = `${part.speed}|${part.range?.startTick ?? ''}|${part.range?.endTick ?? ''}|${len}`;
+    let pcm = cache.get(key);
+    if (!pcm) {
+      pcm = renderSynth(part.prepared, {
+        ...opts,
+        totalSamples: len,
+        leadInMs: 0,
+        ...(part.range ? { range: part.range } : {}),
+        onProgress: (f) => opts.onProgress?.((k + f) / arr.parts.length),
+      });
+      fadeOutAt(pcm, len, part.lengthSamples, msToSample(CUT_FADE_MS, opts.sampleRate));
+      cache.set(key, pcm);
+    }
+    for (let c = 0; c < SYNTH_CHANNELS; c++) {
+      for (let i = 0; i < len; i++) out[c * n + part.startSample + i]! += pcm[c * len + i]!;
+    }
+  });
+  return out;
+}
+
+/** Linear fade reaching silence at `end` (samples), silence after. Planar stereo, in place. */
+export function fadeOutAt(pcm: Float32Array, len: number, end: number, fade: number): void {
+  const f = Math.max(1, Math.min(end, fade));
+  for (let c = 0; c < SYNTH_CHANNELS; c++) {
+    for (let i = Math.max(0, end - f); i < len; i++) {
+      pcm[c * len + i]! *= i >= end ? 0 : (end - i) / f;
+    }
+  }
 }

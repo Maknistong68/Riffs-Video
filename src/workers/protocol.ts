@@ -3,6 +3,7 @@ import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
 import type { RiffSource } from '../import/source';
 import type { RiffEdit } from '../engine/edits';
+import type { TeachOptions } from '../engine/arrange';
 
 export type SoundMode = 'synth' | 'synth-click';
 
@@ -12,6 +13,7 @@ export type RiffConfig = {
   leadInMs: number;
   title?: string;
   edits?: RiffEdit[];
+  teach?: TeachOptions;
 };
 
 export type TrackInfo = { index: number; name: string; strings: number };

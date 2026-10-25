@@ -10,11 +10,15 @@ import { bendSemitonesOf, fingerOf, pickOf, techniquesOf } from './techniques';
 import { buildTempoSegments, tickToMs, type TempoSegment } from './tempo';
 import type { NoteEvent, Timeline } from './timeline';
 
+export type TickRange = { startTick: number; endTick: number };
+
 export type BuildOptions = {
   trackIndex: number;
   leadInMs: number;
   tailMs: number;
   title?: string;
+  /** Only this play-order tick range; times are relative to its start (alphaTab playbackRange). */
+  range?: TickRange;
 };
 
 export const DEFAULT_BUILD: Omit<BuildOptions, 'trackIndex'> = { leadInMs: 1000, tailMs: 1200 };
@@ -49,7 +53,10 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
   }
   const segments: TempoSegment[] = buildTempoSegments(tempoEvents, division);
   const lead = opts.leadInMs;
-  const ms = (tick: number) => lead + tickToMs(segments, division, tick);
+  const range = opts.range;
+  const origin = range ? tickToMs(segments, division, range.startTick) : 0;
+  const ms = (tick: number) => lead + tickToMs(segments, division, tick) - origin;
+  const inRange = (tick: number) => !range || (tick >= range.startTick && tick < range.endTick);
 
   // Note-on/off pairs for this track's channels.
   const channels = new Set([track.playbackInfo.primaryChannel, track.playbackInfo.secondaryChannel]);
@@ -74,6 +81,10 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
   const events: NoteEvent[] = [];
   let playIndex = 0;
   for (const mb of tickLookup.masterBars) {
+    if (!inRange(mb.start)) {
+      playIndex++;
+      continue;
+    }
     const seen = new Set<number>();
     for (let b = mb.firstBeat; b; b = b === mb.lastBeat ? null : b.nextBeat) {
       for (const item of b.highlightedBeats) {
@@ -88,15 +99,16 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
           const midiKey = note.realValue;
           const candidates = midiNotes.get(`${tick}:${midiKey}`) ?? [];
           const m = candidates.find((c) => !c.used);
+          const clip = (t: number) => (range ? Math.min(t, range.endTick) : t);
           const tech = techniquesOf(note);
           let endTick: number;
           let legato = false;
           if (m) {
             m.used = true;
-            endTick = m.offTick;
+            endTick = clip(m.offTick);
           } else {
             // Not struck in the MIDI (e.g. slide destination): sounds for the beat's length.
-            endTick = tick + beat.playbackDuration;
+            endTick = clip(tick + beat.playbackDuration);
             legato = true;
             if (!tech.includes('slide')) {
               warnings.push(`No MIDI note for ${describe(note, beat)}; using beat length`);
@@ -132,7 +144,7 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
   }
 
   for (const list of midiNotes.values()) {
-    for (const n of list) if (!n.used) warnings.push(`MIDI note ${n.key} at tick ${n.tick} has no tab note`);
+    for (const n of list) if (!n.used && inRange(n.tick)) warnings.push(`MIDI note ${n.key} at tick ${n.tick} has no tab note`);
   }
 
   events.sort((a, b) => a.startMs - b.startMs || a.stringIdx - b.stringIdx);
@@ -140,8 +152,11 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
   assignFingers({ events }).forEach((f, i) => {
     if (f !== undefined) events[i]!.finger = f;
   });
-  const lastBar = tickLookup.masterBars[tickLookup.masterBars.length - 1];
-  const musicEnd = Math.max(lastBar ? ms(lastBar.end) : lead, ...events.map((e) => e.startMs + e.durationMs));
+  const barsInRange = tickLookup.masterBars.filter((mb) => inRange(mb.start));
+  const lastBar = barsInRange[barsInRange.length - 1];
+  const musicEnd = range
+    ? ms(range.endTick)
+    : Math.max(lastBar ? ms(lastBar.end) : lead, ...events.map((e) => e.startMs + e.durationMs));
 
   const timeline: Timeline = {
     version: 1,
@@ -149,15 +164,21 @@ export function buildTimeline(score: Score, opts: BuildOptions, prepared: Prepar
     tuning: [...staff.tuning],
     capo: staff.capo,
     tempoMap: [
-      { ms: 0, bpm: segments[0]!.bpm },
-      ...segments.map((s) => ({ ms: lead + s.ms, bpm: s.bpm })),
+      { ms: 0, bpm: bpmAt(segments, range?.startTick ?? 0) },
+      ...segments.filter((s) => inRange(s.tick) && (!range || s.tick > range.startTick)).map((s) => ({ ms: ms(s.tick), bpm: s.bpm })),
     ].filter((t, i, arr) => i === 0 || t.ms !== arr[i - 1]!.ms || t.bpm !== arr[i - 1]!.bpm),
     leadInMs: lead,
     durationMs: musicEnd + opts.tailMs,
     events,
-    bars: tickLookup.masterBars.map((mb) => ({ index: mb.masterBar.index, startMs: ms(mb.start) })),
+    bars: barsInRange.map((mb) => ({ index: mb.masterBar.index, startMs: ms(mb.start) })),
   };
   return { timeline, prepared, warnings };
+}
+
+function bpmAt(segments: readonly TempoSegment[], tick: number): number {
+  let bpm = segments[0]!.bpm;
+  for (const s of segments) if (s.tick <= tick) bpm = s.bpm;
+  return bpm;
 }
 
 function describe(note: alphaTab.model.Note, beat: alphaTab.model.Beat): string {
