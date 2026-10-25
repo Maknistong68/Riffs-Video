@@ -61,3 +61,53 @@ describe('arranged audio lands exactly on the composite timeline', () => {
     }, 60_000);
   }
 });
+
+describe('phase 6 arrangements', () => {
+  it('hook-first: one full-speed pass, then the teach passes, then full speed', () => {
+    const { timeline: t } = arrange('01-pentatonic-run.atex', { slowMo: true, loopHardest: false, hookFirst: true } as never);
+    expect(validateTimeline(t)).toEqual([]);
+    expect(t.sections!.map((s) => s.label)).toEqual(['Hook · full speed', 'Slow · 50%', 'Slow · 75%', 'Full speed']);
+    const len = (i: number) => t.sections![i]!.endMs - t.sections![i]!.startMs;
+    expect(len(0)).toBeCloseTo(len(3), 3);
+  });
+
+  it('same riff in 3 positions: identical pitches, different strings/frets, one pass each', () => {
+    const { timeline: t, warnings } = arrange('01-pentatonic-run.atex', { slowMo: false, loopHardest: false, positions: true } as never);
+    expect(validateTimeline(t)).toEqual([]);
+    const secs = t.sections!;
+    expect(secs.length).toBeGreaterThanOrEqual(2);
+    expect(secs.length).toBeLessThanOrEqual(3);
+    expect(secs.some((s) => s.label.startsWith('As written'))).toBe(true);
+    const inSec = (i: number) => t.events.filter((e) => e.startMs >= secs[i]!.startMs - 0.5 && e.startMs < secs[i]!.endMs);
+    const pitches = (i: number) => inSec(i).map((e) => e.midi);
+    const places = (i: number) => inSec(i).map((e) => `${e.stringIdx}:${e.fret}`).join();
+    for (let i = 1; i < secs.length; i++) {
+      expect(pitches(i)).toEqual(pitches(0));
+      expect(places(i)).not.toEqual(places(0));
+    }
+    // Positions move up the neck in order and stay playable (4-fret hand span, per chord).
+    const meanFret = (i: number) => { const f = inSec(i).filter((e) => e.fret > 0).map((e) => e.fret); return f.reduce((a, b) => a + b, 0) / f.length; };
+    for (let i = 1; i < secs.length; i++) expect(meanFret(i)).toBeGreaterThan(meanFret(i - 1));
+    expect(warnings.filter((w) => /error|could not/i.test(w))).toEqual([]);
+  });
+
+  it('bar range: only those bars, at their own times, for every pass', () => {
+    const full = arrange('03-repeats.atex', NO_TEACH).timeline;
+    const part = arrange('03-repeats.atex', { slowMo: true, loopHardest: true, range: { fromBar: 1, toBar: 1 } } as never).timeline;
+    expect(validateTimeline(part)).toEqual([]);
+    expect(new Set(part.events.map((e) => e.ref!.bar))).toEqual(new Set([1]));
+    expect(full.events.some((e) => e.ref!.bar !== 1)).toBe(true);
+    // the loop is the (only) bar of the part
+    expect(part.sections!.filter((s) => s.label.startsWith('Loop')).every((s) => s.label.endsWith('bar 2'))).toBe(true);
+  });
+
+  it('bar range: audio plays only the part (onsets match the part timeline)', () => {
+    const arr = arrange('03-repeats.atex', { slowMo: false, loopHardest: false, range: { fromBar: 2, toBar: 2 } } as never);
+    const t = arr.timeline;
+    const mono = toMono(renderArrangement(arr, { trackIndex: 0, sampleRate: 48_000, soundFont, totalSamples: msToSample(t.durationMs) }), 2);
+    const onsets = detectOnsets(mono, 48_000);
+    const expected = [...new Set(t.events.filter((e) => !e.legato).map((e) => e.startMs))];
+    for (const ms of expected) expect(Math.min(...onsets.map((o) => Math.abs(o - ms)))).toBeLessThan(8);
+    expect(onsets.filter((o) => expected.every((ms) => Math.abs(o - ms) > 40)).length).toBeLessThanOrEqual(1);
+  });
+});

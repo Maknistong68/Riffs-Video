@@ -12,6 +12,7 @@ import { defaultFrameSettings, drawFrame } from '../../render/drawFrame';
 import { loadRenderFonts } from '../../render/fonts';
 import { CAMERA_PRESETS, clampCamera, type Camera3D, type CameraMotion } from '../../render/camera';
 import { ensureNeck3d } from '../../render/neck3dRegistry';
+import { isPlainTeach } from '../../engine/teach';
 import { SKIN_IDS, SKINS } from '../../render/skins';
 import { LAYOUTS, type DifficultyBadge, type LayoutId, type RenderStyle } from '../../render/style';
 import { db, getSettings, styleOf, toneOf, updateSettings, type RiffRecord, type StyleSettings } from '../../storage/db';
@@ -116,7 +117,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
       (p) => {
         if (!live) return;
         setPrepared(p);
-        if (!style.teach.slowMo && !style.teach.loopHardest && JSON.stringify(p.timeline) !== JSON.stringify(riff.timelineCache)) {
+        if (isPlainTeach(style.teach) && JSON.stringify(p.timeline) !== JSON.stringify(riff.timelineCache)) {
           void updateRiff(riff.id, { timelineCache: p.timeline });
         }
       },
@@ -392,10 +393,15 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
         {tab === 'teach' && (
           <>
             {silentMode && <p className="small warn">Teach passes are off in Silent mode (they would drift from the official sound).</p>}
+            <label className="switch"><span>Hook first (full speed, then teach)</span><input type="checkbox" checked={!!style.teach.hookFirst} onChange={(e) => setStyle({ teach: { ...style.teach, hookFirst: e.target.checked } })} data-testid="teach-hook" /></label>
             <label className="switch"><span>Slow-mo passes (50% → 75% → 100%)</span><input type="checkbox" checked={style.teach.slowMo} onChange={(e) => setStyle({ teach: { ...style.teach, slowMo: e.target.checked } })} data-testid="teach-slowmo" /></label>
             <label className="switch">
               <span>Loop hardest bar ×3{hardest ? ` (bar ${hardest.barIndex + 1})` : ''}</span>
               <input type="checkbox" checked={style.teach.loopHardest} onChange={(e) => setStyle({ teach: { ...style.teach, loopHardest: e.target.checked } })} data-testid="teach-loop" />
+            </label>
+            <label className="switch">
+              <span>Same riff in 3 positions (other places on the neck, same notes)</span>
+              <input type="checkbox" checked={!!style.teach.positions} onChange={(e) => setStyle({ teach: { ...style.teach, positions: e.target.checked } })} data-testid="teach-positions" />
             </label>
             <label className="switch"><span>Finger numbers on the dots</span><input type="checkbox" checked={render.fingerNumbers} onChange={(e) => setRender({ fingerNumbers: e.target.checked })} /></label>
             <label className="switch"><span>Pick strokes (from the file)</span><input type="checkbox" checked={render.pickArrows} onChange={(e) => setRender({ pickArrows: e.target.checked })} /></label>

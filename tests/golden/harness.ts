@@ -2,6 +2,7 @@
 import { DEFAULT_SOUND_PACK } from '../../src/audio/soundpacks';
 import { programOf, tonePreset } from '../../src/audio/tone';
 import { buildArrangement, NO_TEACH, type TeachOptions } from '../../src/engine/arrange';
+import { isPlainTeach } from '../../src/engine/teach';
 import { buildTimeline, DEFAULT_BUILD } from '../../src/engine/buildTimeline';
 import type { RenderStyle } from '../../src/render/style';
 import { loadAlphaTex } from '../../src/import/alphatab';
@@ -37,7 +38,7 @@ const harness = {
     const fontOk = await loadRenderFonts();
     if (style.view === '3d' && !(await ensureNeck3d())) throw new Error('WebGL unavailable');
     const timeline =
-      teach.slowMo || teach.loopHardest
+      !isPlainTeach(teach)
         ? buildArrangement(() => loadAlphaTex(text), { trackIndex: 0, leadInMs: DEFAULT_BUILD.leadInMs, tailMs: DEFAULT_BUILD.tailMs, teach }).timeline
         : buildTimeline(loadAlphaTex(text), { ...DEFAULT_BUILD, trackIndex: 0 }).timeline;
     const s = defaultFrameSettings(30, style);

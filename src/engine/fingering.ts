@@ -72,10 +72,15 @@ function candidates(slot: Slot, tuning: readonly number[], capo: number): Candid
   return out;
 }
 
-function shapeCost(c: Candidate): number {
-  let cost = CHANGE_COST * c.changed;
+export type FingeringOptions = {
+  /** Pull the hand towards this fret (alternative positions); disables the "keep it as written" bias. */
+  targetFret?: number;
+};
+
+function shapeCost(c: Candidate, o: FingeringOptions = {}): number {
+  let cost = o.targetFret === undefined ? CHANGE_COST * c.changed : 0;
   if (c.low !== null) {
-    cost += 0.04 * c.low; // slight preference for lower positions
+    cost += o.targetFret === undefined ? 0.04 * c.low : 0.5 * Math.abs(c.low - o.targetFret); // slight preference for lower positions
     if (c.high! - c.low > MAX_SPAN) cost += 3; // stretch
   }
   return cost;
@@ -93,12 +98,12 @@ function moveCost(a: Candidate, b: Candidate, hand: number | null): number {
 }
 
 /** Best playable positions for every event (same order as timeline.events). */
-export function optimizeFingering(t: Pick<Timeline, 'events' | 'tuning' | 'capo'>): Position[] {
+export function optimizeFingering(t: Pick<Timeline, 'events' | 'tuning' | 'capo'>, o: FingeringOptions = {}): Position[] {
   const ss = slots(t);
   if (ss.length === 0) return [];
   const cands = ss.map((s) => candidates(s, t.tuning, t.capo));
   // dp[i][k] = best cost ending in candidate k of slot i; hand[i][k] = index-finger fret afterwards.
-  let prevCost = cands[0]!.map(shapeCost);
+  let prevCost = cands[0]!.map((c) => shapeCost(c, o));
   let prevHand = cands[0]!.map((c) => c.low);
   const back: number[][] = [cands[0]!.map(() => -1)];
   for (let i = 1; i < ss.length; i++) {
@@ -123,7 +128,7 @@ export function optimizeFingering(t: Pick<Timeline, 'events' | 'tuning' | 'capo'
         best = 1000;
         arg = 0;
       }
-      cost.push(best + shapeCost(c));
+      cost.push(best + shapeCost(c, o));
       bp.push(arg);
       const ph = prevHand[arg] ?? null;
       hand.push(c.low === null ? ph : ph !== null && c.low >= ph && c.high! <= ph + MAX_SPAN ? ph : c.low);

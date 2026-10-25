@@ -7,6 +7,8 @@
  */
 import { alphaTab, createSettings, prepareScore, type PreparedScore, type Score } from '../import/alphatab';
 import { buildTimeline, type TickRange } from './buildTimeline';
+import { applyEdits, type RiffEdit } from './edits';
+import { positionPasses } from './positions';
 import { hardestBar } from './difficulty';
 import { AUDIO_SAMPLE_RATE, msToSample, sampleToMs } from './time';
 import type { NoteEvent, Timeline } from './timeline';
@@ -51,21 +53,47 @@ export function scaleTempo(score: Score, factor: number): void {
   score.finish(createSettings());
 }
 
-type Plan = { label: string; speed: number; range?: TickRange; gapAfterMs: number };
+type Plan = { label: string; speed: number; range?: TickRange; gapAfterMs: number; variant?: { key: string; edits: RiffEdit[] } };
+
+/** Play-order tick range of score bars fromBar..toBar (first time they are played). */
+export function barRangeTicks(prepared: PreparedScore, fromBar: number, toBar: number): TickRange | null {
+  const mbs = prepared.tickLookup.masterBars;
+  const s = mbs.findIndex((mb) => mb.masterBar.index === fromBar);
+  if (s < 0) return null;
+  let e = s;
+  for (let i = s; i < mbs.length; i++) {
+    if (mbs[i]!.masterBar.index > toBar) break;
+    e = i;
+    if (mbs[i]!.masterBar.index === toBar) break;
+  }
+  return { startTick: mbs[s]!.start, endTick: mbs[e]!.end };
+}
 
 export function buildArrangement(makeScore: () => Score, opts: ArrangeOptions, sampleRate = AUDIO_SAMPLE_RATE): Arrangement {
   const baseScore = makeScore();
   const basePrepared = prepareScore(baseScore);
+  const teach = opts.teach;
+  const extraWarnings: string[] = [];
+  // Part videos: everything below plays only these bars.
+  let partRange: TickRange | undefined;
+  if (teach.range) {
+    const r = barRangeTicks(basePrepared, teach.range.fromBar, teach.range.toBar);
+    if (r) partRange = r;
+    else extraWarnings.push(`Bars ${teach.range.fromBar + 1}–${teach.range.toBar + 1} do not exist; playing the whole riff.`);
+  }
   const build = (score: Score, prepared: PreparedScore, range?: TickRange) =>
     buildTimeline(score, { trackIndex: opts.trackIndex, leadInMs: 0, tailMs: 0, ...(range ? { range } : {}) }, prepared);
-  const base = build(baseScore, basePrepared);
+  const base = build(baseScore, basePrepared, partRange);
 
   const plans: Plan[] = [];
-  const teaching = opts.teach.slowMo || opts.teach.loopHardest;
-  if (opts.teach.slowMo) for (const sp of SLOW_SPEEDS) plans.push({ label: `Slow · ${sp * 100}%`, speed: sp, gapAfterMs: PASS_GAP_MS });
-  if (opts.teach.loopHardest) {
+  const teaching = teach.slowMo || teach.loopHardest || !!teach.positions;
+  if (teach.hookFirst) plans.push({ label: 'Hook · full speed', speed: 1, gapAfterMs: PASS_GAP_MS });
+  if (teach.slowMo) for (const sp of SLOW_SPEEDS) plans.push({ label: `Slow · ${sp * 100}%`, speed: sp, gapAfterMs: PASS_GAP_MS });
+  if (teach.loopHardest) {
     const hb = hardestBar(base.timeline);
-    const mb = hb ? basePrepared.tickLookup.masterBars[hb.playIndex] : undefined;
+    // The base timeline's bars start at the part's first bar: offset into the full play order.
+    const offset = partRange ? basePrepared.tickLookup.masterBars.findIndex((mb) => mb.start >= partRange!.startTick) : 0;
+    const mb = hb ? basePrepared.tickLookup.masterBars[offset + hb.playIndex] : undefined;
     if (hb && mb) {
       for (let k = 1; k <= LOOP_COUNT; k++) {
         plans.push({
@@ -77,16 +105,29 @@ export function buildArrangement(makeScore: () => Score, opts: ArrangeOptions, s
       }
     }
   }
-  plans.push({ label: teaching ? 'Full speed' : '', speed: 1, gapAfterMs: 0 });
+  if (teach.positions) {
+    const passes = positionPasses(base.timeline);
+    if (passes.length < 2) extraWarnings.push('No other comfortable position found for these notes; showing it once.');
+    passes.forEach((p, k) =>
+      plans.push({ label: p.label, speed: 1, gapAfterMs: k === passes.length - 1 ? 0 : PASS_GAP_MS, ...(p.edits.length ? { variant: { key: `pos${k}`, edits: p.edits } } : {}) }),
+    );
+  } else {
+    plans.push({ label: teaching || teach.hookFirst ? 'Full speed' : '', speed: 1, gapAfterMs: 0 });
+  }
 
-  const byspeed = new Map<number, { score: Score; prepared: PreparedScore }>([[1, { score: baseScore, prepared: basePrepared }]]);
-  const sourceFor = (speed: number) => {
-    let v = byspeed.get(speed);
+  const sources = new Map<string, { score: Score; prepared: PreparedScore }>([['1|', { score: baseScore, prepared: basePrepared }]]);
+  const sourceFor = (plan: Plan) => {
+    const key = `${plan.speed}|${plan.variant?.key ?? ''}`;
+    let v = sources.get(key);
     if (!v) {
       const score = makeScore();
-      scaleTempo(score, speed);
+      if (plan.variant) {
+        const res = applyEdits(score, opts.trackIndex, plan.variant.edits);
+        if (res.errors.length) extraWarnings.push(...res.errors.map((e) => `${plan.label}: ${e}`));
+      }
+      if (plan.speed !== 1) scaleTempo(score, plan.speed);
       v = { score, prepared: prepareScore(score) };
-      byspeed.set(speed, v);
+      sources.set(key, v);
     }
     return v;
   };
@@ -96,12 +137,13 @@ export function buildArrangement(makeScore: () => Score, opts: ArrangeOptions, s
   const tempoMap: Timeline['tempoMap'] = [];
   const sections: NonNullable<Timeline['sections']> = [];
   const parts: ArrangementPart[] = [];
-  const warnings = [...base.warnings];
+  const warnings = [...base.warnings, ...extraWarnings];
   let cursor = msToSample(opts.leadInMs, sampleRate);
 
   plans.forEach((plan, k) => {
-    const { score, prepared } = sourceFor(plan.speed);
-    const part = plan.speed === 1 && !plan.range ? base : build(score, prepared, plan.range);
+    const { score, prepared } = sourceFor(plan);
+    const range = plan.range ?? partRange;
+    const part = plan.speed === 1 && !plan.range && !plan.variant ? base : build(score, prepared, range);
     if (part !== base) warnings.push(...part.warnings.map((w) => `${plan.label}: ${w}`));
     const startMs = sampleToMs(cursor, sampleRate);
     const lengthSamples = msToSample(part.timeline.durationMs, sampleRate);
@@ -123,7 +165,7 @@ export function buildArrangement(makeScore: () => Score, opts: ArrangeOptions, s
     parts.push({
       label: plan.label,
       speed: plan.speed,
-      ...(plan.range ? { range: plan.range } : {}),
+      ...(range ? { range } : {}),
       prepared,
       startSample: cursor,
       lengthSamples,
