@@ -27,6 +27,8 @@ export type NoteMatch = {
   pitchOk: boolean;
   ok: boolean;
   detail: string;
+  /** Verified on the guitar before effects (the processed sound masked the attack). */
+  viaDry?: boolean;
 };
 
 export type FrameCheck = { frame: number; psnr: number; ok: boolean };
@@ -47,6 +49,8 @@ export type SyncReport = {
   audioLatencySamples?: number;
   /** False for Silent exports (frames and lengths verified; no sound to listen to). */
   audioChecked?: boolean;
+  /** Decoded audio vs the audio that was encoded (offset and similarity). */
+  alignment?: { offsetMs: number; correlation: number; ok: boolean };
 };
 
 export function checkKind(e: NoteEvent): CheckKind {

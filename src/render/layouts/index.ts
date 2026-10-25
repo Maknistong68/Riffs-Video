@@ -5,7 +5,8 @@
 import { upperBound, type Timeline } from '../../engine/timeline';
 import type { FrameSettings } from '../drawFrame';
 import { SKINS } from '../skins';
-import type { NeckView } from '../neck2d';
+import { stringSpacing, type NeckView } from '../neck2d';
+import { makeProjector, neckModel, solveCamera, type CameraPose, type NeckModel, type Region } from '../view3d';
 import type { LaneGeometry } from '../tabLane';
 
 export type LayoutGeometry = {
@@ -14,7 +15,37 @@ export type LayoutGeometry = {
   notation: LaneGeometry | null;
   /** Neck-Overlay: upcoming notes are drawn as numbered markers on the neck itself. */
   numbersOnNeck: boolean;
+  /** 3D view: the scene the WebGL renderer draws (neck.proj places the overlay on it). */
+  view3d?: View3D;
 };
+
+export type View3D = { model: NeckModel; pose: CameraPose; region: Region; fromFret: number; toFret: number };
+
+/** Header (title, bpm, badges) ends here; the 3D neck may use the space below it. */
+const HEADER_BOTTOM = 300;
+
+/**
+ * Layout geometry for this frame, including the 3D camera and projection when the style asks
+ * for the 3D view. Pure: the renderer, the overlay and the Sync Report all call this.
+ */
+export function frameGeometry(s: FrameSettings, t: Timeline, ms: number): LayoutGeometry {
+  const geo = layoutGeometry(s, t, ms);
+  if (s.style.view !== '3d') return geo;
+  const v = geo.neck;
+  const h = v.y1 - v.y0;
+  const top = Math.max(s.safeZones.topPx + HEADER_BOTTOM, v.y0 - h * 0.9);
+  const bottom = Math.min((geo.lane ?? geo.notation)?.y0 ?? s.height - s.safeZones.bottomPx, v.y1 + h * 0.9 + 60) - 8;
+  // The guitar may run under the TikTok action column; the notes it must show stay left of it.
+  const region: Region = { x: 0, y: Math.round(top), w: s.width, h: Math.round(bottom - top) };
+  const fit: Region = { ...region, w: s.width - s.safeZones.rightPx };
+  const model = neckModel(v);
+  const pose = solveCamera(model, v, region, s.style.camera, ms, fit);
+  return {
+    ...geo,
+    neck: { ...v, proj: makeProjector(model, pose, region, stringSpacing(v)) },
+    view3d: { model, pose, region, fromFret: v.fromFret, toFret: v.toFret },
+  };
+}
 
 /** Visible frets: enough for the highest note in the riff (12, 15, 19 or 24). */
 export function visibleFrets(t: Pick<Timeline, 'events'>): number {

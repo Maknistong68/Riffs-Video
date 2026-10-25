@@ -9,9 +9,12 @@
 | @spotify/basic-pitch (incl. model files) | Apache-2.0 | Pitch detection for the Sync Report |
 | @tensorflow/tfjs | Apache-2.0 | Runs Basic Pitch |
 | @fontsource/inter (Inter) | SIL OFL 1.1 | Bundled render font (deterministic frames) |
+| three (three.js) | MIT | 3D guitar neck (lazy-loaded; procedural geometry, no model files) |
+| Freeverb reverb algorithm (Jezar at Dreampoint) | Public domain | Re-implemented in `src/audio/fx.ts` (comb/allpass tunings) |
 | react, react-dom | MIT | UI |
 | dexie, dexie-react-hooks | Apache-2.0 | IndexedDB |
 | vite-plugin-pwa / workbox | MIT | Service worker, offline precache |
 
 Test fixtures in `tests/fixtures/alphatab/` are alphaTab test files (MPL-2.0), see the README there.
 App icons are drawn by `scripts/make-icons.cjs` (original).
+The 3D neck, headstock and wood textures are generated in code (`src/render/three/neck3d.ts`): no third-party 3D assets.

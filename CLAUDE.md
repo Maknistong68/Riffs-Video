@@ -115,7 +115,10 @@ type NoteEvent = {
 1. Decode the exported MP4's audio with mediabunny.
 2. Run Basic Pitch (in a Web Worker) → detected notes (onset + pitch).
 3. Match detected notes to `timeline.events`: onset within ±1 frame, pitch within ±50 cents
-   (bends: compare target pitch).
+   (bends: compare target pitch). Amp/pedal effects (distortion, delay, reverb) can hide a pick
+   attack: such notes are re-checked on the guitar signal before effects, and only if the decoded
+   audio cross-correlates with the encoded audio at ≤ 2 ms offset (the effects chain adds no
+   latency; unit-tested). The report marks those notes "ok before effects".
 4. Render 5 sample frames from the encoded video (decode with mediabunny) and compare
    pixel-hash against `drawFrame` output for those frames.
 5. Show a result card: ✅ "In sync — 48/48 notes matched" or ⚠️ list of mismatches with

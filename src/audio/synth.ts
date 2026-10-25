@@ -15,6 +15,8 @@ export type SynthOptions = {
   soundFont: Uint8Array;
   /** 0 = off. alphaTab metronome ("Synth + click" mode). */
   metronomeVolume?: number;
+  /** Guitar track volume (0 renders the metronome alone, so it can bypass the pedals). */
+  trackVolume?: number;
   /** Render only this play-order tick range (audio time 0 = range start). */
   range?: { startTick: number; endTick: number };
   /** Called with 0..1 while rendering. */
@@ -63,7 +65,7 @@ export function renderSynth(prepared: PreparedScore, opts: SynthOptions): Float3
   }
   // Only the chosen guitar track is audible: the Sync Report checks exactly these notes.
   for (const t of score.tracks) {
-    const v = t.index === opts.trackIndex ? 1 : 0;
+    const v = t.index === opts.trackIndex ? (opts.trackVolume ?? 1) : 0;
     options.trackVolume.set(t.playbackInfo.primaryChannel, v);
     options.trackVolume.set(t.playbackInfo.secondaryChannel, v);
   }

@@ -1,4 +1,5 @@
 import type { SkinId } from './skins';
+import { DEFAULT_CAMERA, type Camera3D } from './camera';
 
 export type LayoutId = 'classic' | 'overlay' | 'split' | 'closeup';
 export type DifficultyBadge = 'none' | 'Easy' | 'Medium' | 'Hard';
@@ -16,6 +17,9 @@ export type RenderStyle = {
   lookAhead: boolean;
   credit: string;
   difficulty: DifficultyBadge;
+  /** Flat fretboard or a 3D guitar neck seen from `camera`. */
+  view: '2d' | '3d';
+  camera: Camera3D;
 };
 
 export const DEFAULT_STYLE: RenderStyle = {
@@ -28,6 +32,8 @@ export const DEFAULT_STYLE: RenderStyle = {
   lookAhead: true,
   credit: '',
   difficulty: 'none',
+  view: '3d',
+  camera: DEFAULT_CAMERA,
 };
 
 export const LAYOUTS: { id: LayoutId; name: string }[] = [

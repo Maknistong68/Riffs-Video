@@ -10,9 +10,13 @@ import { frameToMs } from '../../engine/time';
 import { tuningLabel } from '../../engine/tuning';
 import { defaultFrameSettings, drawFrame } from '../../render/drawFrame';
 import { loadRenderFonts } from '../../render/fonts';
+import { CAMERA_PRESETS, clampCamera, type Camera3D, type CameraMotion } from '../../render/camera';
+import { ensureNeck3d } from '../../render/neck3dRegistry';
 import { SKIN_IDS, SKINS } from '../../render/skins';
 import { LAYOUTS, type DifficultyBadge, type LayoutId, type RenderStyle } from '../../render/style';
-import { db, styleOf, type RiffRecord, type StyleSettings } from '../../storage/db';
+import { db, styleOf, toneOf, type RiffRecord, type StyleSettings } from '../../storage/db';
+import { toneForSkin } from '../../audio/tone';
+import { ToneControls } from './ToneControls';
 import { riffSource, updateRiff } from '../../storage/riffs';
 import { inspectSource, prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared, SoundMode, TrackInfo } from '../../workers/protocol';
@@ -70,6 +74,12 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
   const source = useMemo(() => riffSource(riff), [riff.sourceText, riff.sourceBytes, riff.fileName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => void loadRenderFonts().then(() => setFontReady(true)), []);
+  // three.js is loaded only when the 3D view is used.
+  const [neck3d, setNeck3d] = useState<'idle' | 'ready' | 'failed'>('idle');
+  useEffect(() => {
+    if (style.render.view !== '3d' || neck3d !== 'idle') return;
+    void ensureNeck3d().then((ok) => setNeck3d(ok ? 'ready' : 'failed'));
+  }, [style.render.view, neck3d]);
   useEffect(() => {
     void inspectSource(source).then((i) => setTracks(i.tracks), () => undefined);
   }, [source]);
@@ -77,15 +87,18 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
   // Timeline + synth audio (incl. teach passes) from the worker whenever they could change.
   // In Silent mode the preview still gets the synth as a guide (the export is silent).
   const config = riffConfig(riff, style);
-  const configKey = JSON.stringify({ ...config, source: undefined, mode: style.soundMode });
+  const tone = toneOf(style);
+  const configKey = JSON.stringify({ ...config, source: undefined, mode: style.soundMode, tone });
   const silentMode = style.soundMode === 'silent';
   useEffect(() => {
     let live = true;
     setError(null);
-    prepareRiff({
+    // Debounced: dragging a pedal knob re-renders the effects once the finger settles.
+    const timer = window.setTimeout(() => prepareRiff({
       riff: config,
       soundFontUrl: DEFAULT_SOUND_PACK.url,
       soundMode: silentMode ? 'synth' : style.soundMode,
+      tone,
     }).then(
       (p) => {
         if (!live) return;
@@ -95,9 +108,10 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
         }
       },
       (e: unknown) => live && setError(e instanceof WorkerError ? [e.message, ...e.details] : [String(e)]),
-    );
+    ), prepared ? 250 : 0);
     return () => {
       live = false;
+      window.clearTimeout(timer);
     };
   }, [source, configKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -132,7 +146,28 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (ctx && prepared) drawFrame(ctx, prepared.timeline, pv.frame, settings);
-  }, [prepared, pv.frame, settings, fontReady]);
+  }, [prepared, pv.frame, settings, fontReady, neck3d]);
+
+  // Drag the preview to turn the guitar (3D view). Live while dragging, saved on release.
+  const drag = useRef<{ x: number; y: number; cam: Camera3D; scale: number } | null>(null);
+  const is3d = render.view === '3d';
+  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!is3d) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = e.currentTarget.getBoundingClientRect();
+    drag.current = { x: e.clientX, y: e.clientY, cam: render.camera, scale: 140 / Math.max(1, rect.width) };
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const camera = clampCamera({ ...d.cam, yaw: d.cam.yaw - (e.clientX - d.x) * d.scale, pitch: d.cam.pitch + (e.clientY - d.y) * d.scale });
+    setLocalStyle((st) => ({ ...st, render: { ...st.render, camera } }));
+  };
+  const onPointerUp = () => {
+    if (!drag.current) return;
+    drag.current = null;
+    setStyle({ render: { ...render } });
+  };
 
   const setStyle = (patch: Partial<StyleSettings>) => {
     const next = { ...style, ...patch };
@@ -162,8 +197,23 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
       </div>
 
       <div className="preview-wrap">
-        <canvas ref={canvasRef} width={settings.width} height={settings.height} data-testid="preview" aria-label="Video preview" />
+        <canvas
+          ref={canvasRef}
+          width={settings.width}
+          height={settings.height}
+          data-testid="preview"
+          aria-label={is3d ? 'Video preview — drag to turn the guitar' : 'Video preview'}
+          style={is3d ? { touchAction: 'none', cursor: 'grab' } : undefined}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+        />
       </div>
+      {is3d && <p className="dim small center">Drag the preview to turn the guitar.</p>}
+      {is3d && neck3d === 'failed' && (
+        <div className="notice small">This device can’t draw the 3D guitar (no WebGL). <button className="btn" onClick={() => setRender({ view: '2d' })}>Use 2D</button></div>
+      )}
 
       {error && <div className="errors" role="alert">{error.map((m, i) => <span key={i}>{m}</span>)}</div>}
       {prepared && prepared.warnings.length > 0 && (
@@ -189,6 +239,25 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
       <section className="panel card" role="tabpanel">
         {tab === 'guitar' && (
           <>
+            <Segmented<'2d' | '3d'> label="View" value={render.view} onChange={(v) => setRender({ view: v })} options={[{ value: '3d', label: '3D guitar' }, { value: '2d', label: 'Flat 2D' }]} />
+            {is3d && (
+              <>
+                <div className="field">
+                  <span>Camera angle (or drag the preview)</span>
+                  <div className="chips" role="radiogroup" aria-label="Camera angle">
+                    {CAMERA_PRESETS.map((p) => {
+                      const on = Math.round(render.camera.yaw) === p.yaw && Math.round(render.camera.pitch) === p.pitch;
+                      return (
+                        <button key={p.id} role="radio" aria-checked={on} className={`chip ${on ? 'on' : ''}`} onClick={() => setRender({ camera: { ...render.camera, yaw: p.yaw, pitch: p.pitch } })}>
+                          {p.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <Segmented<CameraMotion> label="Camera motion" value={render.camera.motion} onChange={(motion) => setRender({ camera: { ...render.camera, motion } })} options={[{ value: 'static', label: 'Still' }, { value: 'orbit', label: 'Slow orbit' }]} />
+              </>
+            )}
             <label className="field">
               <span>Guitar</span>
               <select className="input" value={render.skin} onChange={(e) => setRender({ skin: e.target.value as RenderStyle['skin'] })} aria-label="Guitar skin">
@@ -229,6 +298,13 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
             <Segmented<SoundMode> label="Sound mode" value={style.soundMode} onChange={(v) => setStyle({ soundMode: v })} options={[{ value: 'synth', label: 'Synth' }, { value: 'synth-click', label: 'Synth + click' }, { value: 'silent', label: 'Silent' }]} />
             {silentMode && (
               <SilentControls silent={style.silent} riffBpm={Math.round(riff.timelineCache?.tempoMap[0]?.bpm ?? t?.tempoMap[0]?.bpm ?? 120)} reference={reference} onChange={(silent) => setStyle({ silent })} />
+            )}
+            {silentMode ? (
+              <p className="dim small">The preview plays this tone as a guide; the export is silent.</p>
+            ) : null}
+            <ToneControls tone={tone} onChange={(t) => setStyle({ tone: t })} />
+            {style.tone && (
+              <button className="btn" onClick={() => setStyle({ tone: toneForSkin(render.skin) })}>Reset to the {SKINS[render.skin].name} default</button>
             )}
             <label className="field">
               <span>Sound pack</span>

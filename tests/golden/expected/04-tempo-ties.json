@@ -401,6 +401,7 @@
    "loopHardest": true
   },
   "fps": 60,
+  "tone": "nylon",
   "sections": [
    {
     "startMs": 1000,

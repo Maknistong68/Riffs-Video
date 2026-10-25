@@ -1,5 +1,38 @@
 # Status
 
+## After Phase 3 — user requests: 3D guitar, real guitar tone, chord highlighting ✅ in emulation · ⏳ real-device check
+
+### What exists
+- **3D guitar neck** (`src/render/three/neck3d.ts`, three.js, lazy-loaded): procedural fretboard with wood grain,
+  binding, neck back, nut, shaped headstock (6-in-line or 3+3) with tuners, metal frets, inlays per skin; struck strings
+  glow and vibrate; shadows. Default view for new riffs; "Flat 2D" is one tap away.
+- **Camera**: drag the Studio preview to turn the guitar; presets Front / Angled / Low angle / From above / Player's view /
+  Down the neck; "Slow orbit" motion. The camera is solved per frame so the whole fret window (incl. open-string dots and
+  fret numbers) always fits left of the TikTok action column, at any angle.
+- **One projection** (`src/render/view3d.ts`, pure math): three.js uses its camera, and the 2D overlay (dots, glyphs,
+  look-ahead, fret numbers) plus the Sync Report's highlight probes project through the same function. Dot size follows
+  the on-screen string spacing, so dots never overlap.
+- **Guitar tone** (`src/audio/tone.ts`, `src/audio/fx.ts`): instrument (Electric DI, Jazz, Acoustic steel, Nylon, Bass —
+  GM programs of the SoundFont) + pedalboard: compressor → drive (overdrive / distortion / fuzz, 2× oversampled) → amp
+  (tone stack + speaker cabinet) → chorus → delay → reverb (Freeverb). 11 presets (Clean, Crunch, Rock, Metal, Lead, Fuzz,
+  Ambient, Jazz, Acoustic, Nylon, Bass); default follows the guitar model. Deterministic, zero added latency; same chain in
+  preview and export; knob changes re-run only the effects (dry synth cached in the worker). The metronome bypasses it.
+- **Chords**: Riff Review playback lights every note of a chord (it used to light only the first); open strings are filled
+  "0" dots like every other note.
+- **Sync Report with effects**: notes whose attack the effects hide are re-checked on the dry guitar, gated by a
+  stream-alignment check (decoded audio vs encoded audio, ≤ 2 ms, correlation ≥ 0.8).
+
+### Checks
+- Golden: Lead, Acoustic, Rock, Nylon, Metal tones; 3D on split / close-up (slow orbit) / classic — all Sync Reports green.
+- e2e: 3D drag + presets + Rock tone with delay → export 25/25 ✅ (plus all earlier flows).
+- Unit: fx (determinism, silent lead-in, no onset latency, harmonics from distortion, delay timing, reverb tail, cabinet
+  roll-off), alignment.
+
+### Notes
+- 3D export speed on phones is not measured yet (headless tests use software WebGL). If a phone is too slow, use Flat 2D.
+- The SoundFont is the built-in Sonivox GM set; the amp/pedals make it sound like a guitar rig, but better guitar
+  samples (P8) would still help.
+
 ## Phase 3 — Understanding music from text and audio ✅ in emulation · ⏳ waiting for real-device check
 
 ### Acceptance

@@ -169,3 +169,20 @@ textarea.input { padding: 12px 14px; min-height: 260px; font-family: ui-monospac
 .tap-pad:active { background: #2c3446; transform: scale(0.99); }
 .tap-count { font-size: 44px; font-weight: 800; }
 .tap-next { color: var(--dim); font-size: 18px; }
+
+/* Tone: presets + pedalboard */
+.tone { display: flex; flex-direction: column; gap: 14px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.chip { flex: none; min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 15px; }
+.chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.pedal { border-radius: 14px; background: var(--surface); border: 1px solid var(--line); border-left: 6px solid color-mix(in srgb, var(--pedal) 35%, var(--surface)); overflow: hidden; }
+.pedal.on { border-left-color: var(--pedal); background: color-mix(in srgb, var(--pedal) 8%, var(--surface)); }
+.stomp { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 0 14px; border: 0; background: transparent; text-align: left; font-size: 16px; }
+.led { width: 12px; height: 12px; border-radius: 50%; background: #3a3f4b; box-shadow: inset 0 1px 2px #0008; flex: none; }
+.pedal.on .led { background: #ff3b30; box-shadow: 0 0 10px #ff3b30; }
+.knobs { display: flex; flex-direction: column; gap: 10px; padding: 0 14px 14px; }
+.knob { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--dim); font-weight: 600; }
+.knob span { display: flex; justify-content: space-between; }
+.knob b { color: var(--text); font-weight: 700; }
+.knob input { width: 100%; min-height: 32px; accent-color: var(--pedal); }
+.center { text-align: center; }

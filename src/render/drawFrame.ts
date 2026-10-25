@@ -2,7 +2,8 @@ import { frameToMs } from '../engine/time';
 import { tuningLabel } from '../engine/tuning';
 import type { Timeline } from '../engine/timeline';
 import { font } from './fonts';
-import { layoutGeometry } from './layouts';
+import { frameGeometry } from './layouts';
+import { neckRenderer } from './neck3dRegistry';
 import { drawNeck } from './neck2d';
 import { drawNotation } from './notation';
 import { SKINS } from './skins';
@@ -52,7 +53,10 @@ function currentBpm(t: Timeline, ms: number): number {
 export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameSettings): void {
   const ms = frameToMs(frameIndex, s.fps);
   const th = s.theme;
-  const geo = layoutGeometry(s, t, ms);
+  let geo = frameGeometry(s, t, ms);
+  const r3d = geo.view3d ? neckRenderer() : null;
+  // 3D requested but the renderer isn't loaded (or WebGL is missing): draw the flat neck.
+  if (geo.view3d && !r3d) geo = frameGeometry({ ...s, style: { ...s.style, view: '2d' } }, t, ms);
   const right = s.width - s.safeZones.rightPx;
 
   ctx.save();
@@ -62,6 +66,7 @@ export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameS
   drawHeader(ctx, t, s, ms);
   drawSection(ctx, t, s, ms);
 
+  if (geo.view3d && r3d) r3d.draw(ctx, geo.view3d, SKINS[s.style.skin], th, t, ms);
   drawNeck(ctx, geo.neck, SKINS[s.style.skin], th, t, ms, s.style, geo.numbersOnNeck);
   if (geo.lane) drawTabLane(ctx, geo.lane, t, th, ms, s.style);
   if (geo.notation) drawNotation(ctx, geo.notation, t, th, ms);

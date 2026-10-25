@@ -1,4 +1,5 @@
 /** Local-only storage (CLAUDE.md §5): Dexie/IndexedDB for records, OPFS for large blobs. */
+import { toneForSkin, type ToneSettings } from '../audio/tone';
 import Dexie, { type EntityTable } from 'dexie';
 import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
@@ -28,7 +29,14 @@ export type StyleSettings = {
   render: RenderStyle;
   teach: TeachOptions;
   silent: SilentSettings;
+  /** Instrument + pedals. Unset = the default tone for the chosen guitar model. */
+  tone?: ToneSettings;
 };
+
+/** The tone in effect (explicit choice, or the guitar model's default). */
+export function toneOf(s: StyleSettings): ToneSettings {
+  return s.tone ?? toneForSkin(s.render.skin);
+}
 
 export type RiffRecord = {
   id: string;

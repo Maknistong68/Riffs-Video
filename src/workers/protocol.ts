@@ -6,6 +6,7 @@ import type { TranscribedRiff } from '../import/transcribeRiff';
 import type { RiffEdit } from '../engine/edits';
 import type { TeachOptions } from '../engine/teach';
 import type { RenderStyle } from '../render/style';
+import type { ToneSettings } from '../audio/tone';
 
 export type SoundMode = 'synth' | 'synth-click' | 'silent';
 
@@ -18,6 +19,8 @@ export type RiffConfig = {
   teach?: TeachOptions;
   /** Silent mode: play the riff at this tempo (scaled on the score, so visuals stay exact). */
   tempoBpm?: number;
+  /** General MIDI program for the guitar track (instrument chosen in the Sound tab). */
+  program?: number;
   /** Per-note confidence by ref key (audio transcription). */
   noteConfidence?: Record<string, number>;
 };
@@ -28,7 +31,7 @@ export type WorkerRequest =
   | { id: number; type: 'inspect'; source: RiffSource }
   | { id: number; type: 'timeline'; riff: RiffConfig }
   | { id: number; type: 'transcribe'; pcm: Float32Array<ArrayBuffer>; sampleRate: number; modelUrl: string; tuning: number[]; capo: number; title: string }
-  | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode }
+  | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode; tone: ToneSettings }
   | {
       id: number;
       type: 'export';
@@ -36,6 +39,7 @@ export type WorkerRequest =
       fps: 30 | 60;
       style: RenderStyle;
       soundMode: SoundMode;
+      tone: ToneSettings;
       soundFontUrl: string;
       modelUrl: string;
     };

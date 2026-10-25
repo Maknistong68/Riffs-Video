@@ -3,9 +3,11 @@
  * Heavy work off the UI thread: parse, timeline, synth, render + encode, Sync Report.
  * Everything is derived from the RiffSource inside this worker, deterministically.
  */
+import { applyTone } from '../audio/fx';
 import { normaliseLoudness } from '../audio/mix';
+import type { ToneSettings } from '../audio/tone';
 import { fetchSoundFont } from '../audio/soundpacks';
-import { renderArrangement } from '../audio/synth';
+import { renderArrangement, toMono } from '../audio/synth';
 import { transcribe } from '../audio/transcribe';
 import { buildArrangement, NO_TEACH, scaleTempo } from '../engine/arrange';
 import { DEFAULT_BUILD } from '../engine/buildTimeline';
@@ -22,6 +24,7 @@ import { playableTracks, ScoreImportError } from '../import/alphatab';
 import { loadRiffSource } from '../import/source';
 import { defaultFrameSettings } from '../render/drawFrame';
 import { loadRenderFonts } from '../render/fonts';
+import { ensureNeck3d } from '../render/neck3dRegistry';
 import type { ExportStage, RiffConfig, SoundMode, WorkerRequest, WorkerResponse } from './protocol';
 
 declare const self: DedicatedWorkerGlobalScope;
@@ -33,6 +36,8 @@ function build(riff: RiffConfig) {
   const makeScore = () => {
     const score = loadRiffSource(riff.source);
     editErrors = applyEdits(score, riff.trackIndex, riff.edits ?? []).errors;
+    const track = score.tracks[riff.trackIndex];
+    if (track && riff.program !== undefined) track.playbackInfo.program = riff.program;
     if (riff.tempoBpm && score.tempo > 0 && Math.abs(riff.tempoBpm - score.tempo) > 0.01) scaleTempo(score, riff.tempoBpm / score.tempo);
     return score;
   };
@@ -52,20 +57,37 @@ function build(riff: RiffConfig) {
   return { arrangement: arr, timeline: arr.timeline, warnings: arr.warnings, editErrors };
 }
 
-async function renderAudio(riff: RiffConfig, built: ReturnType<typeof build>, totalSamples: number, soundFontUrl: string, mode: SoundMode, onProgress: (f: number) => void) {
+/** Last dry synth render: turning a pedal knob re-runs only the effects, not the synth. */
+let dryCache: { key: string; pcm: Float32Array<ArrayBuffer>; click: Float32Array<ArrayBuffer> | null } | null = null;
+
+/** Add the click at the level it had next to the dry guitar (the effects chain renormalises the guitar). */
+function mixClick(wet: Float32Array, dry: Float32Array, click: Float32Array): void {
+  let pd = 0, pw = 0;
+  for (let i = 0; i < dry.length; i++) pd = Math.max(pd, Math.abs(dry[i]!));
+  for (let i = 0; i < wet.length; i++) pw = Math.max(pw, Math.abs(wet[i]!));
+  const g = pd > 0 ? pw / pd : 1;
+  for (let i = 0; i < wet.length; i++) wet[i]! += click[i]! * g;
+}
+
+async function renderAudio(riff: RiffConfig, built: ReturnType<typeof build>, totalSamples: number, soundFontUrl: string, mode: SoundMode, tone: ToneSettings, onProgress: (f: number) => void) {
   // Silent / timing-only: a silent track (platforms add the official sound). No synth at all.
-  if (mode === 'silent') return { pcm: new Float32Array(totalSamples * 2), lufs: -Infinity };
-  const soundFont = await fetchSoundFont(soundFontUrl);
-  const pcm = renderArrangement(built.arrangement, {
-    trackIndex: riff.trackIndex,
-    sampleRate: AUDIO_SAMPLE_RATE,
-    totalSamples,
-    soundFont,
-    metronomeVolume: mode === 'synth-click' ? 1 : 0,
-    onProgress,
-  });
+  if (mode === 'silent') return { pcm: new Float32Array(totalSamples * 2), lufs: -Infinity, dry: null };
+  const key = JSON.stringify({ riff, totalSamples, soundFontUrl, mode });
+  let dry = dryCache?.key === key ? dryCache.pcm : null;
+  if (!dry) {
+    const soundFont = await fetchSoundFont(soundFontUrl);
+    const click = mode === 'synth-click';
+    const common = { trackIndex: riff.trackIndex, sampleRate: AUDIO_SAMPLE_RATE, totalSamples, soundFont };
+    dry = renderArrangement(built.arrangement, { ...common, metronomeVolume: 0, onProgress: (f) => onProgress(click ? f * 0.7 : f) });
+    // The click is rendered on its own so it bypasses the pedals and amp.
+    const clickPcm = click ? renderArrangement(built.arrangement, { ...common, metronomeVolume: 1, trackVolume: 0, onProgress: (f) => onProgress(0.7 + f * 0.3) }) : null;
+    dryCache = { key, pcm: dry, click: clickPcm };
+  }
+  const pcm = applyTone(dry, AUDIO_SAMPLE_RATE, tone);
+  const clickPcm = dryCache?.click;
+  if (clickPcm) mixClick(pcm, dry, clickPcm);
   const loudness = normaliseLoudness(pcm, 2, AUDIO_SAMPLE_RATE);
-  return { pcm, lufs: loudness.lufsAfter };
+  return { pcm, lufs: loudness.lufsAfter, dry };
 }
 
 let tfModel: Promise<import('@tensorflow/tfjs').GraphModel> | null = null;
@@ -111,7 +133,7 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
     if (req.type === 'prepare') {
       const built = build(req.riff);
       const total = samplesForFrames(frameCount(built.timeline.durationMs, 60), 60);
-      const { pcm, lufs } = await renderAudio(req.riff, built, total, req.soundFontUrl, req.soundMode, (f) => progress('audio', f));
+      const { pcm, lufs } = await renderAudio(req.riff, built, total, req.soundFontUrl, req.soundMode, req.tone, (f) => progress('audio', f));
       post({ id: req.id, type: 'prepared', result: { timeline: built.timeline, warnings: built.warnings, editErrors: built.editErrors, pcm, sampleRate: AUDIO_SAMPLE_RATE, lufs } }, [pcm.buffer]);
       return;
     }
@@ -119,8 +141,12 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
     progress('prepare', 0);
     const [built] = await Promise.all([Promise.resolve(build(req.riff)), loadRenderFonts()]);
     const settings = defaultFrameSettings(req.fps, req.style);
+    if (settings.style.view === '3d' && !(await ensureNeck3d())) {
+      throw new Error('This device cannot draw the 3D guitar (WebGL is unavailable here). Switch the view to 2D in the Guitar tab.');
+    }
     const plan = await planExport(built.timeline, settings);
-    const { pcm } = await renderAudio(req.riff, built, plan.totalSamples, req.soundFontUrl, req.soundMode, (f) => progress('audio', f));
+    const { pcm, dry } = await renderAudio(req.riff, built, plan.totalSamples, req.soundFontUrl, req.soundMode, req.tone, (f) => progress('audio', f));
+    const reference = dry ? { wetMono: toMono(pcm, 2), dryMono: toMono(dry, 2) } : undefined;
     const { data, info } = await exportMp4(built.timeline, pcm, settings, plan, (p) =>
       progress('render', p.frame / p.frames, { frame: p.frame, frames: p.frames }),
     );
@@ -132,6 +158,7 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
       async (mono, sr) => transcribe(getModel(req.modelUrl), mono, sr, (f) => progress('verify-pitch', f)),
       (stage) => progress(stage === 'audio' ? 'verify-audio' : stage === 'pitch' ? 'verify-pitch' : 'verify-frames', 0),
       req.soundMode !== 'silent',
+      reference,
     );
     report.audioLatencySamples = info.audioLatencySamples;
     post({ id: req.id, type: 'exported', result: { mp4: data, info, report, timeline: built.timeline, warnings: built.warnings } }, [data]);

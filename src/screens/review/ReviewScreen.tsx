@@ -3,11 +3,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { haptic } from '../../app/haptics';
 import { navigate } from '../../app/router';
 import { DEFAULT_SOUND_PACK } from '../../audio/soundpacks';
+import { programOf } from '../../audio/tone';
 import { Sheet } from '../../components/Sheet';
 import type { RiffEdit } from '../../engine/edits';
 import { fingeringEdits, noteFlags, refKey, reviewBars, type ReviewNote } from '../../engine/review';
 import { frameToMs } from '../../engine/time';
-import { db, styleOf, type RiffRecord } from '../../storage/db';
+import { db, styleOf, toneOf, type RiffRecord } from '../../storage/db';
 import { readBlob } from '../../storage/opfs';
 import { riffSource, updateRiff } from '../../storage/riffs';
 import { prepareRiff, WorkerError } from '../../workers/client';
@@ -60,9 +61,10 @@ function Review({ riff }: { riff: RiffRecord }) {
   useEffect(() => {
     let live = true;
     prepareRiff({
-      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits },
+      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, program: programOf(toneOf(style).instrument), ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits },
       soundFontUrl: DEFAULT_SOUND_PACK.url,
       soundMode: 'synth',
+      tone: toneOf(style),
     }).then(
       (p) => live && (setPrepared(p), setError(null)),
       (e: unknown) => live && setError(e instanceof WorkerError ? [e.message, ...e.details] : [String(e)]),
