@@ -18,7 +18,8 @@ import type { RenderStyle } from '../../src/render/style';
 const riffDir = join(import.meta.dirname, 'riffs');
 const expectedDir = join(import.meta.dirname, 'expected');
 const update = process.env.UPDATE_GOLDEN === '1';
-test.setTimeout(600_000);
+// 3D variants render in software WebGL on CI machines: the long slow-mo + loop export needs time.
+test.setTimeout(1_800_000);
 
 type Variant = { style: Partial<RenderStyle>; teach: TeachOptions; fps: 30 | 60; tone: string };
 const NONE: TeachOptions = { slowMo: false, loopHardest: false };

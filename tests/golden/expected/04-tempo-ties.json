@@ -392,6 +392,7 @@
  },
  "variant": {
   "style": {
+   "view": "2d",
    "layout": "classic",
    "skin": "classical",
    "leftHanded": true

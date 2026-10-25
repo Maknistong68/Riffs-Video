@@ -258,6 +258,7 @@
  },
  "variant": {
   "style": {
+   "view": "2d",
    "layout": "overlay",
    "skin": "lespaul",
    "fingerNumbers": true

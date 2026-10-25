@@ -468,6 +468,12 @@
  },
  "variant": {
   "style": {
+   "view": "3d",
+   "camera": {
+    "yaw": -26,
+    "pitch": 24,
+    "motion": "static"
+   },
    "layout": "split",
    "skin": "acoustic",
    "noteNames": true
@@ -480,13 +486,13 @@
   "tone": "acoustic",
   "sections": [],
   "frames": {
-   "0": "33a15adc36cc7591dfa62c3ae74d0819c2d78e721c91a60b8bd7f7fa2968afd7",
-   "30": "9561633698bc09fa39d6de53786fbee105056cd8f6140e186790e088a33f31ce",
-   "34": "187d28270d3358692720a640b4eb9677f6146b0ef788b06c2d0e736ee6ee9895",
-   "50": "388e596763db31ce78dcc8b29c9b3e1de8ac104a0765f45736b7514c9627994a",
-   "54": "0d28779018ad16887d9ddd9211bbc69fb4ecb3866486c5bd1e0bb60036eff943",
-   "71": "78a0e9be2553c19c7843f99664527c8d2618a1a0d324cfc99df8049e7a5d266f",
-   "75": "5a7eddef8e567b09ce60323ccd69adcca52fb6a31a7faf6efc81c40a620855e0"
+   "0": "042f32a4754f40d09ddc240e0a2ca97d8ce65054aaf001797253d30c3cfcdeea",
+   "30": "1200e5a0aa4c5cf4e664bbc88f0bf45b3044e34080091f29ab0bb72f9759e1d1",
+   "34": "349734fb378262fd0803aae27f5a75a13486567b56ef09aef5e0cd3dae3546de",
+   "50": "3994844b8ff65ca28d29904c7ab0dddbbeecc5426d1315aaf3bec75f9b52ddd4",
+   "54": "06cc5ccb3ebd38eddccac5a69f12f99f7ab52ff5401beb50d9ad8fb367638765",
+   "71": "293ec8c90b7cb987f8d4e97461d8997f6288fb48fd72f2a8c9d49aa2ed55d60c",
+   "75": "33111a4a77c1cdb977b31c1acfa2b2f00a3f3dac61aaae7bd6aa72f8613e0077"
   }
  }
 }
