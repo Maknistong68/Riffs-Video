@@ -66,7 +66,7 @@ one pitch, chains of hammer-ons/slides, techniques out of chords, slides with op
 16ths under 125 ms. A unit sweep checks those rules over 2,700 riffs. A tempo the user picks by hand is kept, so
 very fast riffs can still get a labelled Sync Report.
 
-Verification (emulation, this round): unit 447 ✅ · e2e 38/38 ✅ on iPhone 15 + Pixel 7 (every export ✅ in
+Verification (emulation, after the redesign): unit 450 ✅ · golden 7/7 ✅ · e2e 38/38 ✅ every export in sync. Earlier round: unit 447 ✅ · e2e 38/38 ✅ on iPhone 15 + Pixel 7 (every export ✅ in
 sync: write 39/39, generate 24/24, gp5 20/20, metal genre 52/52, 3 positions 68/68, audio 17/17, 3D tone 25/25,
 ASCII, silent) · golden 7/7 ✅ (5 riffs incl. 3D + slow-mo/loop, 2 phase 6 variants; frame snapshots refreshed for the phase 6 theme/playhead changes, timelines unchanged) · screenshots of the new screens reviewed at 390×844 and 412×915.
 
