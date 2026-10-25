@@ -7,7 +7,7 @@ import type { RiffEdit } from '../engine/edits';
 import type { TeachOptions } from '../engine/teach';
 import type { RenderStyle } from '../render/style';
 
-export type SoundMode = 'synth' | 'synth-click';
+export type SoundMode = 'synth' | 'synth-click' | 'silent';
 
 export type RiffConfig = {
   source: RiffSource;
@@ -16,6 +16,8 @@ export type RiffConfig = {
   title?: string;
   edits?: RiffEdit[];
   teach?: TeachOptions;
+  /** Silent mode: play the riff at this tempo (scaled on the score, so visuals stay exact). */
+  tempoBpm?: number;
   /** Per-note confidence by ref key (audio transcription). */
   noteConfidence?: Record<string, number>;
 };

@@ -45,6 +45,8 @@ export type SyncReport = {
   frames: FrameCheck[];
   highlights: HighlightCheck[];
   audioLatencySamples?: number;
+  /** False for Silent exports (frames and lengths verified; no sound to listen to). */
+  audioChecked?: boolean;
 };
 
 export function checkKind(e: NoteEvent): CheckKind {

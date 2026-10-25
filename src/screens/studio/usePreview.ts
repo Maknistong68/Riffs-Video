@@ -6,7 +6,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { frameCount } from '../../engine/time';
 import type { Prepared } from '../../workers/protocol';
 
-export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0) {
+/** Optional reference recording (Silent mode): played instead of the synth, `startSec` = its time at video 0. */
+export type PreviewReference = { buffer: AudioBuffer; startSec: number };
+
+export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0, reference: PreviewReference | null = null) {
   const [frame, setFrame] = useState(() => Math.floor((initialMs * fps) / 1000));
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -34,18 +37,29 @@ export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0
     if (!prepared) return;
     stop();
     const ctx = new AudioContext({ sampleRate: prepared.sampleRate, latencyHint: 'interactive' });
-    const n = prepared.pcm.length / 2;
-    const buf = ctx.createBuffer(2, n, prepared.sampleRate);
-    buf.copyToChannel(prepared.pcm.subarray(0, n), 0);
-    buf.copyToChannel(prepared.pcm.subarray(n), 1);
     const src = ctx.createBufferSource();
-    src.buffer = buf;
+    if (reference) {
+      src.buffer = reference.buffer;
+    } else {
+      const n = prepared.pcm.length / 2;
+      const buf = ctx.createBuffer(2, n, prepared.sampleRate);
+      buf.copyToChannel(prepared.pcm.subarray(0, n), 0);
+      buf.copyToChannel(prepared.pcm.subarray(n), 1);
+      src.buffer = buf;
+    }
     src.playbackRate.value = speed;
     src.connect(ctx.destination);
     const startFrame = frame >= frames - 1 ? 0 : frame;
     const offsetSec = startFrame / fps;
     const t0 = ctx.currentTime + 0.06;
-    src.start(t0, offsetSec);
+    if (reference) {
+      // Reference time for video time v is startSec + v; before the song starts, wait.
+      const refAt = reference.startSec + offsetSec;
+      if (refAt >= 0) src.start(t0, refAt);
+      else src.start(t0 - refAt / speed, 0);
+    } else {
+      src.start(t0, offsetSec);
+    }
     src.onended = () => stop();
     audio.current = { ctx, src };
     setPlaying(true);
@@ -64,7 +78,7 @@ export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0
       raf.current = requestAnimationFrame(tick);
     };
     raf.current = requestAnimationFrame(tick);
-  }, [prepared, stop, speed, frame, frames, fps]);
+  }, [prepared, stop, speed, frame, frames, fps, reference]);
 
   const seek = useCallback(
     (f: number) => {
@@ -78,7 +92,7 @@ export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0
   useEffect(() => {
     // New audio (e.g. sound mode changed) → stop playback, keep position.
     stop();
-  }, [prepared, stop]);
+  }, [prepared, reference, stop]);
 
   return { frame: Math.min(frame, frames - 1), frames, playing, play, stop, seek, speed, setSpeed };
 }

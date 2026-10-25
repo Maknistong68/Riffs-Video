@@ -7,7 +7,7 @@ import { normaliseLoudness } from '../audio/mix';
 import { fetchSoundFont } from '../audio/soundpacks';
 import { renderArrangement } from '../audio/synth';
 import { transcribe } from '../audio/transcribe';
-import { buildArrangement, NO_TEACH } from '../engine/arrange';
+import { buildArrangement, NO_TEACH, scaleTempo } from '../engine/arrange';
 import { DEFAULT_BUILD } from '../engine/buildTimeline';
 import { applyEdits } from '../engine/edits';
 import { refKey } from '../engine/review';
@@ -33,6 +33,7 @@ function build(riff: RiffConfig) {
   const makeScore = () => {
     const score = loadRiffSource(riff.source);
     editErrors = applyEdits(score, riff.trackIndex, riff.edits ?? []).errors;
+    if (riff.tempoBpm && score.tempo > 0 && Math.abs(riff.tempoBpm - score.tempo) > 0.01) scaleTempo(score, riff.tempoBpm / score.tempo);
     return score;
   };
   const arr = buildArrangement(makeScore, {
@@ -52,6 +53,8 @@ function build(riff: RiffConfig) {
 }
 
 async function renderAudio(riff: RiffConfig, built: ReturnType<typeof build>, totalSamples: number, soundFontUrl: string, mode: SoundMode, onProgress: (f: number) => void) {
+  // Silent / timing-only: a silent track (platforms add the official sound). No synth at all.
+  if (mode === 'silent') return { pcm: new Float32Array(totalSamples * 2), lufs: -Infinity };
   const soundFont = await fetchSoundFont(soundFontUrl);
   const pcm = renderArrangement(built.arrangement, {
     trackIndex: riff.trackIndex,
@@ -128,6 +131,7 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
       plan.frames,
       async (mono, sr) => transcribe(getModel(req.modelUrl), mono, sr, (f) => progress('verify-pitch', f)),
       (stage) => progress(stage === 'audio' ? 'verify-audio' : stage === 'pitch' ? 'verify-pitch' : 'verify-frames', 0),
+      req.soundMode !== 'silent',
     );
     report.audioLatencySamples = info.audioLatencySamples;
     post({ id: req.id, type: 'exported', result: { mp4: data, info, report, timeline: built.timeline, warnings: built.warnings } }, [data]);

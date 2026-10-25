@@ -9,6 +9,7 @@ import type { RiffSource } from '../../import/source';
 import { db, getSettings, newId, styleOf, summarise, updateSettings, type RiffRecord } from '../../storage/db';
 import { requestPersistence, saveBlob } from '../../storage/opfs';
 import { updateRiff } from '../../storage/riffs';
+import { riffConfig } from '../../storage/riffConfig';
 import { startExport, WorkerError, type ExportJob } from '../../workers/client';
 import type { ExportStage, SoundMode } from '../../workers/protocol';
 
@@ -50,10 +51,13 @@ export function ExportFlow({ riff, source, durationMs, onClose }: { riff: RiffRe
         <Segmented<30 | 60> label="Frame rate" value={fps} onChange={setFps} options={[{ value: 30, label: '30 fps' }, { value: 60, label: '60 fps' }]} />
       </div>
       <div className="field"><span>Sound</span>
-        <Segmented<SoundMode> label="Sound" value={soundMode} onChange={setSoundMode} options={[{ value: 'synth', label: 'Synth' }, { value: 'synth-click', label: 'Synth + click' }]} />
+        <Segmented<SoundMode> label="Sound" value={soundMode} onChange={setSoundMode} options={[{ value: 'synth', label: 'Synth' }, { value: 'synth-click', label: 'Synth + click' }, { value: 'silent', label: 'Silent' }]} />
       </div>
+      {soundMode === 'silent' && (
+        <p className="small dim">No audible sound: add the official track in TikTok. First note at {(styleOf(riff).silent.offsetMs / 1000).toFixed(2)} s{styleOf(riff).silent.bpm ? `, ${styleOf(riff).silent.bpm} bpm` : ''}.</p>
+      )}
       <div className="row spread dim small"><span>Quality: High (H.264 + AAC)</span><span>~{formatBytes(estSize)} · ~{estTime} s</span></div>
-      {showNotice && soundMode !== 'synth-click' && <div className="notice">{COPYRIGHT}</div>}
+      {showNotice && soundMode === 'synth' && <div className="notice">{COPYRIGHT}</div>}
       <button
         className="btn primary block"
         data-testid="start-export"
@@ -92,7 +96,7 @@ function Rendering({ riff, source, fps, soundMode, onCancel }: { riff: RiffRecor
 
     const j = startExport(
       {
-        riff: { source, trackIndex: riff.trackIndex, leadInMs: styleOf(riff).leadInMs, title: riff.title, ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits: riff.edits ?? [], teach: styleOf(riff).teach },
+        riff: { ...riffConfig(riff, { ...styleOf(riff), soundMode }), source },
         fps,
         style: styleOf(riff).render,
         soundMode,
@@ -124,6 +128,7 @@ function Rendering({ riff, source, fps, soundMode, onCancel }: { riff: RiffRecor
           durationMs: r.timeline.durationMs,
           sizeBytes: r.info.sizeBytes,
           syncReport: summarise(r.report),
+          ...(soundMode === 'silent' ? { silent: { bpm: Math.round((r.timeline.tempoMap[0]?.bpm ?? 0) * 4) / 4, offsetMs: r.timeline.leadInMs } } : {}),
           createdAt: Date.now(),
         });
         const s = await getSettings(d);

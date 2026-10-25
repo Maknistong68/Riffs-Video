@@ -105,3 +105,25 @@ export function splitDuration(pos: number, units: number, unitsPerBar = UNITS_PE
   }
   return out;
 }
+
+/**
+ * Tempo of a song from its onsets (for Silent mode alignment): every pair of onsets votes for
+ * the beat periods it could be a multiple of; the 70–180 bpm candidate with most support wins.
+ */
+export function estimateBpm(onsetsMs: readonly number[], minBpm = 70, maxBpm = 180): number | null {
+  if (onsetsMs.length < 8) return null;
+  let best: { bpm: number; score: number } | null = null;
+  for (let bpm = minBpm; bpm <= maxBpm; bpm += 0.25) {
+    const beat = 60_000 / bpm;
+    let score = 0;
+    for (let i = 0; i < onsetsMs.length; i++) {
+      for (let j = i + 1; j < onsetsMs.length && onsetsMs[j]! - onsetsMs[i]! < 4 * beat; j++) {
+        const d = (onsetsMs[j]! - onsetsMs[i]!) / (beat / 2); // in eighth-note units
+        const err = Math.abs(d - Math.round(d));
+        if (Math.round(d) >= 1 && err < 0.08) score += (Math.round(d) % 2 === 0 ? 1 : 0.5) * (1 - err / 0.08);
+      }
+    }
+    if (!best || score > best.score) best = { bpm, score };
+  }
+  return best ? Math.round(best.bpm * 4) / 4 : null;
+}

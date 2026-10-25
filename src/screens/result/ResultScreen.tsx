@@ -37,6 +37,12 @@ export function ResultScreen({ exportId }: { exportId: string }) {
         <h1>{meta.riffTitle}</h1>
       </div>
       {url ? <video src={url} controls playsInline className="player" data-testid="player" /> : <div className="player" style={{ aspectRatio: '9 / 16' }} />}
+      {meta.silent && (
+        <div className="card" data-testid="silent-info">
+          <strong>Add the official sound in TikTok</strong>
+          <p className="small">Line it up so the riff’s first note plays at <strong>{(meta.silent.offsetMs / 1000).toFixed(2)} s</strong> ({meta.silent.bpm} bpm).</p>
+        </div>
+      )}
       <SyncCard meta={meta} />
       <div className="row">
         <button className="btn primary" style={{ flex: 1 }} disabled={!blob} onClick={() => blob && void share(blob, fileName, meta.riffTitle)}>Share</button>
@@ -56,11 +62,15 @@ function SyncCard({ meta }: { meta: ExportMeta }) {
   const s = meta.syncReport;
   return (
     <section className={`card sync ${s.ok ? '' : 'fail'}`} data-testid="sync-report" data-ok={String(s.ok)}>
-      <strong>{s.ok ? '✅ In sync' : '⚠️ Sync problems'} — {s.matched}/{s.total} notes matched</strong>
-      <p className="dim small">
-        Checked by listening to the exported file: every attack within ±1 frame ({(1000 / s.fps).toFixed(1)} ms), every pitch heard,
-        frames identical to the preview. Max timing error {s.maxAbsErrorMs.toFixed(1)} ms.
-      </p>
+      <strong>{s.ok ? '✅ In sync' : '⚠️ Sync problems'}{s.audioChecked === false ? ' — timing-only (silent)' : ` — ${s.matched}/${s.total} notes matched`}</strong>
+      {s.audioChecked === false ? (
+        <p className="dim small">Timing-only export: frames identical to the preview, finger dots on their exact frames, sound track silent.</p>
+      ) : (
+        <p className="dim small">
+          Checked by listening to the exported file: every attack within ±1 frame ({(1000 / s.fps).toFixed(1)} ms), every pitch heard,
+          frames identical to the preview. Max timing error {s.maxAbsErrorMs.toFixed(1)} ms.
+        </p>
+      )}
       {s.problems.length > 0 && (
         <ul>
           {s.problems.map((p, i) => (

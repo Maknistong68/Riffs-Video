@@ -28,6 +28,8 @@ export async function verifyExport(
   totalFrames: number,
   transcribeFn: (mono: Float32Array, sampleRate: number) => Promise<DetectedNote[]>,
   onStage: (s: VerifyStage) => void = () => undefined,
+  /** False for Silent / timing-only exports: there is no sound to listen to. */
+  expectAudio = true,
 ): Promise<SyncReport> {
   const fps = settings.fps;
   const toleranceMs = 1000 / fps;
@@ -39,10 +41,19 @@ export async function verifyExport(
   onStage('audio');
   const audioSec = await audioTrack.computeDuration();
   const mono = await decodeMono(audioTrack, audioSec);
-  const onsets = detectOnsets(mono, AUDIO_SAMPLE_RATE);
-  onStage('pitch');
-  const detected = await transcribeFn(mono, AUDIO_SAMPLE_RATE);
-  const { matches, extras } = matchNotes(t, detected, onsets, fps);
+  let matches: SyncReport['matches'] = [];
+  let extras: SyncReport['extras'] = [];
+  if (expectAudio) {
+    const onsets = detectOnsets(mono, AUDIO_SAMPLE_RATE);
+    onStage('pitch');
+    const detected = await transcribeFn(mono, AUDIO_SAMPLE_RATE);
+    ({ matches, extras } = matchNotes(t, detected, onsets, fps));
+  } else {
+    // Timing-only: the track must really be silent (no synth leaked in).
+    let peak = 0;
+    for (const v of mono) peak = Math.max(peak, Math.abs(v));
+    if (peak > 0.001) extras = [{ startMs: 0, durationMs: audioSec * 1000, midi: 0, amplitude: peak }];
+  }
   const checked = matches.filter((m) => m.kind !== 'skipped');
   const matched = checked.filter((m) => m.ok).length;
   const maxAbsErrorMs = Math.max(0, ...checked.map((m) => Math.abs(m.errorMs ?? 0)));
@@ -119,8 +130,8 @@ export async function verifyExport(
   });
 
   const ok =
-    checked.every((m) => m.ok) && durations.ok && frames.every((f) => f.ok) && highlights.every((h) => h.ok);
-  return { ok, fps, toleranceMs, matched, total: checked.length, maxAbsErrorMs, matches, extras, durations, frames, highlights };
+    checked.every((m) => m.ok) && durations.ok && frames.every((f) => f.ok) && highlights.every((h) => h.ok) && (expectAudio || extras.length === 0);
+  return { ok, fps, toleranceMs, matched, total: checked.length, maxAbsErrorMs, matches, extras, durations, frames, highlights, audioChecked: expectAudio };
 }
 
 async function decodeMono(track: ConstructorParameters<typeof AudioSampleSink>[0], durationSec: number): Promise<Float32Array> {

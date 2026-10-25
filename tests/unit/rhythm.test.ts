@@ -106,3 +106,20 @@ describe('writeAlphaTex round trip', () => {
     expect(t.events[0]!.startMs).toBe(1000 + 600);
   });
 });
+
+describe('estimateBpm', () => {
+  it('finds the beat of a busy, syncopated part (with jitter)', async () => {
+    const { estimateBpm } = await import('../../src/import/rhythm');
+    for (const bpm of [84, 100, 128, 150]) {
+      const units = [2, 1, 1, 2, 2, 3, 1, 2, 2, 4, 2, 2, 1, 1, 2, 2, 2, 2, 4, 2, 2, 2, 2, 4, 2, 2];
+      const est = estimateBpm(onsetsFrom(units, bpm, 10))!;
+      // Half/double time are the same song; accept the octave the voting prefers.
+      const k = est / bpm > 1.5 ? 2 : est / bpm < 0.75 ? 0.5 : 1;
+      expect(Math.abs(est / (bpm * k) - 1), `${est} vs ${bpm}`).toBeLessThan(0.02);
+    }
+  });
+  it('needs enough onsets', async () => {
+    const { estimateBpm } = await import('../../src/import/rhythm');
+    expect(estimateBpm([0, 500, 1000])).toBeNull();
+  });
+});

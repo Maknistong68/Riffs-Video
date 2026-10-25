@@ -9,12 +9,25 @@ import { DEFAULT_STYLE as DEFAULT_RENDER, type RenderStyle } from '../render/sty
 
 export type RiffSourceKind = 'alphatex' | 'gp' | 'ascii' | 'audio' | 'ai';
 
+export type SilentSettings = {
+  /** Tempo of the official recording (null = the riff's own tempo). */
+  bpm: number | null;
+  /** Where in the video the riff's first beat lands (= lead-in), for lining up in TikTok. */
+  offsetMs: number;
+  /** Local reference recording (OPFS path) — alignment preview only, never exported. */
+  refPath?: string;
+  refName?: string;
+  /** Where the riff's first beat is in the reference recording. */
+  refStartMs: number;
+};
+
 export type StyleSettings = {
   fps: 30 | 60;
   soundMode: SoundMode;
   leadInMs: number;
   render: RenderStyle;
   teach: TeachOptions;
+  silent: SilentSettings;
 };
 
 export type RiffRecord = {
@@ -47,7 +60,7 @@ export type RiffRecord = {
 };
 
 export type SyncProblem = { text: string; atMs?: number };
-export type SyncSummary = Pick<SyncReport, 'ok' | 'matched' | 'total' | 'maxAbsErrorMs' | 'fps'> & { problems: SyncProblem[] };
+export type SyncSummary = Pick<SyncReport, 'ok' | 'matched' | 'total' | 'maxAbsErrorMs' | 'fps' | 'audioChecked'> & { problems: SyncProblem[] };
 
 export type ExportMeta = {
   id: string;
@@ -59,6 +72,8 @@ export type ExportMeta = {
   durationMs: number;
   sizeBytes: number;
   syncReport: SyncSummary;
+  /** Silent exports: what to line up in TikTok. */
+  silent?: { bpm: number; offsetMs: number };
   createdAt: number;
 };
 
@@ -98,12 +113,13 @@ export const DEFAULT_SETTINGS: AppSettings = {
   copyrightNoticeSeen: false,
 };
 
-export const DEFAULT_STYLE: StyleSettings = { fps: 30, soundMode: 'synth', leadInMs: 1000, render: DEFAULT_RENDER, teach: NO_TEACH };
+export const DEFAULT_SILENT: SilentSettings = { bpm: null, offsetMs: 1000, refStartMs: 0 };
+export const DEFAULT_STYLE: StyleSettings = { fps: 30, soundMode: 'synth', leadInMs: 1000, render: DEFAULT_RENDER, teach: NO_TEACH, silent: DEFAULT_SILENT };
 
 /** Records from older versions lack newer fields: fill them with defaults. */
 export function styleOf(r: Pick<RiffRecord, 'styleSettings'>): StyleSettings {
   const s = r.styleSettings ?? DEFAULT_STYLE;
-  return { ...DEFAULT_STYLE, ...s, render: { ...DEFAULT_RENDER, ...s.render }, teach: { ...NO_TEACH, ...s.teach } };
+  return { ...DEFAULT_STYLE, ...s, render: { ...DEFAULT_RENDER, ...s.render }, teach: { ...NO_TEACH, ...s.teach }, silent: { ...DEFAULT_SILENT, ...s.silent } };
 }
 
 export async function getSettings(db: RiffReelDb): Promise<AppSettings> {
@@ -127,7 +143,8 @@ export function summarise(report: SyncReport): SyncSummary {
     ...report.frames.filter((f) => !f.ok).map((f) => ({ text: `frame differs from preview (${f.psnr.toFixed(1)} dB)`, atMs: frameMs(f.frame) })),
     ...report.highlights.filter((h) => !h.ok).map((h) => ({ text: `finger dot ${h.detail}`, atMs: frameMs(h.frame) })),
   ];
-  return { ok: report.ok, matched: report.matched, total: report.total, maxAbsErrorMs: report.maxAbsErrorMs, fps: report.fps, problems };
+  if (report.audioChecked === false && report.extras.length) problems.push({ text: 'Silent export contains sound' });
+  return { ok: report.ok, matched: report.matched, total: report.total, maxAbsErrorMs: report.maxAbsErrorMs, fps: report.fps, audioChecked: report.audioChecked ?? true, problems };
 }
 
 let instance: RiffReelDb | null = null;

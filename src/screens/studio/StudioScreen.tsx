@@ -17,6 +17,9 @@ import { riffSource, updateRiff } from '../../storage/riffs';
 import { inspectSource, prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared, SoundMode, TrackInfo } from '../../workers/protocol';
 import { ExportFlow } from './ExportFlow';
+import { SilentControls } from './SilentControls';
+import { riffConfig } from '../../storage/riffConfig';
+import { readBlob } from '../../storage/opfs';
 import { usePreview } from './usePreview';
 
 type Tab = 'guitar' | 'sound' | 'layout' | 'text' | 'teach';
@@ -72,15 +75,17 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
   }, [source]);
 
   // Timeline + synth audio (incl. teach passes) from the worker whenever they could change.
-  const teachKey = JSON.stringify(style.teach);
-  const editsKey = JSON.stringify(edits);
+  // In Silent mode the preview still gets the synth as a guide (the export is silent).
+  const config = riffConfig(riff, style);
+  const configKey = JSON.stringify({ ...config, source: undefined, mode: style.soundMode });
+  const silentMode = style.soundMode === 'silent';
   useEffect(() => {
     let live = true;
     setError(null);
     prepareRiff({
-      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits, teach: style.teach },
+      riff: config,
       soundFontUrl: DEFAULT_SOUND_PACK.url,
-      soundMode: style.soundMode,
+      soundMode: silentMode ? 'synth' : style.soundMode,
     }).then(
       (p) => {
         if (!live) return;
@@ -94,10 +99,34 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
     return () => {
       live = false;
     };
-  }, [source, riff.trackIndex, riff.title, style.leadInMs, style.soundMode, teachKey, editsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [source, configKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Silent mode reference recording, decoded once for the preview transport.
+  const [reference, setReference] = useState<AudioBuffer | null>(null);
+  useEffect(() => {
+    const path = style.silent.refPath;
+    if (!silentMode || !path) return setReference(null);
+    let live = true;
+    void readBlob(db(), path, '').then(async (b) => {
+      if (!b || !live) return;
+      try {
+        const buf = await new OfflineAudioContext(2, 1, 48_000).decodeAudioData(await b.arrayBuffer());
+        if (live) setReference(buf);
+      } catch {
+        if (live) setError(['Could not read the reference recording.']);
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, [silentMode, style.silent.refPath]);
+  const previewRef = useMemo(
+    () => (silentMode && reference ? { buffer: reference, startSec: (style.silent.refStartMs - style.silent.offsetMs) / 1000 } : null),
+    [silentMode, reference, style.silent.refStartMs, style.silent.offsetMs],
+  );
 
   const fps = style.fps;
-  const pv = usePreview(prepared, fps, atMs ?? 0);
+  const pv = usePreview(prepared, fps, atMs ?? 0, previewRef);
   const settings = useMemo(() => ({ ...defaultFrameSettings(fps, render), showSafeZones: showSafe }), [fps, render, showSafe]);
 
   useEffect(() => {
@@ -197,7 +226,10 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
         )}
         {tab === 'sound' && (
           <>
-            <Segmented<SoundMode> label="Sound mode" value={style.soundMode} onChange={(v) => setStyle({ soundMode: v })} options={[{ value: 'synth', label: 'Synth' }, { value: 'synth-click', label: 'Synth + click' }]} />
+            <Segmented<SoundMode> label="Sound mode" value={style.soundMode} onChange={(v) => setStyle({ soundMode: v })} options={[{ value: 'synth', label: 'Synth' }, { value: 'synth-click', label: 'Synth + click' }, { value: 'silent', label: 'Silent' }]} />
+            {silentMode && (
+              <SilentControls silent={style.silent} riffBpm={Math.round(riff.timelineCache?.tempoMap[0]?.bpm ?? t?.tempoMap[0]?.bpm ?? 120)} reference={reference} onChange={(silent) => setStyle({ silent })} />
+            )}
             <label className="field">
               <span>Sound pack</span>
               <select className="input" value={DEFAULT_SOUND_PACK.id} disabled>
@@ -242,6 +274,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
         )}
         {tab === 'teach' && (
           <>
+            {silentMode && <p className="small warn">Teach passes are off in Silent mode (they would drift from the official sound).</p>}
             <label className="switch"><span>Slow-mo passes (50% → 75% → 100%)</span><input type="checkbox" checked={style.teach.slowMo} onChange={(e) => setStyle({ teach: { ...style.teach, slowMo: e.target.checked } })} data-testid="teach-slowmo" /></label>
             <label className="switch">
               <span>Loop hardest bar ×3{hardest ? ` (bar ${hardest.barIndex + 1})` : ''}</span>
