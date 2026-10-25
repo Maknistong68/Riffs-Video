@@ -10,7 +10,8 @@
     "test": "vitest run",
     "e2e": "playwright test --project=\"iPhone 15\" --project=\"Pixel 7\"",
     "golden": "playwright test --project=golden",
-    "golden:update": "UPDATE_GOLDEN=1 playwright test --project=golden"
+    "golden:update": "UPDATE_GOLDEN=1 playwright test --project=golden",
+    "accuracy": "vitest run --config vitest.accuracy.config.ts"
   },
   "repository": {
     "type": "git",

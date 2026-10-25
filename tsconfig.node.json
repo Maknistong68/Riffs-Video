@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["vite.config.ts", "playwright.config.ts", "tests/e2e", "tests/golden/golden.spec.ts"]
+  "include": ["vite.config.ts", "vitest.accuracy.config.ts", "playwright.config.ts", "tests/e2e", "tests/golden/golden.spec.ts"]
 }

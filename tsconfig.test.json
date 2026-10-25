@@ -4,5 +4,5 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
     "types": ["vite/client", "vite-plugin-pwa/vanillajs", "node"]
   },
-  "include": ["src", "tests/unit"]
+  "include": ["src", "tests/unit", "tests/accuracy"]
 }
