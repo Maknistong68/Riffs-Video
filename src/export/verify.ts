@@ -109,11 +109,11 @@ export async function verifyExport(
   const dot = hexToRgb(settings.theme.dot);
   const step = Math.max(1, Math.ceil(t.events.length / MAX_HIGHLIGHT_CHECKS));
   const probeAt = (e: Timeline['events'][number], frame: number) => {
-    const p = noteProbe(frameGeometry(settings, t, frameToMs(frame, fps)).neck, e);
+    const p = noteProbe(frameGeometry(settings, t, frameToMs(frame, fps)).neck, e, t);
     return p && { x: Math.round(p.x), y: Math.round(p.y) };
   };
   const probes = t.events
-    .filter((e, k) => k % step === 0 && noteProbe(frameGeometry(settings, t, e.startMs).neck, e) !== null)
+    .filter((e, k) => k % step === 0 && noteProbe(frameGeometry(settings, t, e.startMs).neck, e, t) !== null)
     .map((e) => {
       const f = firstFrameAtOrAfter(e.startMs, fps);
       const occupiedBefore =

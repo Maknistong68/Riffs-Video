@@ -77,9 +77,26 @@ describe('neck view', () => {
     const p = noteProbe(neck, t.events[1]!)!;
     const d = dotPosition(neck, t.events[1]!.stringIdx, t.events[1]!.fret);
     expect(Math.hypot(p.x - d.x, p.y - d.y)).toBeLessThan(dotRadius(neck));
-    // Beside the dot's centre (towards the nut), never towards a neighbouring string.
+    // Alone on the neck: beside the number, along the string towards the nut.
     expect(p.y).toBeCloseTo(d.y);
     expect(p.x).toBeLessThan(d.x);
+  });
+
+  it('Sync Report probe stays clear of every other dot lit at that moment (h/p partner, chord neighbours)', () => {
+    const base = { ...t.events[1]!, chordId: undefined, legato: false, tech: [] as typeof t.events[number]['tech'] };
+    const prev = { ...base, id: 'prev', startMs: 1000, durationMs: 1000, stringIdx: 2, fret: 5 };
+    const next = { ...base, id: 'next', startMs: 1500, durationMs: 500, stringIdx: 2, fret: 6 };
+    const above = { ...base, id: 'above', startMs: 1500, durationMs: 500, stringIdx: 3, fret: 6 };
+    const below = { ...base, id: 'below', startMs: 1500, durationMs: 500, stringIdx: 1, fret: 6 };
+    const tl = { ...t, events: [prev, next, above, below] };
+    const p = noteProbe(neck, next, tl)!;
+    const r = dotRadius(neck) * 1.35;
+    for (const o of [prev, above, below]) {
+      const q = dotPosition(neck, o.stringIdx, o.fret);
+      expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThan(r);
+    }
+    const d = dotPosition(neck, next.stringIdx, next.fret);
+    expect(Math.hypot(p.x - d.x, p.y - d.y)).toBeLessThan(dotRadius(neck));
   });
 });
 

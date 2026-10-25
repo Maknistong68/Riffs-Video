@@ -4,7 +4,7 @@
  * function of (timeline, ms, view, style).
  */
 import { noteName } from '../engine/tuning';
-import { lastNotePerString, upperBound, type NoteEvent, type Timeline } from '../engine/timeline';
+import { activeEvents, lastNotePerString, upperBound, type NoteEvent, type Timeline } from '../engine/timeline';
 import type { Ctx2D } from './drawFrame';
 import { font } from './fonts';
 import type { Skin } from './skins';
@@ -38,6 +38,7 @@ export const LOOKAHEAD_MS = 450;
 export const APPROACH_MS = 700;
 /** Hit animation lengths (pop, ring, glow) after a note's onset. */
 export const POP_MS = 160;
+export const POP_PEAK = 1.35;
 export const RING_MS = 250;
 /** Trail: where the hand just was fades out over this long after a note ends. */
 export const TRAIL_MS = 500;
@@ -82,7 +83,7 @@ export function dotRadius(v: NeckView): number {
 /** Dot size multiplier right after the attack (a quick pop back to 1). */
 export function popScale(sinceMs: number): number {
   if (sinceMs < 0 || sinceMs >= POP_MS) return 1;
-  return 1 + 0.35 * (1 - sinceMs / POP_MS) ** 2;
+  return 1 + (POP_PEAK - 1) * (1 - sinceMs / POP_MS) ** 2;
 }
 
 /** '#rrggbb' + alpha → rgba() (theme colours are plain hex). */
@@ -121,15 +122,43 @@ export function dotPosition(v: NeckView, stringIdx: number, fret: number): { x: 
  * Where to sample the dot colour on a note's first frame (Sync Report), or null when the
  * note is not drawn as a plain filled dot then (dead note X, slide destination in motion).
  */
-export function noteProbe(v: NeckView, e: NoteEvent): { x: number; y: number } | null {
+export function noteProbe(v: NeckView, e: NoteEvent, t?: Timeline): { x: number; y: number } | null {
   if (e.tech.includes('dead') || e.legato) return null;
   const p = dotPosition(v, e.stringIdx, e.fret);
   const r = dotRadius(v) * dotScale(v, e.stringIdx, e.fret);
-  // Beside the number, towards the nut: only one dot per string is ever lit, so no other note's
-  // dot can cover this side (above/below, a chord's neighbouring string can).
-  const side = v.mirror ? 1 : -1;
-  if (e.tech.includes('harmonic')) return { x: p.x + side * r * 0.6, y: p.y };
-  return { x: p.x + side * r * 0.72, y: p.y };
+  // Clear of the number in the middle (and inside the harmonic diamond on every diagonal).
+  const k = r * (e.tech.includes('harmonic') ? 0.6 : e.fret >= 10 ? 0.8 : 0.72);
+  // Base direction: along the string towards the nut (in 3D the string runs at an angle on screen).
+  let base = v.mirror ? 0 : Math.PI;
+  if (v.proj) {
+    const f = e.fret === 0 ? Math.max(0, v.fromFret) - 0.6 : midFret(e.fret);
+    const a = v.proj(f, e.stringIdx);
+    const b = v.proj(f - 0.35, e.stringIdx);
+    if (Math.hypot(b.x - a.x, b.y - a.y) > 1e-6) base = Math.atan2(b.y - a.y, b.x - a.x);
+  }
+  // Other dots lit just before or with this note (h/p partner on the same string, chord notes on
+  // neighbouring strings): pick the side of this dot farthest from all of them.
+  const others: { x: number; y: number; r: number }[] = [];
+  if (t) {
+    const near = [...activeEvents(t, e.startMs - 20), ...t.events.filter((o) => o.startMs === e.startMs)];
+    for (const o of near) {
+      if (o.id === e.id) continue;
+      const q = dotPosition(v, o.stringIdx, o.fret);
+      others.push({ ...q, r: dotRadius(v) * dotScale(v, o.stringIdx, o.fret) * POP_PEAK });
+    }
+  }
+  let best = { x: p.x + Math.cos(base) * k, y: p.y + Math.sin(base) * k };
+  let bestClear = -Infinity;
+  for (let i = 0; i < 8; i++) {
+    const ang = base + (i * Math.PI) / 4;
+    const c = { x: p.x + Math.cos(ang) * k, y: p.y + Math.sin(ang) * k };
+    const clear = others.reduce((m, o) => Math.min(m, Math.hypot(c.x - o.x, c.y - o.y) - o.r), Infinity);
+    if (clear > bestClear + 1e-6) {
+      bestClear = clear;
+      best = c;
+    }
+  }
+  return best;
 }
 
 const INLAYS = [3, 5, 7, 9, 15, 17, 19, 21];
@@ -567,7 +596,8 @@ function drawNoteDot(ctx: Ctx2D, v: NeckView, theme: Theme, t: Timeline, e: Note
   }
   ctx.save();
   ctx.shadowColor = theme.dot;
-  ctx.shadowBlur = 12 + 34 * Math.exp(-Math.max(0, since) / 200);
+  // Glow scales with the dot: small (far, 3D) dots must not light up their neighbours' spots.
+  ctx.shadowBlur = r * (0.3 + 0.9 * Math.exp(-Math.max(0, since) / 200));
   ctx.fillStyle = theme.dot;
   ctx.strokeStyle = theme.dot;
   if (e.tech.includes('dead')) {
