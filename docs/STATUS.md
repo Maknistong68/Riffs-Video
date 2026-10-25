@@ -21,6 +21,16 @@
 | Split screen with standard notation | Split layout (Phase 2) | golden |
 | Practice link page | Text › Practice link; `#/p/<data>` (riff in the link, no server): slower, loop, save | unit (round-trips all goldens), e2e |
 
+Generator accuracy: 40 generated riffs (metal/rock/acoustic, medium/hard) exported through the real
+pipeline matched every note after the generator learned to avoid what can't be confirmed by ear: fast repeats of
+one pitch, chains of hammer-ons/slides, techniques out of chords, slides with open strings, short palm mutes and
+16ths under 125 ms. A unit sweep checks those rules over 2,700 riffs. A tempo the user picks by hand is kept, so
+very fast riffs can still get a labelled Sync Report.
+
+Verification (emulation, this round): unit 447 ✅ · e2e 38/38 ✅ on iPhone 15 + Pixel 7 (every export ✅ in
+sync: write 39/39, generate 24/24, gp5 20/20, metal genre 52/52, 3 positions 68/68, audio 17/17, 3D tone 25/25,
+ASCII, silent) · golden 7/7 ✅ (5 riffs incl. 3D + slow-mo/loop, 2 phase 6 variants; frame snapshots refreshed for the phase 6 theme/playhead changes, timelines unchanged) · screenshots of the new screens reviewed at 390×844 and 412×915.
+
 Fixes found on the way: Basic Pitch now falls back to the CPU when the WebGL backend fails mid-run
 (seen as "Failed to compile fragment shader" on a long export in software GL).
 

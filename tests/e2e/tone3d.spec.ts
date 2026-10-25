@@ -50,7 +50,7 @@ test('3D guitar: drag to turn, camera presets, Rock tone with pedals → export 
 
   // Sound: Rock preset = drive (distortion) + amp + reverb; then add a delay pedal.
   await page.getByRole('tab', { name: 'Sound' }).click();
-  await page.getByRole('radio', { name: 'Rock' }).click();
+  await page.getByTestId('tone-controls').getByRole('radio', { name: 'Rock' }).click();
   await expect(page.getByTestId('pedal-drive')).toHaveClass(/on/);
   await page.getByRole('button', { name: 'Delay off' }).click();
   await expect(page.getByTestId('pedal-delay')).toHaveClass(/on/);

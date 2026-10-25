@@ -384,7 +384,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
           <>
             <div className="field" data-testid="genre-controls">
               <span>Genre (sets colours, guitar tone and drums)</span>
-              <div className="chips" role="group" aria-label="Genre">
+              <div className="chips" role="group" aria-label="Genre" style={{ flexWrap: 'wrap' }}>
                 {GENRES.map((g) => (
                   <button key={g.id} className={`chip ${render.theme === g.theme && tone.preset === g.tone && drums.pattern === g.drums ? 'on' : ''}`} onClick={() => setStyle({ render: { ...render, theme: g.theme }, tone: tonePreset(g.tone), drums: { ...drums, pattern: g.drums } })}>
                     {g.name}
