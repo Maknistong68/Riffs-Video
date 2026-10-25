@@ -78,7 +78,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
     let live = true;
     setError(null);
     prepareRiff({
-      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, edits, teach: style.teach },
+      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits, teach: style.teach },
       soundFontUrl: DEFAULT_SOUND_PACK.url,
       soundMode: style.soundMode,
     }).then(

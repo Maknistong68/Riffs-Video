@@ -10,6 +10,10 @@ import { transcribe } from '../audio/transcribe';
 import { buildArrangement, NO_TEACH } from '../engine/arrange';
 import { DEFAULT_BUILD } from '../engine/buildTimeline';
 import { applyEdits } from '../engine/edits';
+import { refKey } from '../engine/review';
+import { transcribeToRiff } from '../import/transcribeRiff';
+import { detectOnsets } from '../audio/onsets';
+import { rmsEnvelope } from '../audio/envelope';
 import { AUDIO_SAMPLE_RATE } from '../engine/time';
 import { exportMp4, planExport } from '../export/exporter';
 import { frameCount, samplesForFrames } from '../engine/time';
@@ -38,6 +42,12 @@ function build(riff: RiffConfig) {
     teach: riff.teach ?? NO_TEACH,
     ...(riff.title ? { title: riff.title } : {}),
   });
+  if (riff.noteConfidence) {
+    for (const e of arr.timeline.events) {
+      const c = e.ref ? riff.noteConfidence[refKey(e.ref)] : undefined;
+      if (c !== undefined) e.confidence = c;
+    }
+  }
   return { arrangement: arr, timeline: arr.timeline, warnings: arr.warnings, editErrors };
 }
 
@@ -82,6 +92,13 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
     if (req.type === 'inspect') {
       const score = loadRiffSource(req.source);
       post({ id: req.id, type: 'inspected', result: { title: score.title, artist: score.artist, tracks: playableTracks(score) } });
+      return;
+    }
+    if (req.type === 'transcribe') {
+      progress('transcribe', 0);
+      const detected = await transcribe(getModel(req.modelUrl), req.pcm, req.sampleRate, (f) => progress('transcribe', f * 0.9));
+      const result = transcribeToRiff(detected, detectOnsets(req.pcm, req.sampleRate), { tuning: req.tuning, capo: req.capo, title: req.title }, rmsEnvelope(req.pcm, req.sampleRate));
+      post({ id: req.id, type: 'transcribed', result });
       return;
     }
     if (req.type === 'timeline') {

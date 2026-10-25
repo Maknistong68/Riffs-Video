@@ -8,6 +8,7 @@ import type { RiffEdit } from '../../engine/edits';
 import { fingeringEdits, noteFlags, refKey, reviewBars, type ReviewNote } from '../../engine/review';
 import { frameToMs } from '../../engine/time';
 import { db, styleOf, type RiffRecord } from '../../storage/db';
+import { readBlob } from '../../storage/opfs';
 import { riffSource, updateRiff } from '../../storage/riffs';
 import { prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared } from '../../workers/protocol';
@@ -59,7 +60,7 @@ function Review({ riff }: { riff: RiffRecord }) {
   useEffect(() => {
     let live = true;
     prepareRiff({
-      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, edits },
+      riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits },
       soundFontUrl: DEFAULT_SOUND_PACK.url,
       soundMode: 'synth',
     }).then(
@@ -113,6 +114,15 @@ function Review({ riff }: { riff: RiffRecord }) {
       </p>
 
       {error && <div className="errors" role="alert">{error.map((m, i) => <span key={i}>{m}</span>)}</div>}
+      {riff.source === 'audio' && (
+        <div className="card" data-testid="audio-banner">
+          <span>
+            Written from your recording at {riff.rhythm?.bpm ?? '?'} bpm.{' '}
+            {warnCount > 0 ? `${warnCount} note${warnCount === 1 ? '' : 's'} marked amber need a look.` : 'All notes heard clearly.'}
+          </span>
+          {riff.recordingPath && <OriginalPlayer path={riff.recordingPath} />}
+        </div>
+      )}
       {riff.source === 'ascii' && ascii && (
         <div className={rhythmGuessed ? 'notice' : 'card'} data-testid="rhythm-banner">
           <span>
@@ -232,4 +242,17 @@ function glyph(n: ReviewNote): string {
   if (n.tech.includes('palmMute')) return 'pm';
   if (n.tech.includes('harmonic')) return '◇';
   return '';
+}
+
+/** Play the original recording next to the synth (comparison only). */
+function OriginalPlayer({ path }: { path: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let u: string | null = null;
+    void readBlob(db(), path, '').then((b) => b && setUrl((u = URL.createObjectURL(b))));
+    return () => {
+      if (u) URL.revokeObjectURL(u);
+    };
+  }, [path]);
+  return url ? <audio src={url} controls style={{ width: '100%', marginTop: 8 }} aria-label="Original recording" /> : null;
 }

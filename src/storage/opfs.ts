@@ -33,7 +33,7 @@ export async function readBlob(db: RiffReelDb, path: string, type = 'video/mp4')
   if (root) {
     try {
       const file = await (await root.getFileHandle(path)).getFile();
-      return new Blob([file], { type });
+      return new Blob([file], { type: type || file.type });
     } catch {
       /* fall through: may have been written before OPFS became available */
     }

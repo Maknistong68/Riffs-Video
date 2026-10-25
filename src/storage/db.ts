@@ -37,6 +37,8 @@ export type RiffRecord = {
   rhythm?: { method: 'spacing' | 'taps' | 'tempo' | 'audio'; bpm: number; units: number[] };
   /** Per-note confidence 0..1 by note ref key (audio transcription / AI import). */
   noteConfidence?: Record<string, number>;
+  /** Original recording (audio import), stored in OPFS — for comparison only, never exported. */
+  recordingPath?: string;
   timelineCache?: Timeline;
   styleSettings: StyleSettings;
   demoId?: string;

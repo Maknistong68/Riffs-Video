@@ -92,7 +92,7 @@ function Rendering({ riff, source, fps, soundMode, onCancel }: { riff: RiffRecor
 
     const j = startExport(
       {
-        riff: { source, trackIndex: riff.trackIndex, leadInMs: styleOf(riff).leadInMs, title: riff.title, edits: riff.edits ?? [], teach: styleOf(riff).teach },
+        riff: { source, trackIndex: riff.trackIndex, leadInMs: styleOf(riff).leadInMs, title: riff.title, ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits: riff.edits ?? [], teach: styleOf(riff).teach },
         fps,
         style: styleOf(riff).render,
         soundMode,

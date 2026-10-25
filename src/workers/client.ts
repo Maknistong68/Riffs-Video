@@ -1,5 +1,6 @@
 /** Promise API over the render worker. One long-lived worker for inspect/prepare; one per export. */
 import type { Timeline } from '../engine/timeline';
+import type { TranscribedRiff } from '../import/transcribeRiff';
 import type { Exported, ExportStage, Inspected, Prepared, RiffConfig, WorkerRequest, WorkerResponse } from './protocol';
 
 export class WorkerError extends Error {
@@ -48,6 +49,14 @@ const sharedChannel = () => (shared ??= new Channel(spawn()));
 
 export function inspectSource(source: Extract<WorkerRequest, { type: 'inspect' }>['source']): Promise<Inspected> {
   return sharedChannel().call<Inspected>({ type: 'inspect', source });
+}
+
+/** Audio → riff (Basic Pitch in a fresh worker so a long transcription never blocks previews). */
+export function transcribeAudio(req: Omit<Extract<WorkerRequest, { type: 'transcribe' }>, 'id' | 'type'>, onProgress: (fraction: number) => void): Promise<TranscribedRiff> {
+  const channel = new Channel(spawn());
+  return channel
+    .call<TranscribedRiff>({ type: 'transcribe', ...req }, (_s, f) => onProgress(f))
+    .finally(() => channel.worker.terminate());
 }
 
 export function buildRiffTimeline(riff: RiffConfig): Promise<Timeline> {

@@ -56,6 +56,8 @@ export async function deleteRiff(id: string): Promise<void> {
   const d = db();
   const exports = await d.exportsMeta.where('riffId').equals(id).toArray();
   for (const e of exports) await deleteBlob(d, e.blobPath);
+  const riff = await d.riffs.get(id);
+  if (riff?.recordingPath) await deleteBlob(d, riff.recordingPath);
   await d.exportsMeta.where('riffId').equals(id).delete();
   await d.riffs.delete(id);
 }

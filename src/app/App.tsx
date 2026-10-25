@@ -6,6 +6,7 @@ import { LibraryScreen } from '../screens/library/LibraryScreen';
 import { ResultScreen } from '../screens/result/ResultScreen';
 import { ReviewScreen } from '../screens/review/ReviewScreen';
 import { PasteScreen } from '../screens/paste/PasteScreen';
+import { AudioImportScreen } from '../screens/audio/AudioImportScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { StudioScreen } from '../screens/studio/StudioScreen';
 import { WriteScreen } from '../screens/write/WriteScreen';
@@ -34,6 +35,7 @@ export function App() {
       {route.name === 'settings' && <SettingsScreen compat={compat} />}
       {route.name === 'write' && <WriteScreen {...(route.riffId ? { riffId: route.riffId } : {})} />}
       {route.name === 'paste' && <PasteScreen />}
+      {route.name === 'audio' && <AudioImportScreen />}
       {route.name === 'review' && <ReviewScreen key={route.riffId} riffId={route.riffId} />}
       {route.name === 'studio' && (
         <StudioScreen key={route.riffId} riffId={route.riffId} {...(route.atMs !== undefined ? { atMs: route.atMs } : {})} openExport={route.openExport ?? false} />
