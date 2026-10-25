@@ -2,7 +2,8 @@
 import type { Timeline } from '../engine/timeline';
 import type { TranscribedRiff } from '../import/transcribeRiff';
 import type { AiNote, AiTabCheck } from '../import/aiRiff';
-import type { Exported, ExportStage, Inspected, Prepared, RiffConfig, WorkerRequest, WorkerResponse } from './protocol';
+import type { Benchmark, Exported, ExportStage, Inspected, Prepared, RiffConfig, WorkerRequest, WorkerResponse } from './protocol';
+import type { RenderStyle } from '../render/style';
 
 export class WorkerError extends Error {
   constructor(message: string, readonly details: string[]) {
@@ -58,6 +59,12 @@ export function transcribeAudio(req: Omit<Extract<WorkerRequest, { type: 'transc
   return channel
     .call<TranscribedRiff>({ type: 'transcribe', ...req }, (_s, f) => onProgress(f))
     .finally(() => channel.worker.terminate());
+}
+
+/** Speed check (fresh worker, so previews and exports are not slowed by it). */
+export function benchmarkRender(style: RenderStyle, fps: 30 | 60 = 30): Promise<Benchmark> {
+  const channel = new Channel(spawn());
+  return channel.call<Benchmark>({ type: 'benchmark', style, fps }).finally(() => channel.worker.terminate());
 }
 
 /** Re-parse and validate an AI-written alphaTex (alphaTab lives in the worker). */

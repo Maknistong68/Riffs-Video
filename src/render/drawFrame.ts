@@ -66,8 +66,19 @@ export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameS
   drawHeader(ctx, t, s, ms);
   drawSection(ctx, t, s, ms);
 
-  if (geo.view3d && r3d) r3d.draw(ctx, geo.view3d, SKINS[s.style.skin], th, t, ms);
-  drawNeck(ctx, geo.neck, SKINS[s.style.skin], th, t, ms, s.style, geo.numbersOnNeck);
+  if (geo.view3d && r3d) {
+    r3d.draw(ctx, geo.view3d, SKINS[s.style.skin], th, t, ms);
+    // Dots/glyphs of frets the camera doesn't show must not spill over the header or tab lane.
+    const r = geo.view3d.region;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(r.x, r.y, r.w, r.h);
+    ctx.clip();
+    drawNeck(ctx, geo.neck, SKINS[s.style.skin], th, t, ms, s.style, geo.numbersOnNeck);
+    ctx.restore();
+  } else {
+    drawNeck(ctx, geo.neck, SKINS[s.style.skin], th, t, ms, s.style, geo.numbersOnNeck);
+  }
   if (geo.lane) drawTabLane(ctx, geo.lane, t, th, ms, s.style);
   if (geo.notation) drawNotation(ctx, geo.notation, t, th, ms);
 

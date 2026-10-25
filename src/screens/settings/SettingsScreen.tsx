@@ -14,6 +14,7 @@ const LICENCES: [string, string][] = [
   ['mediabunny + AAC encoder (FFmpeg AAC, LGPL-2.1+)', 'MPL-2.0'],
   ['Basic Pitch (Spotify) + TensorFlow.js', 'Apache-2.0'],
   ['Inter font', 'SIL OFL 1.1'],
+  ['three.js (3D guitar)', 'MIT'],
   ['React, Dexie, Workbox', 'MIT / Apache-2.0'],
 ];
 
@@ -36,6 +37,24 @@ export function SettingsScreen({ compat }: { compat: CompatResult | null }) {
           <Segmented<30 | 60> label="Default frame rate" value={settings?.defaultFps ?? 30} onChange={(v) => void updateSettings(db(), { defaultFps: v })} options={[{ value: 30, label: '30 fps (faster)' }, { value: 60, label: '60 fps (smoother)' }]} />
         </div>
         <div className="row spread"><span className="dim">Theme</span><strong>Dark</strong></div>
+      </section>
+
+      <section className="card panel" data-testid="perf-card">
+        <h2>This phone’s speed</h2>
+        {settings?.perf?.['3d'] || settings?.perf?.['2d'] ? (
+          <>
+            {(['3d', '2d'] as const).map((k) => settings.perf?.[k] && (
+              <div key={k} className="row spread">
+                <span>{k === '3d' ? '3D guitar' : 'Flat 2D'}</span>
+                <strong className={settings.perf[k]!.ratio >= 0.5 ? 'good' : 'warn'}>{settings.perf[k]!.ratio.toFixed(1)}× real time</strong>
+              </div>
+            ))}
+            <p className="dim small">Measured on first 3D use (render + encode at 30 fps). Below 0.5× the app uses 2D unless you choose 3D.</p>
+          </>
+        ) : (
+          <p className="dim small">Measured the first time you open a riff in 3D.</p>
+        )}
+        <button className="btn" onClick={() => void updateSettings(db(), { perf: {} })}>Measure again next time</button>
       </section>
 
       <section className="card panel">

@@ -16,7 +16,7 @@ export default defineConfig({
     command: 'npx vite --port 5173 --strictPort',
     url: 'http://localhost:5173',
     reuseExistingServer: true,
-    env: { VITE_SUPABASE_URL: 'https://riffreel-test.supabase.co', VITE_SUPABASE_ANON_KEY: 'test-anon-key' },
+    env: { VITE_SUPABASE_URL: 'https://riffreel-test.supabase.co', VITE_SUPABASE_ANON_KEY: 'test-anon-key', VITE_BENCHMARK: 'off' },
   },
   projects: [
     { name: 'golden', testDir: 'tests/golden', use: { browserName: 'chromium', viewport: { width: 800, height: 600 } } },

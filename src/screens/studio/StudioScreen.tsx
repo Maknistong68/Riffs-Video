@@ -14,11 +14,11 @@ import { CAMERA_PRESETS, clampCamera, type Camera3D, type CameraMotion } from '.
 import { ensureNeck3d } from '../../render/neck3dRegistry';
 import { SKIN_IDS, SKINS } from '../../render/skins';
 import { LAYOUTS, type DifficultyBadge, type LayoutId, type RenderStyle } from '../../render/style';
-import { db, styleOf, toneOf, type RiffRecord, type StyleSettings } from '../../storage/db';
+import { db, getSettings, styleOf, toneOf, updateSettings, type RiffRecord, type StyleSettings } from '../../storage/db';
 import { toneForSkin } from '../../audio/tone';
 import { ToneControls } from './ToneControls';
 import { riffSource, updateRiff } from '../../storage/riffs';
-import { inspectSource, prepareRiff, WorkerError } from '../../workers/client';
+import { benchmarkRender, inspectSource, prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared, SoundMode, TrackInfo } from '../../workers/protocol';
 import { ExportFlow } from './ExportFlow';
 import { SilentControls } from './SilentControls';
@@ -27,6 +27,19 @@ import { readBlob } from '../../storage/opfs';
 import { usePreview } from './usePreview';
 
 type Tab = 'guitar' | 'sound' | 'layout' | 'text' | 'teach';
+
+/** The first-use speed check can be turned off for automated tests (VITE_BENCHMARK=off); a test re-enables it per page. */
+function benchmarkEnabled(): boolean {
+  try {
+    if (localStorage.getItem('riffreel.benchmark') === 'on') return true;
+  } catch {
+    /* storage blocked */
+  }
+  return import.meta.env.VITE_BENCHMARK !== 'off';
+}
+
+/** Below this render speed (× real time) 3D is too slow for comfortable exports (CLAUDE.md phase 5). */
+const MIN_3D_SPEED = 0.5;
 
 const TUNINGS: Record<number, { name: string; tuning: number[] }[]> = {
   6: [
@@ -139,6 +152,28 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
     [silentMode, reference, style.silent.refStartMs, style.silent.offsetMs],
   );
 
+  // P14: measure render speed once per device (first 3D use); too slow → this riff uses 2D.
+  const appSettings = useLiveQuery(() => getSettings(db()), []);
+  const perf3d = appSettings?.perf?.['3d'];
+  const benchStarted = useRef(false);
+  useEffect(() => {
+    if (!benchmarkEnabled() || !prepared || !appSettings || style.render.view !== '3d' || neck3d !== 'ready' || perf3d || benchStarted.current) return;
+    benchStarted.current = true;
+    void (async () => {
+      const r3 = await benchmarkRender({ ...style.render, view: '3d' }).catch(() => null);
+      const r2 = await benchmarkRender({ ...style.render, view: '2d' }).catch(() => null);
+      const now = Date.now();
+      const s = await getSettings(db());
+      await updateSettings(db(), {
+        perf: { ...s.perf, '3d': { ratio: r3?.supported ? r3.ratio : 0, measuredAt: now }, ...(r2?.supported ? { '2d': { ratio: r2.ratio, measuredAt: now } } : {}) },
+      });
+    })();
+  }, [prepared, appSettings, style.render, neck3d, perf3d]);
+  const tooSlow3d = perf3d !== undefined && perf3d.ratio < MIN_3D_SPEED;
+  useEffect(() => {
+    if (tooSlow3d && style.render.view === '3d' && !style.force3d) setRender({ view: '2d' });
+  }, [tooSlow3d, style.render.view, style.force3d]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fps = style.fps;
   const pv = usePreview(prepared, fps, atMs ?? 0, previewRef);
   const settings = useMemo(() => ({ ...defaultFrameSettings(fps, render), showSafeZones: showSafe }), [fps, render, showSafe]);
@@ -211,6 +246,12 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
         />
       </div>
       {is3d && <p className="dim small center">Drag the preview to turn the guitar.</p>}
+      {tooSlow3d && !is3d && !style.force3d && (
+        <div className="notice small" data-testid="slow-3d">
+          3D renders at {perf3d!.ratio.toFixed(1)}× real time on this phone, so this riff uses 2D (exports would take {Math.max(2, Math.round(1 / Math.max(0.05, perf3d!.ratio)))}× the video length).{' '}
+          <button className="btn" onClick={() => setStyle({ force3d: true, render: { ...render, view: '3d' } })}>Use 3D anyway</button>
+        </div>
+      )}
       {is3d && neck3d === 'failed' && (
         <div className="notice small">This device can’t draw the 3D guitar (no WebGL). <button className="btn" onClick={() => setRender({ view: '2d' })}>Use 2D</button></div>
       )}
@@ -255,7 +296,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
                     })}
                   </div>
                 </div>
-                <Segmented<CameraMotion> label="Camera motion" value={render.camera.motion} onChange={(motion) => setRender({ camera: { ...render.camera, motion } })} options={[{ value: 'static', label: 'Still' }, { value: 'orbit', label: 'Slow orbit' }]} />
+                <Segmented<CameraMotion> label="Camera motion" value={render.camera.motion} onChange={(motion) => setRender({ camera: { ...render.camera, motion } })} options={[{ value: 'static', label: 'Still' }, { value: 'follow', label: 'Follow hand' }, { value: 'orbit', label: 'Slow orbit' }]} />
               </>
             )}
             <label className="field">

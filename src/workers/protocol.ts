@@ -32,6 +32,7 @@ export type WorkerRequest =
   | { id: number; type: 'inspect'; source: RiffSource }
   | { id: number; type: 'timeline'; riff: RiffConfig }
   | { id: number; type: 'checkAi'; alphaTex: string; notes: AiNote[] }
+  | { id: number; type: 'benchmark'; style: RenderStyle; fps: 30 | 60 }
   | { id: number; type: 'transcribe'; pcm: Float32Array<ArrayBuffer>; sampleRate: number; modelUrl: string; tuning: number[]; capo: number; title: string }
   | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode; tone: ToneSettings }
   | {
@@ -48,6 +49,9 @@ export type WorkerRequest =
 
 export type ExportStage = 'prepare' | 'audio' | 'render' | 'verify-audio' | 'verify-pitch' | 'verify-frames' | 'transcribe';
 
+/** Render + encode speed of a short real export, as a multiple of real time (P14). */
+export type Benchmark = { supported: boolean; ratio: number; msPerFrame: number };
+
 export type Inspected = { title: string; artist: string; tracks: TrackInfo[] };
 export type Prepared = { timeline: Timeline; warnings: string[]; editErrors: string[]; pcm: Float32Array<ArrayBuffer>; sampleRate: number; lufs: number };
 export type Exported = { mp4: ArrayBuffer; info: ExportInfo; report: SyncReport; timeline: Timeline; warnings: string[] };
@@ -58,6 +62,7 @@ export type WorkerResponse =
   | { id: number; type: 'prepared'; result: Prepared }
   | { id: number; type: 'timeline'; result: Timeline }
   | { id: number; type: 'checkedAi'; result: AiTabCheck }
+  | { id: number; type: 'benchmarked'; result: Benchmark }
   | { id: number; type: 'transcribed'; result: TranscribedRiff }
   | { id: number; type: 'exported'; result: Exported }
   | { id: number; type: 'error'; message: string; details: string[] };

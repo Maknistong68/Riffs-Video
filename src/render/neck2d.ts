@@ -26,6 +26,8 @@ export type NeckView = {
    * string index) and its size relative to the flat view. Unset = the flat 2D fretboard.
    */
   proj?: Projector;
+  /** 3D: frets the camera frames (fret numbers are only drawn for these). Defaults to the window. */
+  labelFrets?: [number, number];
 };
 
 export type Projector = (fret: number, stringIdx: number) => { x: number; y: number; scale: number };
@@ -130,12 +132,13 @@ export function drawNeck(ctx: Ctx2D, v: NeckView, skin: Skin, theme: Theme, t: T
 /** Fret numbers under the neck, placed through the 3D projection. */
 function drawFretNumbers3d(ctx: Ctx2D, v: NeckView, theme: Theme): void {
   const proj = v.proj!;
+  const [lo, hi] = v.labelFrets ?? [v.fromFret, v.toFret];
   ctx.save();
   ctx.fillStyle = theme.textDim;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const f of [1, 3, 5, 7, 9, 12, 15, 17, 19, 21, 24]) {
-    if (f - 1 >= v.fromFret - 0.05 && f <= v.toFret + 0.05 && (f > 1 || v.fromFret > 0.5)) {
+    if (f - 1 >= lo - 0.05 && f <= hi + 0.05 && (f > 1 || lo > 0.5)) {
       const p = proj(midFret(f), v.strings - 1 + 1.25);
       ctx.font = font(600, Math.round(26 * Math.max(0.6, Math.min(1.6, p.scale))));
       ctx.fillText(String(f), p.x, p.y);

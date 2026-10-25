@@ -66,3 +66,25 @@ test('3D guitar: drag to turn, camera presets, Rock tone with pedals → export 
   console.log(`[${info.project.name}-tone3d] ${(await report.locator('strong').innerText()).trim()}`);
   await expect(report).toHaveAttribute('data-ok', 'true');
 });
+
+test('first-use speed check: too slow for 3D → this riff falls back to 2D, "Use 3D anyway" restores it', async ({ page }) => {
+  test.setTimeout(420_000);
+  await page.addInitScript(() => localStorage.setItem('riffreel.benchmark', 'on'));
+  await page.goto('/');
+  await page.locator('.riff-card').first().click();
+  await expect(page.getByTestId('open-export')).toBeEnabled({ timeout: 60_000 });
+  // The benchmark runs a short real export in 3D and in 2D; software WebGL (no GPU) is far below 0.5×.
+  await page.goto('/#/settings');
+  await expect(page.getByTestId('perf-card')).toContainText('3D guitar', { timeout: 360_000 });
+  const ratio3d = Number((await page.getByTestId('perf-card').locator('strong').first().innerText()).replace('× real time', ''));
+  await page.goBack();
+  if (ratio3d < 0.5) {
+    await expect(page.getByTestId('slow-3d')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('radio', { name: 'Flat 2D' })).toHaveAttribute('aria-checked', 'true');
+    await page.getByRole('button', { name: 'Use 3D anyway' }).click();
+    await expect(page.getByRole('radio', { name: '3D guitar' })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('slow-3d')).toHaveCount(0);
+  } else {
+    await expect(page.getByRole('radio', { name: '3D guitar' })).toHaveAttribute('aria-checked', 'true');
+  }
+});

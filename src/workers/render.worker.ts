@@ -10,7 +10,7 @@ import { fetchSoundFont } from '../audio/soundpacks';
 import { renderArrangement, toMono } from '../audio/synth';
 import { transcribe } from '../audio/transcribe';
 import { buildArrangement, NO_TEACH, scaleTempo } from '../engine/arrange';
-import { DEFAULT_BUILD } from '../engine/buildTimeline';
+import { buildTimeline, DEFAULT_BUILD } from '../engine/buildTimeline';
 import { applyEdits } from '../engine/edits';
 import { refKey } from '../engine/review';
 import { transcribeToRiff } from '../import/transcribeRiff';
@@ -21,12 +21,13 @@ import { AUDIO_SAMPLE_RATE } from '../engine/time';
 import { exportMp4, planExport } from '../export/exporter';
 import { frameCount, samplesForFrames } from '../engine/time';
 import { verifyExport } from '../export/verify';
-import { playableTracks, ScoreImportError } from '../import/alphatab';
+import { loadAlphaTex, playableTracks, ScoreImportError } from '../import/alphatab';
 import { loadRiffSource } from '../import/source';
 import { defaultFrameSettings } from '../render/drawFrame';
 import { loadRenderFonts } from '../render/fonts';
 import { ensureNeck3d } from '../render/neck3dRegistry';
-import type { ExportStage, RiffConfig, SoundMode, WorkerRequest, WorkerResponse } from './protocol';
+import type { Benchmark, ExportStage, RiffConfig, SoundMode, WorkerRequest, WorkerResponse } from './protocol';
+import type { RenderStyle } from '../render/style';
 
 declare const self: DedicatedWorkerGlobalScope;
 const post = (m: WorkerResponse, transfer: Transferable[] = []) => self.postMessage(m, transfer);
@@ -91,6 +92,21 @@ async function renderAudio(riff: RiffConfig, built: ReturnType<typeof build>, to
   return { pcm, lufs: loudness.lufsAfter, dry };
 }
 
+/** A short, busy riff (chords, high frets, every string) for the speed check. */
+const BENCH_TEX = '\\tempo 120\n\\track "Guitar"\n\\staff {tabs}\n\\tuning (E4 B3 G3 D3 A2 E2)\n:8 0.6 3.6 5.6 (5.5 5.4) 7.3 5.2 8.1 (12.1 12.2 13.3) |\n:8 10.1 12.2 10.3 12.4 :4 (0.6 2.5 2.4) (3.6 5.5 5.4)';
+
+async function benchmark(style: RenderStyle, fps: 30 | 60): Promise<Benchmark> {
+  await loadRenderFonts();
+  if (style.view === '3d' && !(await ensureNeck3d())) return { supported: false, ratio: 0, msPerFrame: Infinity };
+  const timeline = buildTimeline(loadAlphaTex(BENCH_TEX), { ...DEFAULT_BUILD, trackIndex: 0 }).timeline;
+  const settings = defaultFrameSettings(fps, style);
+  const plan = await planExport(timeline, settings);
+  const t0 = performance.now();
+  await exportMp4(timeline, new Float32Array(plan.totalSamples * 2), settings, plan, () => undefined);
+  const sec = (performance.now() - t0) / 1000;
+  return { supported: true, ratio: plan.frames / fps / sec, msPerFrame: (sec * 1000) / plan.frames };
+}
+
 let tfModel: Promise<import('@tensorflow/tfjs').GraphModel> | null = null;
 async function getModel(url: string) {
   tfModel ??= (async () => {
@@ -125,6 +141,10 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
       const detected = await transcribe(getModel(req.modelUrl), req.pcm, req.sampleRate, (f) => progress('transcribe', f * 0.9));
       const result = transcribeToRiff(detected, detectOnsets(req.pcm, req.sampleRate), { tuning: req.tuning, capo: req.capo, title: req.title }, rmsEnvelope(req.pcm, req.sampleRate));
       post({ id: req.id, type: 'transcribed', result });
+      return;
+    }
+    if (req.type === 'benchmark') {
+      post({ id: req.id, type: 'benchmarked', result: await benchmark(req.style, req.fps) });
       return;
     }
     if (req.type === 'checkAi') {

@@ -29,6 +29,8 @@ export type StyleSettings = {
   render: RenderStyle;
   teach: TeachOptions;
   silent: SilentSettings;
+  /** The user chose 3D although the benchmark found this device too slow for it. */
+  force3d?: boolean;
   /** Instrument + pedals. Unset = the default tone for the chosen guitar model. */
   tone?: ToneSettings;
 };
@@ -109,6 +111,8 @@ export type AppSettings = {
   copyrightNoticeSeen: boolean;
   /** Anonymous random id for AI-import rate limiting (no account, nothing personal). */
   deviceId?: string;
+  /** Measured render+encode speed per view (× real time at 30 fps), from the first-use benchmark. */
+  perf?: Partial<Record<'2d' | '3d', { ratio: number; measuredAt: number }>>;
 };
 
 export type StoredBlob = { path: string; blob: Blob };

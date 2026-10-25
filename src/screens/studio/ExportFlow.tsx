@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { haptic } from '../../app/haptics';
 import { navigate } from '../../app/router';
 import { DEFAULT_SOUND_PACK } from '../../audio/soundpacks';
-import { formatBytes } from '../../components/format';
+import { formatBytes, formatDuration } from '../../components/format';
 import { Segmented } from '../../components/Segmented';
 import { Sheet } from '../../components/Sheet';
 import type { RiffSource } from '../../import/source';
@@ -34,9 +34,15 @@ export function ExportFlow({ riff, source, durationMs, onClose }: { riff: RiffRe
     void getSettings(db()).then((s) => setShowNotice(!riff.isOriginal && !s.copyrightNoticeSeen));
   }, [riff.isOriginal]);
 
+  const [perf, setPerf] = useState<number | null>(null);
+  useEffect(() => {
+    void getSettings(db()).then((s) => setPerf(s.perf?.[styleOf(riff).render.view]?.ratio ?? null));
+  }, [riff]);
   const duration = durationMs / 1000;
   const estSize = duration * (fps === 60 ? 220_000 : 140_000);
-  const estTime = Math.ceil(duration * fps * 0.02 + duration * 1.5 + 6);
+  // Render+encode from this device's benchmark (measured at 30 fps), plus synth and the Sync Report.
+  const renderSec = perf && perf > 0 ? (duration * (fps / 30)) / perf : duration * fps * 0.02;
+  const estTime = Math.ceil(renderSec + duration * 1.5 + 6);
 
   if (phase === 'rendering') {
     return <Rendering riff={riff} source={source} fps={fps} soundMode={soundMode} onCancel={onClose} />;
@@ -56,7 +62,7 @@ export function ExportFlow({ riff, source, durationMs, onClose }: { riff: RiffRe
       {soundMode === 'silent' && (
         <p className="small dim">No audible sound: add the official track in TikTok. First note at {(styleOf(riff).silent.offsetMs / 1000).toFixed(2)} s{styleOf(riff).silent.bpm ? `, ${styleOf(riff).silent.bpm} bpm` : ''}.</p>
       )}
-      <div className="row spread dim small"><span>Quality: High (H.264 + AAC)</span><span>~{formatBytes(estSize)} · ~{estTime} s</span></div>
+      <div className="row spread dim small"><span>Quality: High (H.264 + AAC)</span><span>~{formatBytes(estSize)} · ~{formatDuration(estTime * 1000)}</span></div>
       {showNotice && soundMode === 'synth' && <div className="notice">{COPYRIGHT}</div>}
       <button
         className="btn primary block"

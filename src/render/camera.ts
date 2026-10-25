@@ -1,6 +1,7 @@
 /** 3D camera settings (pure data; part of RenderStyle). */
 
-export type CameraMotion = 'static' | 'orbit';
+/** static: fixed angle · orbit: slow deterministic sway · follow: zooms to the playing hand and pans with it. */
+export type CameraMotion = 'static' | 'orbit' | 'follow';
 /** Camera angles in degrees. yaw turns the neck away (one end recedes), pitch looks from above/below. */
 export type Camera3D = { yaw: number; pitch: number; motion: CameraMotion };
 

@@ -39,11 +39,18 @@ export function frameGeometry(s: FrameSettings, t: Timeline, ms: number): Layout
   const region: Region = { x: 0, y: Math.round(top), w: s.width, h: Math.round(bottom - top) };
   const fit: Region = { ...region, w: s.width - s.safeZones.rightPx };
   const model = neckModel(v);
-  const pose = solveCamera(model, v, region, s.style.camera, ms, fit);
+  // Follow-hand rig: frame only the frets around the playing hand (the Close-up window, which
+  // always contains every sounding note) and pan with it. Other rigs frame the layout's window.
+  let fitView = v;
+  if (s.style.camera.motion === 'follow' && v.fromFret <= 0) {
+    const from = closeupWindow(t, ms);
+    fitView = { ...v, fromFret: from, toFret: from + CLOSEUP_SPAN };
+  }
+  const pose = solveCamera(model, fitView, region, s.style.camera, ms, fit);
   return {
     ...geo,
-    neck: { ...v, proj: makeProjector(model, pose, region, stringSpacing(v)) },
-    view3d: { model, pose, region, fromFret: v.fromFret, toFret: v.toFret },
+    neck: { ...v, proj: makeProjector(model, pose, region, stringSpacing(v)), labelFrets: [fitView.fromFret, fitView.toFret] },
+    view3d: { model, pose, region, fromFret: fitView.fromFret, toFret: fitView.toFret },
   };
 }
 
