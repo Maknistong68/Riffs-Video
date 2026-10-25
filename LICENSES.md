@@ -4,6 +4,7 @@
 |---|---|---|
 | @coderline/alphatab | MPL-2.0 | Score import (alphaTex, Guitar Pro, MusicXML), MIDI generation, synth |
 | Sonivox GM SoundFont (`sonivox.sf2`, shipped with alphaTab) | Apache-2.0, © Sonic Network Inc. | Synth sound pack (precached) |
+| "Studio guitars" sound pack (`src/assets/soundfonts/riffreel-guitars.sf3`): presets 0:24–27, 0:33, 128:0 cut from FluidR3Mono_GM.sf3 (MuseScore 3.6.2) with `scripts/subset-soundfont.mjs` | MIT. FluidR3 © 2000–2002, 2008 Frank Wen; mono conversion (FluidR3Mono) © 2014–17 Michael Cowgill. These notices must stay with any derivative | Default synth sound pack (precached) |
 | mediabunny | MPL-2.0 | MP4 muxing/demuxing, WebCodecs encode/decode |
 | @mediabunny/aac-encoder | MPL-2.0 (bundles a WASM build of FFmpeg's AAC encoder, LGPL-2.1+) | AAC fallback, lazy-loaded only when the browser has no native AAC encoder |
 | @spotify/basic-pitch (incl. model files) | Apache-2.0 | Pitch detection for the Sync Report |

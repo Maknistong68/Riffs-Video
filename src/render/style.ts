@@ -35,7 +35,11 @@ export type RenderStyle = {
   endCard: EndCard;
   /** Big line at the top from the first frame ("Can you play this?"); empty = title only. */
   hook: string;
+  /** Series badge ("RIFF #12") so a run of videos reads as one show. */
+  series: SeriesBadge;
 };
+
+export type SeriesBadge = { on: boolean; label: string; number: number };
 
 export const DEFAULT_STYLE: RenderStyle = {
   layout: 'classic',
@@ -55,7 +59,13 @@ export const DEFAULT_STYLE: RenderStyle = {
   opener: 'none',
   endCard: { kind: 'none', text: '' },
   hook: 'Can you play this?',
+  series: { on: false, label: 'Riff', number: 1 },
 };
+
+/** "RIFF #12" (empty when off). */
+export function seriesText(s: SeriesBadge): string {
+  return s.on ? `${s.label.trim() || 'Riff'} #${Math.max(1, Math.round(s.number))}`.toUpperCase() : '';
+}
 
 export const LAYOUTS: { id: LayoutId; name: string }[] = [
   { id: 'classic', name: 'Classic' },

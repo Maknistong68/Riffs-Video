@@ -71,6 +71,18 @@ describe('phase 6 arrangements', () => {
     expect(len(0)).toBeCloseTo(len(3), 3);
   });
 
+  it('speed-up ending: full speed, then 125 % and 150 % — same notes, shorter passes', () => {
+    const { timeline: t } = arrange('01-pentatonic-run.atex', { slowMo: false, loopHardest: false, hookFirst: true, speedUp: true } as never);
+    expect(validateTimeline(t)).toEqual([]);
+    expect(t.sections!.map((s) => s.label)).toEqual(['Hook · full speed', 'Full speed', 'Faster · 125%', 'Faster · 150%']);
+    const len = (i: number) => t.sections![i]!.endMs - t.sections![i]!.startMs;
+    const per = (i: number) => t.events.filter((e) => e.startMs >= t.sections![i]!.startMs && e.startMs < t.sections![i]!.endMs).length;
+    expect(per(2)).toBe(per(1));
+    expect(per(3)).toBe(per(1));
+    expect(len(2)).toBeLessThan(len(1));
+    expect(len(3)).toBeLessThan(len(2));
+  });
+
   it('same riff in 3 positions: identical pitches, different strings/frets, one pass each', () => {
     const { timeline: t, warnings } = arrange('01-pentatonic-run.atex', { slowMo: false, loopHardest: false, positions: true } as never);
     expect(validateTimeline(t)).toEqual([]);

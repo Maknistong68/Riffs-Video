@@ -17,6 +17,7 @@ import type { TeachOptions } from './teach';
 export { NO_TEACH, type TeachOptions } from './teach';
 
 export const SLOW_SPEEDS = [0.5, 0.75] as const;
+export const FAST_SPEEDS = [1.25, 1.5] as const;
 export const LOOP_COUNT = 3;
 /** Silence between passes (lets the last note ring, gives the viewer a breath). */
 export const PASS_GAP_MS = 800;
@@ -112,7 +113,11 @@ export function buildArrangement(makeScore: () => Score, opts: ArrangeOptions, s
       plans.push({ label: p.label, speed: 1, gapAfterMs: k === passes.length - 1 ? 0 : PASS_GAP_MS, ...(p.edits.length ? { variant: { key: `pos${k}`, edits: p.edits } } : {}) }),
     );
   } else {
-    plans.push({ label: teaching || teach.hookFirst ? 'Full speed' : '', speed: 1, gapAfterMs: 0 });
+    plans.push({ label: teaching || teach.hookFirst || teach.speedUp ? 'Full speed' : '', speed: 1, gapAfterMs: 0 });
+  }
+  if (teach.speedUp) {
+    plans[plans.length - 1]!.gapAfterMs = PASS_GAP_MS;
+    FAST_SPEEDS.forEach((sp, k) => plans.push({ label: `Faster · ${Math.round(sp * 100)}%`, speed: sp, gapAfterMs: k === FAST_SPEEDS.length - 1 ? 0 : PASS_GAP_MS }));
   }
 
   const sources = new Map<string, { score: Score; prepared: PreparedScore }>([['1|', { score: baseScore, prepared: basePrepared }]]);

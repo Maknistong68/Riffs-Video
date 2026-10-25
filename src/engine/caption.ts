@@ -13,9 +13,11 @@ export type CaptionInput = {
   difficulty?: 'Easy' | 'Medium' | 'Hard';
   genre?: 'metal' | 'blues' | 'lofi' | 'acoustic' | 'dark';
   isOriginal: boolean;
-  teach?: { slowMo?: boolean; loopHardest?: boolean; positions?: boolean; hookFirst?: boolean };
+  teach?: { slowMo?: boolean; loopHardest?: boolean; positions?: boolean; hookFirst?: boolean; speedUp?: boolean };
   part?: { part: number; parts: number };
   practiceUrl?: string;
+  /** "RIFF #12": goes in front of the title and the caption. */
+  series?: string;
 };
 
 export type Caption = { title: string; caption: string; hashtags: string[]; full: string };
@@ -38,15 +40,17 @@ export function buildCaption(i: CaptionInput): Caption {
   const teaching = !!(i.teach?.slowMo || i.teach?.loopHardest || i.teach?.positions);
   const part = i.part && i.part.parts > 1 ? ` (Part ${i.part.part}/${i.part.parts})` : '';
 
-  const title = `${i.title}${i.artist ? ` – ${i.artist}` : ''} ${teaching ? 'guitar lesson' : 'guitar riff'}${part}`;
+  const pre = i.series ? `${i.series} · ` : '';
+  const title = `${pre}${i.title}${i.artist ? ` – ${i.artist}` : ''} ${teaching ? 'guitar lesson' : 'guitar riff'}${part}`;
   const bits = [
     teaching ? 'Tab + slow-mo walkthrough' : 'Tab on screen',
     tuning,
     bpm ? `${bpm} bpm` : '',
     i.difficulty ? `${i.difficulty} level` : '',
     i.teach?.positions ? 'shown in 3 positions' : '',
+    i.teach?.speedUp ? 'sped up to 150%' : '',
   ].filter(Boolean);
-  const caption = `${i.title}${i.artist ? ` by ${i.artist}` : ''} 🎸 ${bits.join(' · ')}${part}${i.credit ? `\n${i.credit}` : ''}${i.isOriginal ? '\nOriginal riff — free to use with credit.' : ''}${i.practiceUrl ? `\nPractice it slowly: ${i.practiceUrl}` : ''}`;
+  const caption = `${pre}${i.title}${i.artist ? ` by ${i.artist}` : ''} 🎸 ${bits.join(' · ')}${part}${i.credit ? `\n${i.credit}` : ''}${i.isOriginal ? '\nOriginal riff — free to use with credit.' : ''}${i.practiceUrl ? `\nPractice it slowly: ${i.practiceUrl}` : ''}\nWhat BPM can you play it at? 👇`;
 
   const tags: string[] = ['#guitar', '#guitartok', teaching ? '#guitarlesson' : '#guitarriff', '#guitartabs'];
   const titleTag = slug(i.title);

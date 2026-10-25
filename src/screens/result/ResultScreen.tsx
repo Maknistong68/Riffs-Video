@@ -4,6 +4,7 @@ import { navigate } from '../../app/router';
 import { formatBytes, formatDuration } from '../../components/format';
 import { db, styleOf, type ExportMeta, type RiffRecord } from '../../storage/db';
 import { buildCaption, type Caption } from '../../engine/caption';
+import { seriesText } from '../../render/style';
 import { difficultyLabel } from '../../engine/difficulty';
 import { copyText, makePracticeLink } from '../../export/practice';
 import { readBlob } from '../../storage/opfs';
@@ -113,6 +114,7 @@ function captionFor(riff: RiffRecord, link: string | null): Caption | null {
     teach: st.teach,
     ...(r.endCard.kind === 'part' ? { part: { part: r.endCard.part ?? 1, parts: r.endCard.parts ?? 2 } } : {}),
     ...(link ? { practiceUrl: link } : {}),
+    ...(seriesText(r.series) ? { series: seriesText(r.series) } : {}),
   });
 }
 

@@ -6,7 +6,7 @@ import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
 import type { SoundMode } from '../workers/protocol';
 import type { RiffEdit } from '../engine/edits';
-import { NO_TEACH, type TeachOptions } from '../engine/teach';
+import { DEFAULT_TEACH, type TeachOptions } from '../engine/teach';
 import { DEFAULT_STYLE as DEFAULT_RENDER, type RenderStyle } from '../render/style';
 
 export type RiffSourceKind = 'alphatex' | 'gp' | 'ascii' | 'audio' | 'ai';
@@ -122,6 +122,8 @@ export type AppSettings = {
   deviceId?: string;
   /** Measured render+encode speed per view (× real time at 30 fps), from the first-use benchmark. */
   perf?: Partial<Record<'2d' | '3d', { ratio: number; measuredAt: number }>>;
+  /** Next number for the series badge ("RIFF #N"), counted up by exports that show the badge. */
+  nextSeriesNumber?: number;
 };
 
 export type StoredBlob = { path: string; blob: Blob };
@@ -168,12 +170,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
 };
 
 export const DEFAULT_SILENT: SilentSettings = { bpm: null, offsetMs: 1000, refStartMs: 0 };
-export const DEFAULT_STYLE: StyleSettings = { fps: 30, soundMode: 'synth', leadInMs: 1000, render: DEFAULT_RENDER, teach: NO_TEACH, silent: DEFAULT_SILENT };
+export const DEFAULT_STYLE: StyleSettings = { fps: 30, soundMode: 'synth', leadInMs: 1000, render: DEFAULT_RENDER, teach: DEFAULT_TEACH, silent: DEFAULT_SILENT };
 
 /** Records from older versions lack newer fields: fill them with defaults. */
 export function styleOf(r: Pick<RiffRecord, 'styleSettings'>): StyleSettings {
   const s = r.styleSettings ?? DEFAULT_STYLE;
-  return { ...DEFAULT_STYLE, ...s, render: { ...DEFAULT_RENDER, ...s.render }, teach: { ...NO_TEACH, ...s.teach }, silent: { ...DEFAULT_SILENT, ...s.silent } };
+  return { ...DEFAULT_STYLE, ...s, render: { ...DEFAULT_RENDER, ...s.render }, teach: { ...DEFAULT_TEACH, ...s.teach }, silent: { ...DEFAULT_SILENT, ...s.silent } };
 }
 
 export async function getSettings(db: RiffReelDb): Promise<AppSettings> {

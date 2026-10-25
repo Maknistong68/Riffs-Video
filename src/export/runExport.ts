@@ -48,6 +48,8 @@ export function runExport(riff: RiffRecord, opts: { fps: 30 | 60; soundMode: Sou
     });
     // P16: ask the browser not to evict our files, once, at the first export.
     const s = await getSettings(d);
+    const series = styleOf(riff).render.series;
+    if (series?.on) await updateSettings(d, { nextSeriesNumber: Math.max(s.nextSeriesNumber ?? 1, Math.round(series.number) + 1) });
     if (!s.persistRequested) {
       await requestPersistence();
       await updateSettings(d, { persistRequested: true });

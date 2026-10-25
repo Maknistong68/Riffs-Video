@@ -8,7 +8,7 @@ import { autoDifficulty, drawOpener, drawOutro, inOutro } from './overlays';
 import { drawNeck, withAlpha } from './neck2d';
 import { drawNotation } from './notation';
 import { SKINS } from './skins';
-import { DEFAULT_STYLE, type RenderStyle } from './style';
+import { DEFAULT_STYLE, seriesText, type RenderStyle } from './style';
 import { drawTabLane, roundRect, stringLetters } from './tabLane';
 import { SAFE_ZONES, THEMES, type Theme } from './theme';
 
@@ -168,16 +168,32 @@ function drawStage(ctx: Ctx2D, t: Timeline, s: FrameSettings, geo: LayoutGeometr
 const HOOK_FULL_MS = 2500;
 const END_PROMPT_MS = 1200;
 
-/** Count-in over the neck before the first note: "3 · 2 · 1", one per beat, pulsing. */
-function drawCountIn(ctx: Ctx2D, t: Timeline, s: FrameSettings, geo: LayoutGeometry, ms: number): void {
+/**
+ * Count-in over the neck: "3 · 2 · 1" in the silence before the first note and before each pass
+ * that follows a gap (with hook first, the hook plays at once and the count-in leads into the
+ * next pass).
+ */
+export function countInAt(t: Timeline, ms: number): { n: number; into: number } | null {
   const first = t.events[0];
-  if (!first || ms >= first.startMs) return;
-  // The lead-in is split into three equal steps so it always reads 3 · 2 · 1.
-  const step = first.startMs / 3;
-  if (step < 120) return;
-  const left = first.startMs - ms;
+  if (!first) return null;
+  const secs = t.sections ?? [];
+  const starts = [first.startMs, ...secs.slice(1).map((x) => x.startMs)];
+  const target = starts.find((x) => x > ms);
+  if (target === undefined) return null;
+  const prevEnd = Math.max(0, ...secs.filter((x) => x.endMs <= target + 0.5 && x.startMs < target).map((x) => x.endMs));
+  // The silence is split into three equal steps (at most 1.5 s in all) so it always reads 3 · 2 · 1.
+  const window = Math.min(target - prevEnd, 1500);
+  const step = window / 3;
+  const left = target - ms;
+  if (step < 120 || left > window) return null;
   const n = Math.min(3, Math.ceil(left / step));
-  const into = step * n - left; // ms since this number appeared
+  return { n, into: step * n - left };
+}
+
+function drawCountIn(ctx: Ctx2D, t: Timeline, s: FrameSettings, geo: LayoutGeometry, ms: number): void {
+  const c = countInAt(t, ms);
+  if (!c) return;
+  const { n, into } = c;
   const v = geo.neck;
   const cx = (v.x0 + v.x1) / 2;
   const cy = (v.y0 + v.y1) / 2;
@@ -274,6 +290,8 @@ function drawHeader(ctx: Ctx2D, t: Timeline, s: FrameSettings, ms: number): void
   // Chips: tempo, bar, tuning (only when not standard), difficulty, credit.
   const chips: { text: string; fill: string; ink: string }[] = [];
   const plain = { fill: 'rgba(255, 255, 255, 0.09)', ink: th.text };
+  const series = seriesText(s.style.series ?? DEFAULT_STYLE.series);
+  if (series) chips.push({ text: series, fill: th.dot, ink: th.dotText });
   chips.push({ text: `${Math.round(currentBpm(t, ms))} BPM`, ...plain });
   const tuning = tuningLabel(t.tuning, t.capo);
   if (tuning !== 'Standard tuning') chips.push({ text: tuning, ...plain });
@@ -301,7 +319,13 @@ function drawHeader(ctx: Ctx2D, t: Timeline, s: FrameSettings, ms: number): void
 
 /** Teach captions: "Slow · 50%", "Loop 2/3 · bar 3", "Full speed". */
 function drawSection(ctx: Ctx2D, t: Timeline, s: FrameSettings, ms: number): void {
-  const sec = t.sections?.find((x) => ms >= x.startMs - 400 && ms < x.endMs + 400);
+  const secs = t.sections ?? [];
+  // The pass playing now; in a gap, the one coming next (its count-in is running), else the one
+  // that just ended (briefly).
+  const sec =
+    secs.find((x) => ms >= x.startMs && ms < x.endMs) ??
+    secs.find((x) => x.startMs > ms && x.startMs - ms <= 1500) ??
+    secs.find((x) => ms >= x.endMs && ms < x.endMs + 400);
   if (!sec) return;
   const th = s.theme;
   ctx.font = font(800, 34);

@@ -1,10 +1,14 @@
 /** SoundFont registry (P22). Files are precached by the service worker for offline use. */
 import sonivoxUrl from '@coderline/alphatab/soundfont/sonivox.sf2?url';
+import guitarsUrl from '../assets/soundfonts/riffreel-guitars.sf3?url';
 
 export type SoundPack = { id: string; name: string; url: string; licence: string };
 
 export const SOUND_PACKS: SoundPack[] = [
-  { id: 'sonivox', name: 'Sonivox GM (built-in)', url: sonivoxUrl, licence: 'Apache-2.0, © Sonic Network Inc.' },
+  // Real multi-sampled guitars (nylon, steel, jazz, clean, bass + drum kit for the click), cut from
+  // FluidR3Mono GM with scripts/subset-soundfont.mjs: 1.4 MB, so it is precached like the app.
+  { id: 'fluid-guitars', name: 'Studio guitars (FluidR3)', url: guitarsUrl, licence: 'MIT, © Frank Wen, Michael Cowgill' },
+  { id: 'sonivox', name: 'Sonivox GM (classic)', url: sonivoxUrl, licence: 'Apache-2.0, © Sonic Network Inc.' },
 ];
 
 export const DEFAULT_SOUND_PACK = SOUND_PACKS[0]!;

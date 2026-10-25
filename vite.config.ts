@@ -50,7 +50,7 @@ export default defineConfig({
       },
       workbox: {
         // Offline after first load: app shell, workers, SoundFont, font, Basic Pitch model, AAC fallback.
-        globPatterns: ['**/*.{js,css,html,woff2,sf2,json,bin,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,woff2,sf2,sf3,json,bin,png,svg}'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: 'index.html',
       },

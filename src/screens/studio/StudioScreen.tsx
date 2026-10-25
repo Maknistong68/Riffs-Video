@@ -428,6 +428,27 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
               <span>Hook line (big text at the top, first 2.5 s)</span>
               <input className="input" defaultValue={render.hook} placeholder="Leave empty for title only" maxLength={60} onBlur={(e) => e.target.value !== render.hook && setRender({ hook: e.target.value.trim() })} data-testid="hook-line" />
             </label>
+            <label className="switch">
+              <span>Series badge (“{(render.series.label || 'Riff').toUpperCase()} #{render.series.number}”) — number counts up with each export</span>
+              <input
+                type="checkbox"
+                checked={render.series.on}
+                onChange={(e) => setRender({ series: { ...render.series, on: e.target.checked, ...(e.target.checked ? { number: appSettings?.nextSeriesNumber ?? render.series.number } : {}) } })}
+                data-testid="series-on"
+              />
+            </label>
+            {render.series.on && (
+              <div className="row" style={{ gap: 8 }}>
+                <label className="field" style={{ flex: 2 }}>
+                  <span>Series name</span>
+                  <input className="input" defaultValue={render.series.label} maxLength={16} onBlur={(e) => e.target.value !== render.series.label && setRender({ series: { ...render.series, label: e.target.value.trim() || 'Riff' } })} />
+                </label>
+                <label className="field" style={{ flex: 1 }}>
+                  <span>Number</span>
+                  <input className="input" type="number" min={1} max={9999} defaultValue={render.series.number} key={render.series.number} onBlur={(e) => { const n = Math.max(1, Math.round(Number(e.target.value) || 1)); if (n !== render.series.number) setRender({ series: { ...render.series, number: n } }); }} data-testid="series-number" />
+                </label>
+              </div>
+            )}
             <label className="field">
               <span>Artist credit</span>
               <input className="input" defaultValue={render.credit} placeholder="e.g. Original by @you" onBlur={(e) => e.target.value !== render.credit && setRender({ credit: e.target.value.trim() })} />
@@ -471,6 +492,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
               <span>Same riff in 3 positions (other places on the neck, same notes)</span>
               <input type="checkbox" checked={!!style.teach.positions} onChange={(e) => setStyle({ teach: { ...style.teach, positions: e.target.checked } })} data-testid="teach-positions" />
             </label>
+            <label className="switch"><span>Speed-up ending (125% → 150%)</span><input type="checkbox" checked={!!style.teach.speedUp} onChange={(e) => setStyle({ teach: { ...style.teach, speedUp: e.target.checked } })} data-testid="teach-speedup" /></label>
             <SplitParts riff={riff} />
             <label className="switch"><span>Finger numbers on the dots</span><input type="checkbox" checked={render.fingerNumbers} onChange={(e) => setRender({ fingerNumbers: e.target.checked })} /></label>
             <label className="switch"><span>Pick strokes (from the file)</span><input type="checkbox" checked={render.pickArrows} onChange={(e) => setRender({ pickArrows: e.target.checked })} /></label>

@@ -6,6 +6,7 @@
 import { alphaTab, type PreparedScore } from '../import/alphatab';
 import { msToSample } from '../engine/time';
 import type { Arrangement } from '../engine/arrange';
+import { humanizeMidi } from './humanize';
 
 export type SynthOptions = {
   trackIndex: number;
@@ -21,6 +22,8 @@ export type SynthOptions = {
   range?: { startTick: number; endTick: number };
   /** Called with 0..1 while rendering. */
   onProgress?: (fraction: number) => void;
+  /** Seeded velocity variation (default on); timing is never changed. */
+  humanize?: boolean;
 };
 
 export const SYNTH_CHANNELS = 2;
@@ -50,7 +53,7 @@ function silentOutput(sampleRate: number): alphaTab.synth.ISynthOutput {
 }
 
 export function renderSynth(prepared: PreparedScore, opts: SynthOptions): Float32Array<ArrayBuffer> {
-  const { score, midi, syncPoints, transpositionPitches } = prepared;
+  const { score, midi } = prepared;
   const options = new alphaTab.synth.AudioExportOptions();
   options.sampleRate = opts.sampleRate;
   options.soundFonts = [opts.soundFont];
@@ -70,6 +73,17 @@ export function renderSynth(prepared: PreparedScore, opts: SynthOptions): Float3
     options.trackVolume.set(t.playbackInfo.secondaryChannel, v);
   }
 
+  // The MidiFile is cached and shared: velocities are humanized for this render only.
+  const restore = opts.humanize === false ? () => undefined : humanizeMidi(midi.tracks as unknown as Parameters<typeof humanizeMidi>[0], midi.division);
+  try {
+    return renderWith(prepared, options, opts);
+  } finally {
+    restore();
+  }
+}
+
+function renderWith(prepared: PreparedScore, options: alphaTab.synth.AudioExportOptions, opts: SynthOptions): Float32Array<ArrayBuffer> {
+  const { midi, syncPoints, transpositionPitches } = prepared;
   const synth = new alphaTab.synth.AlphaSynth(silentOutput(opts.sampleRate), 500);
   const exporter = synth.exportAudio(options, midi, syncPoints, transpositionPitches);
 

@@ -114,6 +114,9 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
     const y = laneLineY(g, e.stringIdx, strings);
     const xa = noteX(g, prev, ms) + 24;
     const xb = noteX(g, e, ms) - 24;
+    const fadeLink = Math.min(edgeAlpha(xa), edgeAlpha(xb));
+    if (fadeLink <= 0) continue;
+    ctx.globalAlpha = fadeLink;
     ctx.strokeStyle = theme.glyph;
     ctx.fillStyle = theme.glyph;
     if (hp) {
@@ -133,6 +136,7 @@ export function drawTabLane(ctx: Ctx2D, g: LaneGeometry, t: Timeline, theme: The
       ctx.stroke();
     }
   }
+  ctx.globalAlpha = 1;
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

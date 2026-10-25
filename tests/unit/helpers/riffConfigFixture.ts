@@ -2,6 +2,7 @@ import { DEFAULT_STYLE, type RiffRecord, type StyleSettings } from '../../../src
 import { riffConfig as build } from '../../../src/storage/riffConfig';
 
 export { DEFAULT_STYLE };
+export { HOOK_LEAD_IN_MS } from '../../../src/storage/riffConfig';
 
 /** riffConfig for a minimal alphaTex riff record with the given style. */
 export function riffConfig(style: StyleSettings) {

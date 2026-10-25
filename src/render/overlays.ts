@@ -28,7 +28,11 @@ export function musicSpan(t: Timeline): Span {
   if (!s) {
     const first = t.events[0]?.startMs ?? t.leadInMs;
     const last = t.events.reduce((m, e) => Math.max(m, e.startMs + e.durationMs), first);
-    s = { firstMs: first, lastEndMs: last, maxBar: t.bars.reduce((m, b) => Math.max(m, b.index), 0), difficulty: difficultyLabel(t) };
+    // Difficulty of the riff as written: the "Full speed" pass when the video has passes (a 150 %
+    // speed-up pass would otherwise make every riff "Hard").
+    const full = t.sections?.find((x) => x.label === 'Full speed');
+    const rated = full ? { ...t, events: t.events.filter((e) => e.startMs >= full.startMs && e.startMs < full.endMs) } : t;
+    s = { firstMs: first, lastEndMs: last, maxBar: t.bars.reduce((m, b) => Math.max(m, b.index), 0), difficulty: difficultyLabel(rated) };
     spans.set(t, s);
   }
   return s;
