@@ -61,6 +61,11 @@ export function transcribeAudio(req: Omit<Extract<WorkerRequest, { type: 'transc
     .finally(() => channel.worker.terminate());
 }
 
+/** The riff as alphaTex with its edits applied (practice links). */
+export function riffAlphaTex(riff: RiffConfig): Promise<string> {
+  return sharedChannel().call<string>({ type: 'exportTex', riff });
+}
+
 /** Speed check (fresh worker, so previews and exports are not slowed by it). */
 export function benchmarkRender(style: RenderStyle, fps: 30 | 60 = 30): Promise<Benchmark> {
   const channel = new Channel(spawn());

@@ -2,13 +2,19 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { navigate } from '../../app/router';
 import { formatBytes, formatDuration } from '../../components/format';
-import { db, type ExportMeta } from '../../storage/db';
+import { db, styleOf, type ExportMeta, type RiffRecord } from '../../storage/db';
+import { buildCaption, type Caption } from '../../engine/caption';
+import { difficultyLabel } from '../../engine/difficulty';
+import { copyText, makePracticeLink } from '../../export/practice';
 import { readBlob } from '../../storage/opfs';
 import { deleteExport } from '../../storage/riffs';
 
 /** S8: player, Sync Report, share/save. */
 export function ResultScreen({ exportId }: { exportId: string }) {
   const meta = useLiveQuery(() => db().exportsMeta.get(exportId), [exportId]);
+  const riff = useLiveQuery(async () => (meta ? ((await db().riffs.get(meta.riffId)) ?? null) : undefined), [meta?.riffId]);
+  const [link, setLink] = useState<string | null>(null);
+  const caption = riff ? captionFor(riff, link) : null;
   const [url, setUrl] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
 
@@ -45,7 +51,7 @@ export function ResultScreen({ exportId }: { exportId: string }) {
       )}
       <SyncCard meta={meta} />
       <div className="row">
-        <button className="btn primary" style={{ flex: 1 }} disabled={!blob} onClick={() => blob && void share(blob, fileName, meta.riffTitle)}>Share</button>
+        <button className="btn primary" style={{ flex: 1 }} disabled={!blob} onClick={() => blob && void share(blob, fileName, caption?.title ?? meta.riffTitle, caption?.full)}>Share</button>
         <button className="btn" style={{ flex: 1 }} disabled={!blob} onClick={() => blob && download(blob, fileName)}>Save</button>
       </div>
       <div className="row">
@@ -53,6 +59,7 @@ export function ResultScreen({ exportId }: { exportId: string }) {
         <button className="btn" style={{ flex: 1 }} onClick={() => navigate({ name: 'studio', riffId: meta.riffId, openExport: true })}>Re-export</button>
         <button className="btn danger" style={{ flex: 1 }} onClick={async () => { await deleteExport(meta.id); navigate({ name: 'exports' }); }}>Delete</button>
       </div>
+      {riff && caption && <CaptionCard riff={riff} caption={caption} link={link} onLink={setLink} />}
       <p className="dim small">{formatDuration(meta.durationMs)} · {meta.fps} fps · {formatBytes(meta.sizeBytes)} · 1080×1920</p>
     </main>
   );
@@ -89,11 +96,65 @@ function SyncCard({ meta }: { meta: ExportMeta }) {
   );
 }
 
-async function share(blob: Blob, name: string, title: string) {
+function captionFor(riff: RiffRecord, link: string | null): Caption | null {
+  const t = riff.timelineCache;
+  if (!t) return null;
+  const st = styleOf(riff);
+  const r = st.render;
+  const difficulty = r.difficulty === 'none' ? undefined : r.difficulty === 'auto' ? difficultyLabel(t) : r.difficulty;
+  return buildCaption({
+    title: riff.title,
+    ...(riff.artist ? { artist: riff.artist } : {}),
+    ...(r.credit ? { credit: r.credit } : {}),
+    timeline: t,
+    ...(difficulty ? { difficulty } : {}),
+    genre: r.theme,
+    isOriginal: riff.isOriginal,
+    teach: st.teach,
+    ...(r.endCard.kind === 'part' ? { part: { part: r.endCard.part ?? 1, parts: r.endCard.parts ?? 2 } } : {}),
+    ...(link ? { practiceUrl: link } : {}),
+  });
+}
+
+/** Auto title / caption / hashtags + practice link, ready to paste into TikTok. */
+function CaptionCard({ riff, caption, link, onLink }: { riff: RiffRecord; caption: Caption; link: string | null; onLink: (l: string) => void }) {
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <section className="card panel" data-testid="caption-card">
+      <h2>Caption</h2>
+      <strong>{caption.title}</strong>
+      <p className="small" style={{ whiteSpace: 'pre-wrap' }} data-testid="caption-text">{caption.caption}</p>
+      <p className="small dim">{caption.hashtags.join(' ')}</p>
+      <div className="row">
+        <button className="btn" style={{ flex: 1 }} onClick={async () => setMsg(await copyText(caption.full, 'Caption copied'))} data-testid="copy-caption">Copy caption</button>
+        <button
+          className="btn"
+          style={{ flex: 1 }}
+          disabled={busy}
+          data-testid="make-practice-link"
+          onClick={async () => {
+            setBusy(true);
+            const r = link ? { ok: true as const, url: link } : await makePracticeLink(riff);
+            setBusy(false);
+            if (!r.ok) return setMsg(r.message);
+            onLink(r.url);
+            setMsg(await copyText(r.url, 'Practice link copied (also added to the caption)'));
+          }}
+        >
+          {link ? 'Copy practice link' : 'Make practice link'}
+        </button>
+      </div>
+      {msg && <p className="small good" role="status">{msg}</p>}
+    </section>
+  );
+}
+
+async function share(blob: Blob, name: string, title: string, text?: string) {
   const file = new File([blob], name, { type: 'video/mp4' });
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title });
+      await navigator.share({ files: [file], title, ...(text ? { text } : {}) });
       return;
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') return;

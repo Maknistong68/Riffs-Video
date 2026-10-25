@@ -16,6 +16,7 @@ import { applyEdits } from '../engine/edits';
 import { refKey } from '../engine/review';
 import { transcribeToRiff } from '../import/transcribeRiff';
 import { checkAiTab } from '../import/aiRiff';
+import { riffToAlphaTex } from '../import/texExport';
 import { detectOnsets } from '../audio/onsets';
 import { rmsEnvelope } from '../audio/envelope';
 import { AUDIO_SAMPLE_RATE } from '../engine/time';
@@ -138,6 +139,19 @@ async function getModel(url: string) {
   return tfModel;
 }
 
+/** Basic Pitch on WebGL; if the GPU backend fails mid-run (shader compile, lost context), redo it on the CPU. */
+async function transcribeSafe(url: string, pcm: Float32Array, sr: number, onProgress: (f: number) => void) {
+  try {
+    return await transcribe(getModel(url), pcm, sr, onProgress);
+  } catch (e) {
+    const tf = await import('@tensorflow/tfjs');
+    if (tf.getBackend() !== 'webgl') throw e;
+    await tf.setBackend('cpu');
+    await tf.ready();
+    return transcribe(getModel(url), pcm, sr, onProgress);
+  }
+}
+
 self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
   const req = ev.data;
   const progress = (stage: ExportStage, fraction: number, extra: { frame?: number; frames?: number } = {}) =>
@@ -150,9 +164,13 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
     }
     if (req.type === 'transcribe') {
       progress('transcribe', 0);
-      const detected = await transcribe(getModel(req.modelUrl), req.pcm, req.sampleRate, (f) => progress('transcribe', f * 0.9));
+      const detected = await transcribeSafe(req.modelUrl, req.pcm, req.sampleRate, (f) => progress('transcribe', f * 0.9));
       const result = transcribeToRiff(detected, detectOnsets(req.pcm, req.sampleRate), { tuning: req.tuning, capo: req.capo, title: req.title }, rmsEnvelope(req.pcm, req.sampleRate));
       post({ id: req.id, type: 'transcribed', result });
+      return;
+    }
+    if (req.type === 'exportTex') {
+      post({ id: req.id, type: 'exportedTex', result: riffToAlphaTex(req.riff.source, req.riff.trackIndex, req.riff.edits ?? [], req.riff.title) });
       return;
     }
     if (req.type === 'benchmark') {
@@ -192,7 +210,7 @@ self.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
       built.timeline,
       settings,
       plan.frames,
-      async (mono, sr) => transcribe(getModel(req.modelUrl), mono, sr, (f) => progress('verify-pitch', f)),
+      async (mono, sr) => transcribeSafe(req.modelUrl, mono, sr, (f) => progress('verify-pitch', f)),
       (stage) => progress(stage === 'audio' ? 'verify-audio' : stage === 'pitch' ? 'verify-pitch' : 'verify-frames', 0),
       req.soundMode !== 'silent',
       reference,

@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { canQueue, enqueue } from '../../export/queue';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { haptic } from '../../app/haptics';
 import { navigate } from '../../app/router';
@@ -148,6 +149,10 @@ function RiffMenu({ riff, onClose }: { riff: RiffRecord; onClose: () => void }) 
         <>
           <button className="option" onClick={() => setRenaming(true)}><span className="ico">✏️</span><span className="txt"><strong>Rename</strong></span></button>
           <button className="option" onClick={async () => { await duplicateRiff(riff.id); onClose(); }}><span className="ico">📄</span><span className="txt"><strong>Duplicate</strong></span></button>
+          <button className="option" disabled={!canQueue(riff)} data-testid="menu-queue" onClick={async () => { await enqueue([riff]); onClose(); }}>
+            <span className="ico">📦</span>
+            <span className="txt"><strong>Add to export queue</strong><span className="dim small">{canQueue(riff) ? 'Exports with its saved style, one after another' : 'Review the notes first'}</span></span>
+          </button>
           {riff.source === 'alphatex' && (
             <button className="option" onClick={() => navigate({ name: 'write', riffId: riff.id })}><span className="ico">⌨️</span><span className="txt"><strong>Edit alphaTex</strong></span></button>
           )}

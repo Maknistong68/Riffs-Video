@@ -187,3 +187,4 @@ textarea.input { padding: 12px 14px; min-height: 260px; font-family: ui-monospac
 .knob input { width: 100%; min-height: 32px; accent-color: var(--pedal); }
 .center { text-align: center; }
 .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
+.queue-item { min-height: 52px; border-top: 1px solid var(--line); padding-top: 8px; }

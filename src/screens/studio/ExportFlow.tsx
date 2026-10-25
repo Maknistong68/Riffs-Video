@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { haptic } from '../../app/haptics';
 import { navigate } from '../../app/router';
-import { DEFAULT_SOUND_PACK } from '../../audio/soundpacks';
 import { formatBytes, formatDuration } from '../../components/format';
 import { Segmented } from '../../components/Segmented';
 import { Sheet } from '../../components/Sheet';
-import type { RiffSource } from '../../import/source';
-import { db, drumsOf, getSettings, newId, styleOf, summarise, toneOf, updateSettings, type RiffRecord } from '../../storage/db';
-import { requestPersistence, saveBlob } from '../../storage/opfs';
+import { db, getSettings, styleOf, updateSettings, type RiffRecord } from '../../storage/db';
 import { updateRiff } from '../../storage/riffs';
-import { riffConfig } from '../../storage/riffConfig';
-import { startExport, WorkerError, type ExportJob } from '../../workers/client';
+import { WorkerError } from '../../workers/client';
+import { runExport, type ExportRun } from '../../export/runExport';
 import type { ExportStage, SoundMode } from '../../workers/protocol';
 
 type Platform = 'tiktok' | 'shorts' | 'reels';
@@ -23,7 +20,7 @@ const STAGES: { key: ExportStage | 'verify'; label: string }[] = [
   { key: 'verify', label: 'Checking sync (listening to the result)' },
 ];
 
-export function ExportFlow({ riff, source, durationMs, onClose }: { riff: RiffRecord; source: RiffSource; durationMs: number; onClose: () => void }) {
+export function ExportFlow({ riff, durationMs, onClose }: { riff: RiffRecord; durationMs: number; onClose: () => void }) {
   const [phase, setPhase] = useState<'sheet' | 'rendering'>('sheet');
   const [platform, setPlatform] = useState<Platform>('tiktok');
   const [fps, setFps] = useState(riff.styleSettings.fps);
@@ -45,7 +42,7 @@ export function ExportFlow({ riff, source, durationMs, onClose }: { riff: RiffRe
   const estTime = Math.ceil(renderSec + duration * 1.5 + 6);
 
   if (phase === 'rendering') {
-    return <Rendering riff={riff} source={source} fps={fps} soundMode={soundMode} onCancel={onClose} />;
+    return <Rendering riff={riff} fps={fps} soundMode={soundMode} onCancel={onClose} />;
   }
   return (
     <Sheet onClose={onClose} label="Export">
@@ -81,14 +78,14 @@ export function ExportFlow({ riff, source, durationMs, onClose }: { riff: RiffRe
 }
 
 /** S7: progress, wake lock, cancel; saves the result and opens S8. */
-function Rendering({ riff, source, fps, soundMode, onCancel }: { riff: RiffRecord; source: RiffSource; fps: 30 | 60; soundMode: SoundMode; onCancel: () => void }) {
+function Rendering({ riff, fps, soundMode, onCancel }: { riff: RiffRecord; fps: 30 | 60; soundMode: SoundMode; onCancel: () => void }) {
   const [stage, setStage] = useState<ExportStage>('prepare');
   const [fraction, setFraction] = useState(0);
   const [frames, setFrames] = useState<{ frame: number; frames: number } | null>(null);
   const [error, setError] = useState<string[] | null>(null);
   const [wasHidden, setWasHidden] = useState(false);
   const started = useRef(performance.now());
-  const job = useRef<ExportJob | null>(null);
+  const job = useRef<ExportRun | null>(null);
 
   useEffect(() => {
     let wake: WakeLockSentinel | null = null;
@@ -100,52 +97,18 @@ function Rendering({ riff, source, fps, soundMode, onCancel }: { riff: RiffRecor
     };
     document.addEventListener('visibilitychange', onVis);
 
-    const j = startExport(
-      {
-        riff: { ...riffConfig(riff, { ...styleOf(riff), soundMode }), source },
-        fps,
-        style: styleOf(riff).render,
-        soundMode,
-        tone: toneOf(styleOf(riff)),
-        drums: drumsOf(styleOf(riff)),
-        soundFontUrl: DEFAULT_SOUND_PACK.url,
-        modelUrl: new URL(`${import.meta.env.BASE_URL}models/basic-pitch/model.json`, location.href).href,
-      },
-      (s, f, frame, total) => {
-        setStage(s);
-        setFraction(f);
-        if (frame !== undefined && total !== undefined) setFrames({ frame, frames: total });
-      },
-    );
+    const j = runExport(riff, { fps, soundMode }, (s, f, frame, total) => {
+      setStage(s);
+      setFraction(f);
+      if (frame !== undefined && total !== undefined) setFrames({ frame, frames: total });
+    });
     job.current = j;
     let unmounted = false;
     j.promise.then(
-      async (r) => {
+      ({ exportId, ok }) => {
         if (unmounted) return;
-        const d = db();
-        const id = newId('exp');
-        const blobPath = `${id}.mp4`;
-        await saveBlob(d, blobPath, new Blob([r.mp4], { type: 'video/mp4' }));
-        await d.exportsMeta.add({
-          id,
-          riffId: riff.id,
-          riffTitle: riff.title,
-          blobPath,
-          preset: 'tiktok',
-          fps,
-          durationMs: r.timeline.durationMs,
-          sizeBytes: r.info.sizeBytes,
-          syncReport: summarise(r.report),
-          ...(soundMode === 'silent' ? { silent: { bpm: Math.round((r.timeline.tempoMap[0]?.bpm ?? 0) * 4) / 4, offsetMs: r.timeline.leadInMs } } : {}),
-          createdAt: Date.now(),
-        });
-        const s = await getSettings(d);
-        if (!s.persistRequested) {
-          await requestPersistence();
-          await updateSettings(d, { persistRequested: true });
-        }
-        haptic(r.report.ok ? 30 : 80);
-        navigate({ name: 'result', exportId: id });
+        haptic(ok ? 30 : 80);
+        navigate({ name: 'result', exportId });
       },
       (e: unknown) => {
         if (unmounted || (e instanceof DOMException && e.name === 'AbortError')) return;

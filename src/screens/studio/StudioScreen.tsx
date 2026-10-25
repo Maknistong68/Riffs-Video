@@ -18,6 +18,8 @@ import { LAYOUTS, type DifficultyBadge, type EndCard, type LayoutId, type Render
 import { db, drumsOf, getSettings, styleOf, toneOf, updateSettings, type RiffRecord, type StyleSettings } from '../../storage/db';
 import { toneForSkin, tonePreset } from '../../audio/tone';
 import { ToneControls } from './ToneControls';
+import { copyText, makePracticeLink } from '../../export/practice';
+import { barCount, partRanges, splitIntoParts } from '../../export/splitParts';
 import { DRUM_PATTERNS } from '../../audio/drums';
 import { GENRES } from './genres';
 import { THEME_NAMES, THEMES, type ThemeId } from '../../render/theme';
@@ -448,6 +450,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
                 <input className="input" defaultValue={render.endCard.text} placeholder={render.endCard.kind === 'follow' ? 'Follow for more riffs' : 'Part 2 on my profile'} aria-label="End card text" onBlur={(e) => e.target.value !== render.endCard.text && setRender({ endCard: { ...render.endCard, text: e.target.value.trim() } })} />
               )}
             </div>
+            <PracticeLinkButton riff={riff} />
             <label className="switch"><span>This is my original riff</span><input type="checkbox" checked={riff.isOriginal} onChange={(e) => void updateRiff(riff.id, { isOriginal: e.target.checked })} /></label>
           </>
         )}
@@ -464,6 +467,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
               <span>Same riff in 3 positions (other places on the neck, same notes)</span>
               <input type="checkbox" checked={!!style.teach.positions} onChange={(e) => setStyle({ teach: { ...style.teach, positions: e.target.checked } })} data-testid="teach-positions" />
             </label>
+            <SplitParts riff={riff} />
             <label className="switch"><span>Finger numbers on the dots</span><input type="checkbox" checked={render.fingerNumbers} onChange={(e) => setRender({ fingerNumbers: e.target.checked })} /></label>
             <label className="switch"><span>Pick strokes (from the file)</span><input type="checkbox" checked={render.pickArrows} onChange={(e) => setRender({ pickArrows: e.target.checked })} /></label>
             <label className="switch"><span>Note names</span><input type="checkbox" checked={render.noteNames} onChange={(e) => setRender({ noteNames: e.target.checked })} /></label>
@@ -471,7 +475,65 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
         )}
       </section>
 
-      {exporting && prepared && <ExportFlow riff={riff} source={source} durationMs={prepared.timeline.durationMs} onClose={() => setExporting(false)} />}
+      {exporting && prepared && <ExportFlow riff={riff} durationMs={prepared.timeline.durationMs} onClose={() => setExporting(false)} />}
     </main>
+  );
+}
+
+/** "Part 1 / Part 2" videos: split into N-bar parts with end cards, queued for export. */
+function SplitParts({ riff }: { riff: RiffRecord }) {
+  const [per, setPer] = useState(4);
+  const [busy, setBusy] = useState(false);
+  const bars = barCount(riff);
+  const parts = partRanges(bars, per).length;
+  if (bars < 2) return null;
+  return (
+    <div className="field" data-testid="split-parts">
+      <span>Split into parts ({bars} bars)</span>
+      <div className="row">
+        <label className="field" style={{ flex: 1 }}>
+          <span>Bars per part</span>
+          <input className="input" type="number" min={1} max={bars} value={per} onChange={(e) => setPer(Math.max(1, Math.min(bars, Number(e.target.value) || 1)))} aria-label="Bars per part" />
+        </label>
+        <button
+          className="btn"
+          style={{ flex: 1, alignSelf: 'flex-end' }}
+          disabled={busy || parts < 2}
+          data-testid="split-go"
+          onClick={async () => {
+            setBusy(true);
+            await splitIntoParts(riff, per);
+            navigate({ name: 'exports' });
+          }}
+        >
+          {parts < 2 ? 'Nothing to split' : `Make ${parts} part videos`}
+        </button>
+      </div>
+      <p className="small dim">Each part gets a “Part X of {Math.max(2, parts)}” end card and joins the export queue.</p>
+    </div>
+  );
+}
+
+/** Share the riff itself as a link: viewers can play it slower, loop it and save it. */
+function PracticeLinkButton({ riff }: { riff: RiffRecord }) {
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="field">
+      <button
+        className="btn"
+        disabled={busy}
+        data-testid="studio-practice-link"
+        onClick={async () => {
+          setBusy(true);
+          const r = await makePracticeLink(riff);
+          setBusy(false);
+          setMsg(r.ok ? await copyText(r.url, 'Practice link copied — put it in your bio or caption') : r.message);
+        }}
+      >
+        Copy practice link
+      </button>
+      {msg && <span className="small good" role="status" data-testid="practice-link-msg">{msg}</span>}
+    </div>
   );
 }

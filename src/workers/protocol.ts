@@ -36,6 +36,7 @@ export type WorkerRequest =
   | { id: number; type: 'timeline'; riff: RiffConfig }
   | { id: number; type: 'checkAi'; alphaTex: string; notes: AiNote[] }
   | { id: number; type: 'benchmark'; style: RenderStyle; fps: 30 | 60 }
+  | { id: number; type: 'exportTex'; riff: RiffConfig }
   | { id: number; type: 'transcribe'; pcm: Float32Array<ArrayBuffer>; sampleRate: number; modelUrl: string; tuning: number[]; capo: number; title: string }
   | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode; tone: ToneSettings; drums?: DrumSettings }
   | {
@@ -67,6 +68,7 @@ export type WorkerResponse =
   | { id: number; type: 'timeline'; result: Timeline }
   | { id: number; type: 'checkedAi'; result: AiTabCheck }
   | { id: number; type: 'benchmarked'; result: Benchmark }
+  | { id: number; type: 'exportedTex'; result: string }
   | { id: number; type: 'transcribed'; result: TranscribedRiff }
   | { id: number; type: 'exported'; result: Exported }
   | { id: number; type: 'error'; message: string; details: string[] };

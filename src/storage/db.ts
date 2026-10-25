@@ -124,12 +124,26 @@ export type AppSettings = {
 
 export type StoredBlob = { path: string; blob: Blob };
 
+/** Batch export queue (phase 6): riffs waiting to be exported one after the other. */
+export type QueueItem = {
+  id: string;
+  riffId: string;
+  riffTitle: string;
+  fps: 30 | 60;
+  status: 'queued' | 'running' | 'done' | 'failed';
+  exportId?: string;
+  error?: string;
+  syncOk?: boolean;
+  createdAt: number;
+};
+
 export class RiffReelDb extends Dexie {
   riffs!: EntityTable<RiffRecord, 'id'>;
   exportsMeta!: EntityTable<ExportMeta, 'id'>;
   settings!: EntityTable<AppSettings, 'id'>;
   /** Fallback blob store when OPFS writes are unavailable. */
   blobs!: EntityTable<StoredBlob, 'path'>;
+  exportQueue!: EntityTable<QueueItem, 'id'>;
 
   constructor(name = 'riffreel') {
     super(name);
@@ -139,6 +153,7 @@ export class RiffReelDb extends Dexie {
       settings: 'id',
       blobs: 'path',
     });
+    this.version(2).stores({ exportQueue: 'id, status, createdAt' });
   }
 }
 

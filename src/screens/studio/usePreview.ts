@@ -9,13 +9,17 @@ import type { Prepared } from '../../workers/protocol';
 /** Optional reference recording (Silent mode): played instead of the synth, `startSec` = its time at video 0. */
 export type PreviewReference = { buffer: AudioBuffer; startSec: number };
 
-export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0, reference: PreviewReference | null = null) {
+export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0, reference: PreviewReference | null = null, loop = false) {
   const [frame, setFrame] = useState(() => Math.floor((initialMs * fps) / 1000));
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const audio = useRef<{ ctx: AudioContext; src: AudioBufferSourceNode } | null>(null);
   const raf = useRef(0);
   const frames = prepared ? frameCount(prepared.timeline.durationMs, fps) : 1;
+  // Loop (practice page): at the end, start again from the top.
+  const loopRef = useRef(loop);
+  loopRef.current = loop;
+  const [restart, setRestart] = useState(0);
 
   const stop = useCallback(() => {
     cancelAnimationFrame(raf.current);
@@ -60,7 +64,13 @@ export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0
     } else {
       src.start(t0, offsetSec);
     }
-    src.onended = () => stop();
+    src.onended = () => {
+      stop();
+      if (loopRef.current) {
+        setFrame(0);
+        setRestart((n) => n + 1);
+      }
+    };
     audio.current = { ctx, src };
     setPlaying(true);
     const tick = () => {
@@ -70,8 +80,11 @@ export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0
       const sec = offsetSec + Math.max(0, a.ctx.currentTime - t0 - latency) * speed;
       const f = Math.floor(sec * fps);
       if (f >= frames) {
-        setFrame(frames - 1);
         stop();
+        if (loopRef.current) {
+          setFrame(0);
+          setRestart((n) => n + 1);
+        } else setFrame(frames - 1);
         return;
       }
       setFrame(f);
@@ -87,6 +100,10 @@ export function usePreview(prepared: Prepared | null, fps: number, initialMs = 0
     },
     [stop, frames],
   );
+
+  useEffect(() => {
+    if (restart) play();
+  }, [restart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => () => stop(), [stop]);
   useEffect(() => {

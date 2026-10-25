@@ -9,6 +9,7 @@ export type Route =
   | { name: 'paste' }
   | { name: 'audio' }
   | { name: 'ai' }
+  | { name: 'practice'; data: string }
   | { name: 'review'; riffId: string }
   | { name: 'studio'; riffId: string; atMs?: number; openExport?: boolean }
   | { name: 'result'; exportId: string };
@@ -32,6 +33,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'audio' };
     case 'ai':
       return { name: 'ai' };
+    case 'p':
+      return parts[1] ? { name: 'practice', data: parts[1] } : { name: 'library' };
     case 'riff':
       if (parts[1]) {
         const at = params.get('t');
@@ -68,6 +71,8 @@ export function href(r: Route): string {
       return '#/audio';
     case 'ai':
       return '#/ai';
+    case 'practice':
+      return `#/p/${r.data}`;
     case 'studio': {
       const q = new URLSearchParams();
       if (r.atMs !== undefined) q.set('t', String(Math.round(r.atMs)));
