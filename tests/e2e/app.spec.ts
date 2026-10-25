@@ -50,7 +50,9 @@ test('write → review (edit a note) → studio (Close-up + slow-mo) → export 
   await expect(page.getByRole('button', { name: 'Bar 1, string 5, fret 2' }).first()).toBeVisible();
   await page.getByTestId('confirm-review').click();
 
-  // Studio: Close-up layout + slow-mo passes.
+  // Studio: Close-up layout + slow-mo passes. Flat 2D keeps this long export quick on GPU-less CI
+  // (3D export has its own test in tone3d.spec.ts).
+  await page.getByRole('radio', { name: 'Flat 2D' }).click();
   await page.getByRole('tab', { name: 'Layout' }).click();
   await page.getByRole('button', { name: 'Close-up' }).click();
   await page.getByRole('tab', { name: 'Teach' }).click();

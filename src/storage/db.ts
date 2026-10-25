@@ -1,5 +1,6 @@
 /** Local-only storage (CLAUDE.md §5): Dexie/IndexedDB for records, OPFS for large blobs. */
 import { toneForSkin, type ToneSettings } from '../audio/tone';
+import { DEFAULT_DRUMS, type DrumSettings } from '../audio/drums';
 import Dexie, { type EntityTable } from 'dexie';
 import type { SyncReport } from '../export/syncCheck';
 import type { Timeline } from '../engine/timeline';
@@ -33,7 +34,13 @@ export type StyleSettings = {
   force3d?: boolean;
   /** Instrument + pedals. Unset = the default tone for the chosen guitar model. */
   tone?: ToneSettings;
+  /** Drum backing (mixed after the pedals). */
+  drums?: DrumSettings;
 };
+
+export function drumsOf(s: StyleSettings): DrumSettings {
+  return s.drums ?? DEFAULT_DRUMS;
+}
 
 /** The tone in effect (explicit choice, or the guitar model's default). */
 export function toneOf(s: StyleSettings): ToneSettings {

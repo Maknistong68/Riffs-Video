@@ -6,7 +6,7 @@ import { formatBytes, formatDuration } from '../../components/format';
 import { Segmented } from '../../components/Segmented';
 import { Sheet } from '../../components/Sheet';
 import type { RiffSource } from '../../import/source';
-import { db, getSettings, newId, styleOf, summarise, toneOf, updateSettings, type RiffRecord } from '../../storage/db';
+import { db, drumsOf, getSettings, newId, styleOf, summarise, toneOf, updateSettings, type RiffRecord } from '../../storage/db';
 import { requestPersistence, saveBlob } from '../../storage/opfs';
 import { updateRiff } from '../../storage/riffs';
 import { riffConfig } from '../../storage/riffConfig';
@@ -107,6 +107,7 @@ function Rendering({ riff, source, fps, soundMode, onCancel }: { riff: RiffRecor
         style: styleOf(riff).render,
         soundMode,
         tone: toneOf(styleOf(riff)),
+        drums: drumsOf(styleOf(riff)),
         soundFontUrl: DEFAULT_SOUND_PACK.url,
         modelUrl: new URL(`${import.meta.env.BASE_URL}models/basic-pitch/model.json`, location.href).href,
       },

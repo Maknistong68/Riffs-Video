@@ -8,6 +8,7 @@ import type { RiffEdit } from '../engine/edits';
 import type { TeachOptions } from '../engine/teach';
 import type { RenderStyle } from '../render/style';
 import type { ToneSettings } from '../audio/tone';
+import type { DrumSettings } from '../audio/drums';
 
 export type SoundMode = 'synth' | 'synth-click' | 'silent';
 
@@ -34,7 +35,7 @@ export type WorkerRequest =
   | { id: number; type: 'checkAi'; alphaTex: string; notes: AiNote[] }
   | { id: number; type: 'benchmark'; style: RenderStyle; fps: 30 | 60 }
   | { id: number; type: 'transcribe'; pcm: Float32Array<ArrayBuffer>; sampleRate: number; modelUrl: string; tuning: number[]; capo: number; title: string }
-  | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode; tone: ToneSettings }
+  | { id: number; type: 'prepare'; riff: RiffConfig; soundFontUrl: string; soundMode: SoundMode; tone: ToneSettings; drums?: DrumSettings }
   | {
       id: number;
       type: 'export';
@@ -43,6 +44,7 @@ export type WorkerRequest =
       style: RenderStyle;
       soundMode: SoundMode;
       tone: ToneSettings;
+      drums?: DrumSettings;
       soundFontUrl: string;
       modelUrl: string;
     };

@@ -9,7 +9,7 @@ import { drawNotation } from './notation';
 import { SKINS } from './skins';
 import { DEFAULT_STYLE, type RenderStyle } from './style';
 import { drawTabLane, roundRect } from './tabLane';
-import { DARK_THEME, SAFE_ZONES, type Theme } from './theme';
+import { SAFE_ZONES, THEMES, type Theme } from './theme';
 
 export { visibleFrets } from './layouts';
 
@@ -29,14 +29,15 @@ export const VIDEO_WIDTH = 1080;
 export const VIDEO_HEIGHT = 1920;
 
 export function defaultFrameSettings(fps: number, style: Partial<RenderStyle> = {}): FrameSettings {
+  const st = { ...DEFAULT_STYLE, ...style };
   return {
     fps,
     width: VIDEO_WIDTH,
     height: VIDEO_HEIGHT,
-    theme: DARK_THEME,
+    theme: THEMES[st.theme] ?? THEMES.dark,
     safeZones: SAFE_ZONES,
     showSafeZones: false,
-    style: { ...DEFAULT_STYLE, ...style },
+    style: st,
   };
 }
 
@@ -60,7 +61,12 @@ export function drawFrame(ctx: Ctx2D, t: Timeline, frameIndex: number, s: FrameS
   const right = s.width - s.safeZones.rightPx;
 
   ctx.save();
-  ctx.fillStyle = th.background;
+  if (th.backgroundTop && th.backgroundBottom) {
+    const g = ctx.createLinearGradient(0, 0, 0, s.height);
+    g.addColorStop(0, th.backgroundTop);
+    g.addColorStop(1, th.backgroundBottom);
+    ctx.fillStyle = g;
+  } else ctx.fillStyle = th.background;
   ctx.fillRect(0, 0, s.width, s.height);
 
   drawHeader(ctx, t, s, ms);

@@ -15,9 +15,12 @@ import { ensureNeck3d } from '../../render/neck3dRegistry';
 import { isPlainTeach } from '../../engine/teach';
 import { SKIN_IDS, SKINS } from '../../render/skins';
 import { LAYOUTS, type DifficultyBadge, type LayoutId, type RenderStyle } from '../../render/style';
-import { db, getSettings, styleOf, toneOf, updateSettings, type RiffRecord, type StyleSettings } from '../../storage/db';
-import { toneForSkin } from '../../audio/tone';
+import { db, drumsOf, getSettings, styleOf, toneOf, updateSettings, type RiffRecord, type StyleSettings } from '../../storage/db';
+import { toneForSkin, tonePreset } from '../../audio/tone';
 import { ToneControls } from './ToneControls';
+import { DRUM_PATTERNS } from '../../audio/drums';
+import { GENRES } from './genres';
+import { THEME_NAMES, THEMES, type ThemeId } from '../../render/theme';
 import { riffSource, updateRiff } from '../../storage/riffs';
 import { benchmarkRender, inspectSource, prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared, SoundMode, TrackInfo } from '../../workers/protocol';
@@ -102,7 +105,8 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
   // In Silent mode the preview still gets the synth as a guide (the export is silent).
   const config = riffConfig(riff, style);
   const tone = toneOf(style);
-  const configKey = JSON.stringify({ ...config, source: undefined, mode: style.soundMode, tone });
+  const drums = drumsOf(style);
+  const configKey = JSON.stringify({ ...config, source: undefined, mode: style.soundMode, tone, drums });
   const silentMode = style.soundMode === 'silent';
   useEffect(() => {
     let live = true;
@@ -113,6 +117,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
       soundFontUrl: DEFAULT_SOUND_PACK.url,
       soundMode: silentMode ? 'synth' : style.soundMode,
       tone,
+      drums,
     }).then(
       (p) => {
         if (!live) return;
@@ -345,6 +350,22 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
               <p className="dim small">The preview plays this tone as a guide; the export is silent.</p>
             ) : null}
             <ToneControls tone={tone} onChange={(t) => setStyle({ tone: t })} />
+            <div className="field" data-testid="drum-controls">
+              <span>Drums</span>
+              <div className="chips" role="radiogroup" aria-label="Drum pattern">
+                {DRUM_PATTERNS.map((d) => (
+                  <button key={d.id} role="radio" aria-checked={drums.pattern === d.id} className={`chip ${drums.pattern === d.id ? 'on' : ''}`} onClick={() => setStyle({ drums: { ...drums, pattern: d.id } })}>
+                    {d.name}
+                  </button>
+                ))}
+              </div>
+              {drums.pattern !== 'none' && (
+                <label className="knob">
+                  <span>Drum volume<b>{Math.round(drums.volume * 10)}</b></span>
+                  <input type="range" min={0} max={1} step={0.05} value={drums.volume} aria-label="Drum volume" onChange={(e) => setStyle({ drums: { ...drums, volume: Number(e.target.value) } })} />
+                </label>
+              )}
+            </div>
             {style.tone && (
               <button className="btn" onClick={() => setStyle({ tone: toneForSkin(render.skin) })}>Reset to the {SKINS[render.skin].name} default</button>
             )}
@@ -359,6 +380,26 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
         )}
         {tab === 'layout' && (
           <>
+            <div className="field" data-testid="genre-controls">
+              <span>Genre (sets colours, guitar tone and drums)</span>
+              <div className="chips" role="group" aria-label="Genre">
+                {GENRES.map((g) => (
+                  <button key={g.id} className={`chip ${render.theme === g.theme && tone.preset === g.tone && drums.pattern === g.drums ? 'on' : ''}`} onClick={() => setStyle({ render: { ...render, theme: g.theme }, tone: tonePreset(g.tone), drums: { ...drums, pattern: g.drums } })}>
+                    {g.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <span>Colours</span>
+              <div className="chips" role="radiogroup" aria-label="Colour theme">
+                {(Object.keys(THEME_NAMES) as ThemeId[]).map((id) => (
+                  <button key={id} role="radio" aria-checked={render.theme === id} className={`chip ${render.theme === id ? 'on' : ''}`} onClick={() => setRender({ theme: id })}>
+                    <span className="swatch" style={{ background: THEMES[id].dot }} />{THEME_NAMES[id]}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="field">
               <span>Preset</span>
               <div className="grid">

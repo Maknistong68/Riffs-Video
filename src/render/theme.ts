@@ -23,6 +23,9 @@ export type Theme = {
   glyph: string;
   badge: string;
   badgeText: string;
+  /** Optional vertical background gradient (top → bottom); otherwise `background` fills the frame. */
+  backgroundTop?: string;
+  backgroundBottom?: string;
 };
 
 export const DARK_THEME: Theme = {
@@ -50,6 +53,86 @@ export const DARK_THEME: Theme = {
   badge: '#2a3140',
   badgeText: '#f4f4f6',
 };
+
+export type ThemeId = 'dark' | 'metal' | 'blues' | 'lofi' | 'acoustic';
+
+/**
+ * Genre themes (phase 6). Each `dot` must stay far (> 70 in RGB) from every skin's wood and the
+ * background: the Sync Report finds highlights by that colour in the decoded video.
+ */
+export const THEMES: Record<ThemeId, Theme> = {
+  dark: DARK_THEME,
+  metal: {
+    ...DARK_THEME,
+    background: '#0a0808',
+    backgroundTop: '#050505',
+    backgroundBottom: '#2a0606',
+    textDim: '#b09090',
+    stringActive: '#ff6b6b',
+    dot: '#ff2d3c',
+    dotText: '#ffffff',
+    laneBg: '#160d0d',
+    laneLine: '#4a2a2a',
+    noteBox: '#2c1818',
+    noteBoxActive: '#ff2d3c',
+    playhead: '#ffffff',
+    ghost: '#ff9a9a',
+    glyph: '#ffe3e3',
+  },
+  blues: {
+    ...DARK_THEME,
+    background: '#0b1224',
+    backgroundTop: '#070c18',
+    backgroundBottom: '#13275a',
+    textDim: '#93a3c4',
+    stringActive: '#8fd0ff',
+    dot: '#38a6ff',
+    dotText: '#04121f',
+    laneBg: '#0f1a33',
+    laneLine: '#2c3f68',
+    noteBox: '#1a2a4d',
+    noteBoxActive: '#38a6ff',
+    playhead: '#ffb347',
+    ghost: '#ffd27f',
+    glyph: '#e3f0ff',
+  },
+  lofi: {
+    ...DARK_THEME,
+    background: '#1c1529',
+    backgroundTop: '#15101f',
+    backgroundBottom: '#3a2440',
+    textDim: '#b7a6c8',
+    stringActive: '#ffc6de',
+    dot: '#ff8fc2',
+    dotText: '#2a0f1d',
+    laneBg: '#241a31',
+    laneLine: '#4a3a5c',
+    noteBox: '#33264a',
+    noteBoxActive: '#ff8fc2',
+    playhead: '#8fe3ff',
+    ghost: '#c9b8ff',
+    glyph: '#fff0f7',
+  },
+  acoustic: {
+    ...DARK_THEME,
+    background: '#16110b',
+    backgroundTop: '#100c08',
+    backgroundBottom: '#33230f',
+    textDim: '#b9a78f',
+    stringActive: '#bff5d4',
+    dot: '#6fe0a2',
+    dotText: '#062112',
+    laneBg: '#1f1810',
+    laneLine: '#4a3b26',
+    noteBox: '#2e2416',
+    noteBoxActive: '#6fe0a2',
+    playhead: '#ffcc66',
+    ghost: '#ffe39e',
+    glyph: '#fff6e6',
+  },
+};
+
+export const THEME_NAMES: Record<ThemeId, string> = { dark: 'Classic dark', metal: 'Metal', blues: 'Blues', lofi: 'Lo-fi', acoustic: 'Acoustic' };
 
 /** TikTok / Shorts UI overlays. Editable constants (CLAUDE.md §4, P17). */
 export const SAFE_ZONES = {

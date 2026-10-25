@@ -105,6 +105,18 @@ export const TONE_PRESETS: PresetDef[] = [
     },
   },
   {
+    id: 'lofi',
+    name: 'Lo-fi',
+    tone: {
+      ...OFF,
+      instrument: 'electric',
+      compressor: { on: true, amount: 0.35 },
+      amp: { on: true, gain: 0.12, bass: 0.6, mid: 0.45, treble: 0.25 },
+      chorus: { on: true, rate: 0.15, depth: 0.7, mix: 0.4 },
+      reverb: { on: true, size: 0.65, mix: 0.24 },
+    },
+  },
+  {
     id: 'jazz',
     name: 'Jazz',
     tone: { ...OFF, instrument: 'jazz', amp: { on: true, gain: 0.15, bass: 0.6, mid: 0.5, treble: 0.35 }, reverb: { on: true, size: 0.4, mix: 0.14 } },
