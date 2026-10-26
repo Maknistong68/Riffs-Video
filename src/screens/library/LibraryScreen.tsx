@@ -110,7 +110,7 @@ function RiffCard({ riff, lastExport, onMenu }: { riff: RiffRecord; lastExport: 
           <span className="title">{riff.title}</span>
           <span className="dim small">{t ? `${tuningLabel(t.tuning, t.capo)} · ${formatDuration(t.durationMs)}` : riff.artist || ' '}</span>
           <span className="dim small">{lastExport ? `Exported ${formatAgo(lastExport)}` : 'Not exported yet'}</span>
-          {riff.demoId ? <span className="badge">Demo · original</span> : !riff.reviewed && <span className="badge bad">Needs review</span>}
+          {riff.demoId ? <span className="badge">Demo · original</span> : riff.famousId ? <span className="badge">Famous · public domain</span> : !riff.reviewed && <span className="badge bad">Needs review</span>}
         </span>
       </button>
       <button className="icon-btn" style={{ position: 'absolute', right: 4, top: 4 }} aria-label={`More actions for ${riff.title}`} onClick={onMenu}>

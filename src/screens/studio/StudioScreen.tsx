@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { navigate } from '../../app/router';
-import { DEFAULT_SOUND_PACK, SOUND_PACKS } from '../../audio/soundpacks';
+import { SOUND_PACKS, soundPackById } from '../../audio/soundpacks';
 import { formatDuration } from '../../components/format';
 import { Segmented } from '../../components/Segmented';
 import { difficultyLabel, hardestBar } from '../../engine/difficulty';
@@ -108,7 +108,8 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
   const config = riffConfig(riff, style);
   const tone = toneOf(style);
   const drums = drumsOf(style);
-  const configKey = JSON.stringify({ ...config, source: undefined, mode: style.soundMode, tone, drums });
+  const pack = soundPackById(style.soundPack);
+  const configKey = JSON.stringify({ ...config, source: undefined, mode: style.soundMode, tone, drums, pack: pack.id });
   const silentMode = style.soundMode === 'silent';
   useEffect(() => {
     let live = true;
@@ -116,7 +117,7 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
     // Debounced: dragging a pedal knob re-renders the effects once the finger settles.
     const timer = window.setTimeout(() => prepareRiff({
       riff: config,
-      soundFontUrl: DEFAULT_SOUND_PACK.url,
+      soundFontUrl: pack.url,
       soundMode: silentMode ? 'synth' : style.soundMode,
       tone,
       drums,
@@ -377,10 +378,11 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
             )}
             <label className="field">
               <span>Sound pack</span>
-              <select className="input" value={DEFAULT_SOUND_PACK.id} disabled>
+              <select className="input" value={pack.id} onChange={(e) => setStyle({ soundPack: e.target.value })} data-testid="sound-pack">
                 {SOUND_PACKS.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </label>
+            <p className="dim small">{pack.id === 'fluid-guitars' ? 'Recorded guitars — the most realistic sound.' : 'Lighter General MIDI sounds, the original RiffReel sound.'}</p>
             {prepared && <p className="dim small">Loudness normalised to {prepared.lufs.toFixed(1)} LUFS.</p>}
           </>
         )}

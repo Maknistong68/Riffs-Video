@@ -115,6 +115,7 @@ function captionFor(riff: RiffRecord, link: string | null): Caption | null {
     ...(difficulty ? { difficulty } : {}),
     genre: r.theme,
     isOriginal: riff.isOriginal,
+    ...(riff.famousId ? { publicDomain: true } : {}),
     teach: st.teach,
     ...(r.endCard.kind === 'part' ? { part: { part: r.endCard.part ?? 1, parts: r.endCard.parts ?? 2 } } : {}),
     ...(link ? { practiceUrl: link } : {}),

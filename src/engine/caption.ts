@@ -13,6 +13,8 @@ export type CaptionInput = {
   difficulty?: 'Easy' | 'Medium' | 'Hard';
   genre?: 'metal' | 'blues' | 'lofi' | 'acoustic' | 'dark';
   isOriginal: boolean;
+  /** A public-domain melody (Famous riffs): safe to post with the synth sound. */
+  publicDomain?: boolean;
   teach?: { slowMo?: boolean; loopHardest?: boolean; positions?: boolean; hookFirst?: boolean; speedUp?: boolean };
   part?: { part: number; parts: number };
   practiceUrl?: string;
@@ -50,7 +52,7 @@ export function buildCaption(i: CaptionInput): Caption {
     i.teach?.positions ? 'shown in 3 positions' : '',
     i.teach?.speedUp ? 'sped up to 150%' : '',
   ].filter(Boolean);
-  const caption = `${pre}${i.title}${i.artist ? ` by ${i.artist}` : ''} 🎸 ${bits.join(' · ')}${part}${i.credit ? `\n${i.credit}` : ''}${i.isOriginal ? '\nOriginal riff — free to use with credit.' : ''}${i.practiceUrl ? `\nPractice it slowly: ${i.practiceUrl}` : ''}\nWhat BPM can you play it at? 👇`;
+  const caption = `${pre}${i.title}${i.artist ? ` by ${i.artist}` : ''} 🎸 ${bits.join(' · ')}${part}${i.credit ? `\n${i.credit}` : ''}${i.isOriginal ? '\nOriginal riff — free to use with credit.' : i.publicDomain ? '\nPublic-domain melody, played on guitar.' : ''}${i.practiceUrl ? `\nPractice it slowly: ${i.practiceUrl}` : ''}\nWhat BPM can you play it at? 👇`;
 
   const tags: string[] = ['#guitar', '#guitartok', teaching ? '#guitarlesson' : '#guitarriff', '#guitartabs'];
   const titleTag = slug(i.title);

@@ -1,5 +1,21 @@
 # Status
 
+## Famous riffs + sound pack picker ✅ in emulation · ⏳ real-device check
+
+- **Famous riffs** (Create › 🎸 Famous riffs): 20 melodies everyone knows that are in the public domain —
+  Für Elise, Ode to Joy, In the Hall of the Mountain King, Greensleeves, Spanish Romance, Moonlight Sonata,
+  Canon in D, Korobeiniki (Tetris), House of the Rising Sun, Bach's Bourrée, Toccata in D minor, Rondo alla
+  Turca, Amazing Grace, Jingle Bells, Carol of the Bells, When the Saints, Chopin's Funeral March, Flight of
+  the Bumblebee, Minuet in G, Happy Birthday. Each opens straight in the Studio with a matching look
+  (classical = nylon, Mountain King/Toccata/Carol = metal…), the composer credit, and optionally the
+  "Guess the song?" opener. Caption says "Public-domain melody"; no copyright warning on export.
+  Copyrighted songs are not shipped (CLAUDE.md §4): users bring their own Guitar Pro file + Silent mode.
+- Accuracy: written as pitch names on a chosen string and converted to frets in one place
+  (`famousAlphaTex`); unit tests check every riff parses, validates, sounds exactly the written pitches,
+  and that every bar is exactly full for its time signature.
+- **Sound pack picker** (Studio › Sound): Studio guitars (recorded, default) or Sonivox (classic). Saved
+  per riff; preview, Riff Review, export and Sync Report all use the chosen pack.
+
 ## Reviewer's top 3 — done ✅ in emulation · ⏳ listen on real phones
 
 1. **Hook first is the default.** New riffs (and older ones that never set it) play the riff at full speed

@@ -14,6 +14,11 @@ export const SOUND_PACKS: SoundPack[] = [
 
 export const DEFAULT_SOUND_PACK = SOUND_PACKS[0]!;
 
+/** The pack a riff asked for (StyleSettings.soundPack), or the default when unset or unknown. */
+export function soundPackById(id: string | undefined): SoundPack {
+  return SOUND_PACKS.find((p) => p.id === id) ?? DEFAULT_SOUND_PACK;
+}
+
 const cache = new Map<string, Promise<Uint8Array>>();
 
 export function fetchSoundFont(url: string): Promise<Uint8Array> {

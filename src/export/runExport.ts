@@ -2,7 +2,7 @@
  * Export one riff and store the result (shared by the Export sheet and the batch queue):
  * worker render + encode + Sync Report → MP4 in OPFS + metadata in IndexedDB.
  */
-import { DEFAULT_SOUND_PACK } from '../audio/soundpacks';
+import { soundPackById } from '../audio/soundpacks';
 import { db, drumsOf, getSettings, newId, styleOf, summarise, toneOf, updateSettings, type RiffRecord } from '../storage/db';
 import { requestPersistence, saveBlob } from '../storage/opfs';
 import { riffConfig } from '../storage/riffConfig';
@@ -23,7 +23,7 @@ export function runExport(riff: RiffRecord, opts: { fps: 30 | 60; soundMode: Sou
       soundMode: opts.soundMode,
       tone: toneOf(style),
       drums: drumsOf(style),
-      soundFontUrl: DEFAULT_SOUND_PACK.url,
+      soundFontUrl: soundPackById(style.soundPack).url,
       modelUrl: new URL(`${import.meta.env.BASE_URL}models/basic-pitch/model.json`, location.href).href,
     },
     onProgress,

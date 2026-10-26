@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { haptic } from '../../app/haptics';
 import { navigate } from '../../app/router';
-import { DEFAULT_SOUND_PACK } from '../../audio/soundpacks';
+import { soundPackById } from '../../audio/soundpacks';
 import { programOf } from '../../audio/tone';
 import { Sheet } from '../../components/Sheet';
 import type { RiffEdit } from '../../engine/edits';
@@ -64,7 +64,7 @@ function Review({ riff }: { riff: RiffRecord }) {
     let live = true;
     prepareRiff({
       riff: { source, trackIndex: riff.trackIndex, leadInMs: style.leadInMs, title: riff.title, program: programOf(toneOf(style).instrument), ...(riff.noteConfidence ? { noteConfidence: riff.noteConfidence } : {}), edits },
-      soundFontUrl: DEFAULT_SOUND_PACK.url,
+      soundFontUrl: soundPackById(style.soundPack).url,
       soundMode: 'synth',
       tone: toneOf(style),
     }).then(

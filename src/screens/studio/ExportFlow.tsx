@@ -28,8 +28,8 @@ export function ExportFlow({ riff, durationMs, onClose }: { riff: RiffRecord; du
   const [showNotice, setShowNotice] = useState(false);
 
   useEffect(() => {
-    void getSettings(db()).then((s) => setShowNotice(!riff.isOriginal && !s.copyrightNoticeSeen));
-  }, [riff.isOriginal]);
+    void getSettings(db()).then((s) => setShowNotice(!riff.isOriginal && !riff.famousId && !s.copyrightNoticeSeen));
+  }, [riff.isOriginal, riff.famousId]);
 
   const [perf, setPerf] = useState<number | null>(null);
   useEffect(() => {

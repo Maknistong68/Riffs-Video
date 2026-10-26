@@ -70,6 +70,10 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet onClose={onClose} label="Create riff">
       <h2>New riff</h2>
+      <button className="option" onClick={() => { onClose(); navigate({ name: 'famous' }); }} data-testid="open-famous">
+        <span className="ico">🎸</span>
+        <span className="txt"><strong>Famous riffs</strong><span className="dim small">20 well-known melodies (public domain) — ready to post</span></span>
+      </button>
       <button className="option" onClick={() => { onClose(); navigate({ name: 'write' }); }}>
         <span className="ico">✍️</span>
         <span className="txt"><strong>Write riff</strong><span className="dim small">Type tab in alphaTex</span></span>

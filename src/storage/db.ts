@@ -36,6 +36,8 @@ export type StyleSettings = {
   tone?: ToneSettings;
   /** Drum backing (mixed after the pedals). */
   drums?: DrumSettings;
+  /** Sound pack id (audio/soundpacks.ts). Unset = the default pack. */
+  soundPack?: string;
 };
 
 export function drumsOf(s: StyleSettings): DrumSettings {
@@ -74,6 +76,8 @@ export type RiffRecord = {
   timelineCache?: Timeline;
   styleSettings: StyleSettings;
   demoId?: string;
+  /** Added from Famous riffs (src/demo/famous.ts): a public-domain melody, safe to post. */
+  famousId?: string;
   createdAt: number;
   updatedAt: number;
 };

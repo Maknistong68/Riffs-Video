@@ -18,5 +18,8 @@
 | vite-plugin-pwa / workbox | MIT | Service worker, offline precache |
 
 Test fixtures in `tests/fixtures/alphatab/` are alphaTab test files (MPL-2.0), see the README there.
+Famous riffs (`src/demo/famous.ts`) are guitar arrangements, written for RiffReel, of public-domain
+compositions and traditional tunes (composers who died more than 70 years ago, and works published
+before 1930). No copyrighted songs, recordings or third-party tab files are included.
 App icons are drawn by `scripts/make-icons.cjs` (original).
 The 3D neck, headstock and wood textures are generated in code (`src/render/three/neck3d.ts`): no third-party 3D assets.
