@@ -2,6 +2,7 @@
  * Export one riff and store the result (shared by the Export sheet and the batch queue):
  * worker render + encode + Sync Report → MP4 in OPFS + metadata in IndexedDB.
  */
+import { holdUpdates } from '../app/updateHold';
 import { soundPackById } from '../audio/soundpacks';
 import { db, drumsOf, getSettings, newId, styleOf, summarise, toneOf, updateSettings, type RiffRecord } from '../storage/db';
 import { requestPersistence, saveBlob } from '../storage/opfs';
@@ -15,6 +16,7 @@ export type ExportRun = { promise: Promise<{ exportId: string; ok: boolean }>; c
 
 export function runExport(riff: RiffRecord, opts: { fps: 30 | 60; soundMode: SoundMode }, onProgress: ExportProgress): ExportRun {
   const style = styleOf(riff);
+  const release = holdUpdates();
   const job = startExport(
     {
       riff: { ...riffConfig(riff, { ...style, soundMode: opts.soundMode }), source: riffSource(riff) },
@@ -56,5 +58,6 @@ export function runExport(riff: RiffRecord, opts: { fps: 30 | 60; soundMode: Sou
     }
     return { exportId: id, ok: r.report.ok };
   });
+  promise.then(release, release);
   return { promise, cancel: job.cancel };
 }

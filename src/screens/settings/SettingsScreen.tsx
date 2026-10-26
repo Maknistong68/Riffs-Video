@@ -97,6 +97,7 @@ export function SettingsScreen({ compat }: { compat: CompatResult | null }) {
 
       <section className="card panel">
         <h2>About & licences</h2>
+        <p className="small" data-testid="app-version">Version {__APP_VERSION__}</p>
         {compat?.notes.map((n) => <p key={n} className="small dim">{n}</p>)}
         {LICENCES.map(([name, lic]) => (
           <div key={name} className="small"><div>{name}</div><div className="dim">{lic}</div></div>

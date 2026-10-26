@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import react from '@vitejs/plugin-react';
@@ -25,7 +26,20 @@ function basicPitchModel(): Plugin {
   };
 }
 
+/** Shown in Settings so the user can tell which version the phone is running. */
+function appVersion(): string {
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA ?? (() => {
+    try {
+      return execSync('git rev-parse HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    } catch {
+      return 'dev';
+    }
+  })();
+  return `${sha.slice(0, 7)} · ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+}
+
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify(appVersion()) },
   plugins: [
     react(),
     basicPitchModel(),
