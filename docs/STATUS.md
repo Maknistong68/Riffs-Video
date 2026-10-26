@@ -15,6 +15,16 @@
    Teach › Speed-up ending (full speed → 125 % → 150 %). The caption starts with the series and ends with
    "What BPM can you play it at? 👇".
 
+Verified: unit tests 472 ✅ · golden 8/8 ✅ (new `p6-speedup-series` 80/80; 03-repeats max error 31.4 ms, close
+to the 33.3 ms one-frame limit at 30 fps) · e2e 38/38 ✅ on iPhone 15 + Pixel 7 emulation, every Sync Report ✅.
+Sync Report gained two narrow rules for sampled guitars: a re-struck identical pitch is accepted when its attack
+is heard and the detector reports one long note; a chord root is accepted through its octave only when that
+octave is itself in the chord.
+
+**Real-phone listening checklist:** (1) open a demo riff → hook plays within a blink, then 3·2·1; (2) the
+guitar sounds like a guitar on speaker and headphones, no late or clicky notes; (3) export twice with Series on
+→ the second shows RIFF #N+1; (4) speed-up ending stays readable at 150 %; (5) Sync Report ✅ on the device.
+
 ## Video look — redesign for TikTok (after Phase 6) ✅ in emulation · ⏳ real-device check
 
 **Neck orientation fixed:** the neck is now drawn as the player sees it looking down at the guitar: low E on
