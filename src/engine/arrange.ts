@@ -187,7 +187,9 @@ export function buildArrangement(makeScore: () => Score, opts: ArrangeOptions, s
     capo: base.timeline.capo,
     tempoMap,
     leadInMs: opts.leadInMs,
-    durationMs: sampleToMs(cursor, sampleRate) + opts.tailMs,
+    // Each pass is placed on whole audio samples: a note ending exactly at the end of the last pass
+    // may overrun that by a fraction of a sample, so the video never ends before it (tail 0).
+    durationMs: Math.max(sampleToMs(cursor, sampleRate) + opts.tailMs, ...events.map((e) => e.startMs + e.durationMs)),
     events,
     bars,
     ...(sections.length ? { sections } : {}),

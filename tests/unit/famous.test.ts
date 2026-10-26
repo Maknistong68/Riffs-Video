@@ -53,3 +53,17 @@ describe('famous riffs', () => {
     });
   }
 });
+
+describe('famous riffs with teach passes', () => {
+  it('every riff arranges into a valid timeline with hook first + speed-up and no tail', async () => {
+    const { buildArrangement } = await import('../../src/engine/arrange');
+    const { DEFAULT_TEACH } = await import('../../src/engine/teach');
+    for (const r of FAMOUS_RIFFS) {
+      const tex = famousAlphaTex(r);
+      for (const teach of [DEFAULT_TEACH, { ...DEFAULT_TEACH, speedUp: true, slowMo: true }]) {
+        const { timeline } = buildArrangement(() => loadAlphaTex(tex), { trackIndex: 0, leadInMs: 150, tailMs: 0, teach });
+        expect(validateTimeline(timeline), r.id).toEqual([]);
+      }
+    }
+  });
+});
