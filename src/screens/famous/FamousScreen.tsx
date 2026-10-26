@@ -62,7 +62,7 @@ export function FamousScreen() {
       <div className="stack" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {list.map((r) => (
           <button key={r.id} className="option" onClick={() => void open(r)} disabled={busy !== null} data-testid={`famous-${r.id}`}>
-            <span className="ico">{r.look.tone === 'metal' ? '🤘' : r.look.tone === 'nylon' ? '🎻' : '🎸'}</span>
+            <span className="ico">{r.look.tone === 'metal' ? '🤘' : r.look.tone === 'nylon' ? '🎼' : '🎸'}</span>
             <span className="txt">
               <strong>{busy === r.id ? 'Opening…' : r.title}</strong>
               <span className="dim small">{r.composer}</span>
