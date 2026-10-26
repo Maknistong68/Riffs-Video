@@ -13,6 +13,10 @@
 - Accuracy: written as pitch names on a chosen string and converted to frets in one place
   (`famousAlphaTex`); unit tests check every riff parses, validates, sounds exactly the written pitches,
   and that every bar is exactly full for its time signature.
+- Verified: Sync Report ✅ on all 20 (export with hook first, their own tone/drums, 30 fps) — every note matched,
+  max error 2.0–5.5 ms (Bumblebee 5.5 ms, the rest ≤ 3.5 ms). e2e (iPhone 15): pick Mountain King as Guess
+  the song → switch to the classic pack → reload keeps it → export ✅ 52/52, public-domain caption.
+  ⏳ Listen on a real phone: the melodies are written from the scores; tell me any note that sounds off.
 - **Sound pack picker** (Studio › Sound): Studio guitars (recorded, default) or Sonivox (classic). Saved
   per riff; preview, Riff Review, export and Sync Report all use the chosen pack.
 
