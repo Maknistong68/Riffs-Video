@@ -1,7 +1,8 @@
 /** Riff persistence helpers used by screens. */
 import { DEMO_RIFFS } from '../demo';
 import type { RiffSource } from '../import/source';
-import { db, DEFAULT_STYLE, getSettings, newId, updateSettings, type RiffRecord } from './db';
+import { db, DEFAULT_STYLE, getSettings, newId, styleOf, updateSettings, type RiffRecord } from './db';
+import type { Timeline } from '../engine/timeline';
 import { deleteBlob } from './opfs';
 
 export function riffSource(r: RiffRecord): RiffSource {
@@ -67,4 +68,20 @@ export async function deleteExport(id: string): Promise<void> {
   const e = await d.exportsMeta.get(id);
   if (e) await deleteBlob(d, e.blobPath);
   await d.exportsMeta.delete(id);
+}
+
+/**
+ * The riff played once, as written (no teach passes), cached on the record for the library card,
+ * difficulty and caption. Built in the worker when missing.
+ */
+export async function ensureTimelineCache(riff: RiffRecord): Promise<Timeline | null> {
+  if (riff.timelineCache) return riff.timelineCache;
+  try {
+    const { buildRiffTimeline } = await import('../workers/client');
+    const timeline = await buildRiffTimeline({ source: riffSource(riff), trackIndex: riff.trackIndex, leadInMs: styleOf(riff).leadInMs, title: riff.title, edits: riff.edits ?? [] });
+    await db().riffs.update(riff.id, { timelineCache: timeline });
+    return timeline;
+  } catch {
+    return null;
+  }
 }

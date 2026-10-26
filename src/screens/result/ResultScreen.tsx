@@ -8,13 +8,17 @@ import { seriesText } from '../../render/style';
 import { difficultyLabel } from '../../engine/difficulty';
 import { copyText, makePracticeLink } from '../../export/practice';
 import { readBlob } from '../../storage/opfs';
-import { deleteExport } from '../../storage/riffs';
+import { deleteExport, ensureTimelineCache } from '../../storage/riffs';
 
 /** S8: player, Sync Report, share/save. */
 export function ResultScreen({ exportId }: { exportId: string }) {
   const meta = useLiveQuery(() => db().exportsMeta.get(exportId), [exportId]);
   const riff = useLiveQuery(async () => (meta ? ((await db().riffs.get(meta.riffId)) ?? null) : undefined), [meta?.riffId]);
   const [link, setLink] = useState<string | null>(null);
+  // Riffs made before their timeline was cached: build it once (the caption needs it).
+  useEffect(() => {
+    if (riff && !riff.timelineCache) void ensureTimelineCache(riff);
+  }, [riff]);
   const caption = riff ? captionFor(riff, link) : null;
   const [url, setUrl] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);

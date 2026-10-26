@@ -51,6 +51,15 @@ const P6_VARIANTS: Record<string, P6Variant> = {
     drums: 'metal',
     timing: { leadInMs: OPENER_LEAD_IN_MS, tailMs: OUTRO_MS },
   },
+  'p6-speedup-series': {
+    base: '04-tempo-ties.atex',
+    style: { view: '2d', layout: 'classic', series: { on: true, label: 'Riff', number: 7 } },
+    teach: { slowMo: false, loopHardest: false, hookFirst: true, speedUp: true },
+    fps: 60,
+    tone: 'electric',
+    drums: 'none',
+    timing: { leadInMs: 150, tailMs: 0 },
+  },
   'p6-lofi-positions': {
     base: '01-pentatonic-run.atex',
     style: { view: '2d', layout: 'overlay', theme: 'lofi', barCounter: true },

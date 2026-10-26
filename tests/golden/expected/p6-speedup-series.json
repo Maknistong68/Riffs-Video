@@ -1,0 +1,75 @@
+{
+ "variant": {
+  "base": "04-tempo-ties.atex",
+  "style": {
+   "view": "2d",
+   "layout": "classic",
+   "series": {
+    "on": true,
+    "label": "Riff",
+    "number": 7
+   }
+  },
+  "teach": {
+   "slowMo": false,
+   "loopHardest": false,
+   "hookFirst": true,
+   "speedUp": true
+  },
+  "fps": 60,
+  "tone": "electric",
+  "drums": "none",
+  "timing": {
+   "leadInMs": 150,
+   "tailMs": 0
+  }
+ },
+ "sections": [
+  {
+   "startMs": 150,
+   "endMs": 12150,
+   "label": "Hook · full speed"
+  },
+  {
+   "startMs": 12950,
+   "endMs": 24950,
+   "label": "Full speed"
+  },
+  {
+   "startMs": 25750,
+   "endMs": 35350,
+   "label": "Faster · 125%"
+  },
+  {
+   "startMs": 36150,
+   "endMs": 44150,
+   "label": "Faster · 150%"
+  }
+ ],
+ "durationMs": 44150,
+ "frames": {
+  "0": "6775b5fcc0c961b3674f22bc36dffea45c711bd2635d79479c3463050b5392b0",
+  "5": "cbc17a32b9fc945f2a3d0817fbc6d6271a1d8dc8dc8debdea0e18464115e8938",
+  "9": "40310f88cc34095542b59462e003912367b82df52a82326cb279caf229fbe1e1",
+  "23": "8f6835ad55a87e62c55c8fbc312626bc4ffca7e931c4afa58e045dd502b87be6",
+  "24": "13a7cf1447474d06d36c25f6232886b11ce357e41912a57dbaf179c435dfe691",
+  "27": "e0e380fe933cfc40bfc6d8c5096f053a7a808ce16a0ee7f8c58ac518a350a298",
+  "31": "a419a76411ccd7ba34a5549c97b09feb4065748e69a455710a837ef1648cf468",
+  "50": "4471b63ef81d89e1b14b29613f69aef418242aee6a8c7a00db010271cd23e5a3",
+  "54": "d9ed51148ca40710621b1d6bce13e7330b4b11134386566b0bcd9781c02e4f2b",
+  "61": "a2e03eae459ed2bd0184f79d87515e5a7766d504ab6e1b6e013caf20b7e48b39",
+  "65": "5a6f771cb439c5c269c0b09bd1870968d8610c7d0743b0c3f3655fcda38c4afd",
+  "72": "b9dd972bc722870e0f7b46fe98d6cade27e5fba5ace7dd18054998327b4b3d1b",
+  "76": "b79689828d5a6343c617271e3b18baba1aa0f2c2491dde4c507097296766ec51",
+  "117": "f884b043f39a17f9ba6e6420b944e0b8c626674aa8ae8819ae318c691dcede62",
+  "121": "39923c3703b1482e4f224a2186281221817674f341e3765657764910abaa2ce0",
+  "125": "d62dbc91c074250beca87a46ba4419e7e3e8e04e5cac1fc3781cc2afa8286c01",
+  "129": "4d75fee131d1a9b8e3cedfff10ca2528b073d8750a41362b07b9284025cef887",
+  "132": "82c3e32e9cd3614d660c83a942fd0953c0b8800b366608c96899211095c79ce2",
+  "136": "6f11a631b19eadb0cb5c25bbaff8d44eed54d6668fc34c300792b9535f2c33e4",
+  "407": "bb67c982345524314cb30072b991d7202335948d020883aa0c5a2d5a4416db46",
+  "791": "e6f858814cb52c56fc064c68629c2e6eef998146862b35d87541657139134476",
+  "1103": "2b73cf213cc4d63dd31dc14628d925d7d1cc5f0d47334cf3b197e012f5c32e0c",
+  "1289": "760d249a5e49dfe551834606b29d8ef96bebd6a8113da0d0152085c8eef7e36f"
+ }
+}

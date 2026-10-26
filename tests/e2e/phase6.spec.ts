@@ -38,11 +38,15 @@ test('genre (Metal: theme + tone + drums), Guess opener, heatmap and Follow card
   await page.getByRole('tab', { name: 'Text' }).click();
   await page.getByRole('radio', { name: 'Guess the song?' }).click();
   await page.getByTestId('endcard-controls').getByRole('radio', { name: 'Follow' }).click();
+  await page.getByTestId('series-on').check();
+  await expect(page.getByTestId('series-number')).toHaveValue('1');
   await page.getByLabel('Scrub').fill('20');
   await page.screenshot({ path: `test-results/${info.project.name}-p6-opener.png` });
   await exportAndCheck(page, `${info.project.name}-p6-metal`);
   await expect(page.getByTestId('caption-card')).toContainText('#metalguitar');
   await expect(page.getByTestId('caption-text')).toContainText('Power Drive');
+  await expect(page.getByTestId('caption-text')).toContainText('RIFF #1');
+  await expect(page.getByTestId('caption-text')).toContainText('What BPM can you play it at?');
   expect(errors).toEqual([]);
 });
 

@@ -127,6 +127,40 @@ export function matchNotes(
     matches.push({ ...base, onsetMs: onset, errorMs, onsetOk, detectedMidi, pitchOk, ok, detail });
   }
 
+  // The same pitch struck again right away: Basic Pitch hears one long note. The new attack itself
+  // was verified (onset within a frame); accept the pitch when that same pitch is still sounding
+  // (a detection that began at or before the previous strike and lasts past this one).
+  for (const m of matches) {
+    if (m.pitchOk || m.kind !== 'full' || !m.onsetOk) continue;
+    const e = t.events.find((x) => x.id === m.eventId)!;
+    const prev = [...t.events].reverse().find((x) => x.startMs < e.startMs && x.midi === e.midi && x.startMs >= e.startMs - 2000);
+    if (!prev) continue;
+    const d = detected.find((x) => x.midi === e.midi && x.startMs <= e.startMs - PITCH_SEARCH_MS / 2 && x.startMs >= prev.startMs - PITCH_SEARCH_MS && x.startMs + x.durationMs >= e.startMs);
+    if (!d) continue;
+    m.pitchOk = true;
+    m.detectedMidi = d.midi;
+    m.ok = true;
+    m.detail = 'ok (re-struck: attack heard; the pitch detector hears one long note)';
+  }
+
+  // A chord's low root on a sampled guitar has a weak fundamental, and Basic Pitch then hears only
+  // the octave — which, when that octave is itself a note of the same chord, was already claimed by
+  // that note. Accept the root through it (narrowly: same chord, exact octave, at this onset).
+  for (const m of matches) {
+    if (m.pitchOk || m.kind !== 'full') continue;
+    const e = t.events.find((x) => x.id === m.eventId)!;
+    if (e.chordId === undefined) continue;
+    const siblings = t.events.filter((x) => x.chordId === e.chordId && x.id !== e.id);
+    const d = detected.find(
+      (x) => Math.abs(x.startMs - e.startMs) <= PITCH_SEARCH_MS && x.midi > e.midi && (x.midi - e.midi) % 12 === 0 && siblings.some((s) => s.midi === x.midi),
+    );
+    if (!d) continue;
+    m.pitchOk = true;
+    m.detectedMidi = d.midi;
+    m.ok = m.onsetOk;
+    m.detail = m.ok ? `ok (chord root heard through its octave ${d.midi})` : m.detail.replace(`; pitch ${e.midi} not heard`, '').replace(`pitch ${e.midi} not heard`, '');
+  }
+
   // Extras: detections not explained by any sounding note (re-detected sustain, harmonics, bend steps).
   const extras = detected.filter((d, i) => {
     if (used.has(i) || d.amplitude < EXTRA_MIN_AMPLITUDE) return false;

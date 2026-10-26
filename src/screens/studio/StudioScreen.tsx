@@ -23,7 +23,7 @@ import { barCount, partRanges, splitIntoParts } from '../../export/splitParts';
 import { DRUM_PATTERNS } from '../../audio/drums';
 import { GENRES } from './genres';
 import { THEME_NAMES, THEMES, type ThemeId } from '../../render/theme';
-import { riffSource, updateRiff } from '../../storage/riffs';
+import { ensureTimelineCache, riffSource, updateRiff } from '../../storage/riffs';
 import { benchmarkRender, inspectSource, prepareRiff, WorkerError } from '../../workers/client';
 import type { Prepared, SoundMode, TrackInfo } from '../../workers/protocol';
 import { ExportFlow } from './ExportFlow';
@@ -124,8 +124,12 @@ function Studio({ riff, atMs, openExport }: { riff: RiffRecord; atMs?: number; o
       (p) => {
         if (!live) return;
         setPrepared(p);
-        if (isPlainTeach(style.teach) && JSON.stringify(p.timeline) !== JSON.stringify(riff.timelineCache)) {
-          void updateRiff(riff.id, { timelineCache: p.timeline });
+        if (isPlainTeach(style.teach)) {
+          if (JSON.stringify(p.timeline) !== JSON.stringify(riff.timelineCache)) void updateRiff(riff.id, { timelineCache: p.timeline });
+        } else if (!riff.timelineCache) {
+          // Teach passes (hook first is the default): the library card and caption need the riff
+          // played once, as written — build that plain timeline too.
+          void ensureTimelineCache(riff);
         }
       },
       (e: unknown) => live && setError(e instanceof WorkerError ? [e.message, ...e.details] : [String(e)]),

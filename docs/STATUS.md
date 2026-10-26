@@ -1,5 +1,20 @@
 # Status
 
+## Reviewer's top 3 — done ✅ in emulation · ⏳ listen on real phones
+
+1. **Hook first is the default.** New riffs (and older ones that never set it) play the riff at full speed
+   within 150 ms, then "3 · 2 · 1" over the neck leads into the next pass; the teach caption names the pass
+   that's coming. Toggle: Studio › Teach › Hook first.
+2. **Real guitar sound.** Default pack "Studio guitars": multi-sampled nylon / steel / jazz / clean electric /
+   fingered bass (+ the GM kit for the click), cut from FluidR3Mono GM (MIT) — 1.5 MB SF3, precached.
+   The original samples start up to 57 ms before the pluck (notes sounded late; the Sync Report caught it):
+   `scripts/trim-soundfont-attacks.py` trims every sample to 1 ms before its attack, and a unit test keeps
+   every sample's attack within 10 ms. Velocity is humanized (seeded ±12 %, beat accent); timing never is.
+   Sonivox stays as the classic pack.
+3. **Series format.** Text › Series badge ("RIFF #N", the number counts up with each export that shows it) and
+   Teach › Speed-up ending (full speed → 125 % → 150 %). The caption starts with the series and ends with
+   "What BPM can you play it at? 👇".
+
 ## Video look — redesign for TikTok (after Phase 6) ✅ in emulation · ⏳ real-device check
 
 **Neck orientation fixed:** the neck is now drawn as the player sees it looking down at the guitar: low E on

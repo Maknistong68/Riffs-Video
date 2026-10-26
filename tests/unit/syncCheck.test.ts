@@ -51,3 +51,54 @@ describe('Sync Report matching on real Basic Pitch output', () => {
     expect(matchNotes(timeline, noisy, onsets, 30).extras.map((d) => d.midi)).toEqual([80]);
   });
 });
+
+describe('chord root heard through its octave (sampled guitars)', () => {
+  const tl = (tex: string) => buildTimeline(loadAlphaTex(`\\tempo 100\n\\track "G"\n\\staff {tabs}\n\\tuning (E4 B3 G3 D3 A2 E2)\n${tex}`), { ...DEFAULT_BUILD, trackIndex: 0 }).timeline;
+  const det = (startMs: number, midi: number): DetectedNote => ({ startMs, durationMs: 400, midi, amplitude: 0.8 });
+
+  it('accepts an E5 chord whose low E is heard only as the E3 that is also in the chord', () => {
+    const t = tl(':2 (0.6 2.5 2.4)');
+    const at = t.events[0]!.startMs;
+    const { matches } = matchNotes(t, [det(at + 5, 52), det(at + 5, 47)], [at + 2], 30);
+    expect(matches.every((m) => m.ok)).toBe(true);
+    const root = matches.find((m) => m.expectedMidi === 40)!;
+    expect(root.detail).toContain('octave');
+  });
+
+  it('still flags a chord root when its octave is not part of the chord', () => {
+    const t = tl(':2 (0.6 2.5)'); // E2 + B2: no E3 in the chord
+    const at = t.events[0]!.startMs;
+    const { matches } = matchNotes(t, [det(at + 5, 47)], [at + 2], 30);
+    expect(matches.find((m) => m.expectedMidi === 40)!.ok).toBe(false);
+  });
+
+  it('never applies to single notes', () => {
+    const t = tl(':4 0.6 2.4');
+    const a = t.events[0]!.startMs;
+    const b = t.events[1]!.startMs;
+    const { matches } = matchNotes(t, [det(b + 5, 52)], [a + 2, b + 2], 30);
+    expect(matches.find((m) => m.expectedMidi === 40)!.ok).toBe(false);
+  });
+});
+
+describe('same pitch struck twice (Basic Pitch hears one long note)', () => {
+  const tl = (tex: string) => buildTimeline(loadAlphaTex(`\\tempo 120\n\\track "G"\n\\staff {tabs}\n\\tuning (E4 B3 G3 D3 A2 E2)\n${tex}`), { ...DEFAULT_BUILD, trackIndex: 0 }).timeline;
+  const det = (startMs: number, durationMs: number, midi: number): DetectedNote => ({ startMs, durationMs, midi, amplitude: 0.8 });
+
+  it('accepts the re-strike when its attack is on time and the pitch is still sounding', () => {
+    const t = tl(':8 0.6 0.6 3.6');
+    const [a, b, c] = t.events.map((e) => e.startMs);
+    const { matches } = matchNotes(t, [det(a! + 4, b! - a! + 200, 40), det(c! + 4, 200, 43)], [a! + 2, b! + 2, c! + 2], 30);
+    expect(matches.every((m) => m.ok)).toBe(true);
+    expect(matches[1]!.detail).toContain('re-struck');
+  });
+
+  it('still flags it when the attack is missing or the pitch stopped', () => {
+    const t = tl(':8 0.6 0.6 3.6');
+    const [a, b, c] = t.events.map((e) => e.startMs);
+    const noAttack = matchNotes(t, [det(a! + 4, b! - a! + 200, 40), det(c! + 4, 200, 43)], [a! + 2, c! + 2], 30);
+    expect(noAttack.matches[1]!.ok).toBe(false);
+    const stopped = matchNotes(t, [det(a! + 4, 100, 40), det(c! + 4, 200, 43)], [a! + 2, b! + 2, c! + 2], 30);
+    expect(stopped.matches[1]!.ok).toBe(false);
+  });
+});
