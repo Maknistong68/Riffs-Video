@@ -1,5 +1,7 @@
 # Status
 
+> Deploys: `main` is the default branch and Vercel's production branch (https://riffs-video.vercel.app).
+
 ## Famous riffs + sound pack picker ✅ in emulation · ⏳ real-device check
 
 - **Famous riffs** (Create › 🎸 Famous riffs): 20 melodies everyone knows that are in the public domain —
